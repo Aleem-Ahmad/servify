@@ -1,0 +1,59 @@
+/* src/styles/globals.css */
+
+:root {
+  /* LIGHT THEME (White + Orange) */
+  --primary: #ff7a00;
+  --primary-hover: #e66e00;
+  --bg-color: #ffffff;
+  --text-color: #333333;
+  --text-secondary: #666666;
+  --card-bg: #f9f9f9;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --nav-bg: #ffffff;
+}
+
+.dark {
+  /* DARK THEME (Dark Navy + Orange) */
+  --bg-color: #0a192f; /* Deep Navy */
+  --text-color: #ccd6f6;
+  --text-secondary: #8892b0;
+  --card-bg: #112240; /* Slightly lighter navy */
+  --border-color: rgba(255, 255, 255, 0.1);
+  --nav-bg: #112240;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  font-family: var(--font-geist-sans), sans-serif;
+}
+
+main {
+  min-height: 100vh;
+}
+
+/* Common Dark Theme helpers */
+.dark body {
+  background-color: #0a192f !important;
+}
+
+.dark .lp-page, 
+.dark .admin-page, 
+.dark .provider-page,
+.dark .auth-page {
+  background-color: #0a192f !important;
+  color: #ccd6f6;
+}
+
+/* Global Transition */
+body, div, section, nav, footer, header {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}

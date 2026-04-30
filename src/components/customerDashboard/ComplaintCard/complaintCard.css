@@ -1,0 +1,181 @@
+/* ================= ROOT ================= */
+:root {
+  --orange: #ff7a00;
+  --orange-light: #ff9a3d;
+  --orange-soft: rgba(255, 122, 0, 0.12);
+
+  --text: #1f2937;
+  --muted: #6b7280;
+
+  --card: rgba(255, 255, 255, 0.75);
+
+  --radius: 18px;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* ================= CARD ================= */
+
+.complaint-card {
+  width: 100%;
+  background: var(--card);
+  backdrop-filter: blur(12px);
+
+  border-radius: var(--radius);
+  padding: 20px 22px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  box-shadow: var(--shadow);
+
+  animation: fadeUp 0.5s ease;
+}
+
+/* ================= HEADER ================= */
+
+.complaint-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.complaint-header h2 {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+/* ================= STATUS ================= */
+
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ORANGE THEME STATUS */
+.status-pending {
+  background: var(--orange-soft);
+  color: var(--orange);
+}
+
+.status-accepted {
+  background: rgba(34, 197, 94, 0.12);
+  color: #16a34a;
+}
+
+.status-rejected {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+.status-done {
+  background: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+}
+
+/* ================= INFO ================= */
+
+.complaint-info {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.complaint-info span {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* Arrival highlight */
+.arrival-time {
+  margin-top: 4px;
+  font-weight: 500;
+  color: var(--orange);
+}
+
+/* ================= ACTIONS ================= */
+
+.complaint-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* BASE BUTTON */
+.complaint-actions button {
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: none;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+}
+
+/* CALL BUTTON */
+.button-call {
+  background: linear-gradient(135deg, var(--orange), var(--orange-light));
+  color: white;
+}
+
+.button-call:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(255, 122, 0, 0.35);
+}
+
+/* RATE BUTTON */
+.button-rate {
+  background: #facc15;
+  color: #111;
+}
+
+.button-rate:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(250, 204, 21, 0.4);
+}
+
+/* ICON */
+.icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ================= ANIMATION ================= */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 480px) {
+  .complaint-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ================= DARK MODE ================= */
+.dark .complaint-card {
+  --card: rgba(17, 34, 64, 0.8);
+  --text: #f8fafc;
+  --muted: #cbd5e1;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}

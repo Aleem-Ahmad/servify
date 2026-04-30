@@ -1,0 +1,238 @@
+/* ================= RESET ================= */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  overflow-x: hidden;
+}
+
+/* ================= PAGE LAYOUT ================= */
+.view-provider-page {
+  width: 100%;
+  max-width: 1400px;
+  min-height: calc(100svh - 72px);
+  margin: 0 auto;
+  padding: 40px 2rem;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* ================= PROVIDER SPLIT LAYOUT ================= */
+.provider-container {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+/* LEFT DIV */
+.provider-left {
+  flex: 1 1 300px;
+}
+
+.provider-left .provider-card {
+  text-align: center;
+  padding: 2rem;
+  border-radius: 1.2rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  background: #fff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.provider-left .provider-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+}
+
+.provider-pic {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 1rem;
+}
+
+.provider-name {
+  font-size: 2rem;
+  color: #ff7a00;
+  margin-bottom: 0.3rem;
+}
+
+.provider-category {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 1.5rem;
+}
+
+.book-btn {
+  background-color: #ff7a00;
+  color: #fff;
+  font-weight: 600;
+  padding: 0.8rem 1.8rem;
+  border: none;
+  border-radius: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 1rem;
+}
+
+.book-btn:hover {
+  background-color: #e66f00;
+  transform: scale(1.05);
+}
+
+/* RIGHT DIV */
+.provider-right {
+  flex: 2 1 500px;
+}
+
+.provider-right .provider-card {
+  padding: 2rem;
+  border-radius: 1.2rem;
+  background: #fff;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.provider-section {
+  margin-bottom: 1rem;
+}
+
+.provider-section h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ff7a00;
+  margin-bottom: 0.5rem;
+}
+
+.provider-section p,
+.provider-section ul {
+  font-size: 0.95rem;
+  color: #444;
+}
+
+.provider-section ul li {
+  list-style-type: disc;
+  margin-left: 1.5rem;
+  margin-bottom: 0.3rem;
+}
+
+/* PROVIDER GALLERY */
+.provider-gallery {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.provider-gallery img {
+  width: 80px;
+  height: 80px;
+  border-radius: 0.8rem;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.provider-gallery img:hover {
+  transform: scale(1.05);
+}
+
+/* ================= FEEDBACK ================= */
+.feedback-section {
+  margin-top: 3rem;
+}
+
+.feedback-section h3 {
+  font-size: 1.5rem;
+  color: #ff7a00;
+  margin-bottom: 1rem;
+}
+
+.feedback-card {
+  background-color: #fef8f5;
+  border-left: 4px solid #ff7a00;
+  border-radius: 0.8rem;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.feedback-card:hover {
+  transform: translateY(-2px);
+}
+
+.feedback-card strong {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: #ff7a00;
+}
+
+.feedback-media {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.feedback-media img,
+.feedback-media video {
+  width: 100px;
+  height: 100px;
+  border-radius: 0.8rem;
+  object-fit: cover;
+}
+
+/* ================= PHONE RESPONSIVE ================= */
+@media (max-width: 992px) {
+  .provider-container {
+    flex-direction: column;
+  }
+
+  .provider-left,
+  .provider-right {
+    flex: 1 1 100%;
+  }
+
+  .view-provider-page {
+    padding-top: 5rem;
+  }
+
+  .provider-left .provider-card,
+  .provider-right .provider-card {
+    padding: 1.5rem;
+  }
+
+  .provider-name {
+    font-size: 1.6rem;
+  }
+
+  .provider-section h4 {
+    font-size: 1rem;
+  }
+
+  .book-btn {
+    width: 100%;
+    padding: 0.9rem;
+  }
+
+  .provider-gallery img,
+  .feedback-media img,
+  .feedback-media video {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+/* ================= DARK MODE ================= */
+.dark .view-provider-page { color: var(--text-color); }
+.dark .provider-card { background: var(--card-bg); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); color: var(--text-color); }
+.dark .feedback-card { background: var(--bg-color); border-left: 4px solid var(--primary); color: var(--text-color); }

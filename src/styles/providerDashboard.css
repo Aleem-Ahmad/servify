@@ -1,0 +1,106 @@
+/* ===============================
+   Dashboard Wrapper (HEIGHT SAFE)
+   =============================== */
+
+.provider-dashboard {
+  margin-left: 240px; /* sidebar width */
+
+  height: 100vh; /* exact viewport */
+  width: calc(100% - 240px);
+
+  padding: 24px;
+  box-sizing: border-box;
+
+  background: #f8fafc;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden; /* prevent overflow */
+}
+
+/* ===============================
+   Title
+   =============================== */
+
+.dashboard-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #0f172a;
+
+  flex-shrink: 0;
+}
+
+/* ===============================
+   Bento Grid (fills remaining height)
+   =============================== */
+
+.bento-grid {
+  flex: 1; /* key line */
+  min-height: 0; /* CRITICAL */
+
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 16px;
+
+  overflow: hidden;
+}
+
+/* ===============================
+   Bento Card
+   =============================== */
+
+.bento-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+}
+
+/* ===============================
+   Numbers & Labels
+   =============================== */
+
+.bento-number {
+  font-size: 40px;
+  font-weight: 700;
+  color: #2563eb;
+  line-height: 1;
+}
+
+.bento-label {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+/* ===============================
+   Responsive
+   =============================== */
+
+@media (max-width: 1024px) {
+  .provider-dashboard {
+    margin-left: 0;
+    width: 100%;
+    height: 100vh;
+  }
+
+  .bento-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    overflow-y: auto;
+  }
+}

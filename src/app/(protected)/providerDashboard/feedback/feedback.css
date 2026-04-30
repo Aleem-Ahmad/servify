@@ -1,0 +1,78 @@
+/* ═══════════════════════════════
+   FEEDBACK PAGE — SERVAX
+   ═══════════════════════════════ */
+
+.dashboard-feedback {
+  max-width: 800px;
+  margin: auto;
+}
+
+.dashboard-feedback h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+/* List */
+.feedback-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Card */
+.feedback-card {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: 0.3s;
+}
+
+.feedback-card:hover {
+  transform: translateY(-3px);
+}
+
+/* User */
+.feedback-card strong {
+  color: var(--primary);
+}
+
+/* Comment */
+.feedback-card p {
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+/* Media */
+.feedback-media {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.feedback-media img {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  object-fit: cover;
+  transition: 0.3s;
+}
+
+.feedback-media img:hover {
+  transform: scale(1.1);
+}
+
+/* Empty state */
+.dashboard-feedback > p {
+  opacity: 0.6;
+}
+
+/* 📱 Mobile */
+@media (max-width: 768px) {
+  .feedback-media img {
+    width: 70px;
+    height: 70px;
+  }
+}

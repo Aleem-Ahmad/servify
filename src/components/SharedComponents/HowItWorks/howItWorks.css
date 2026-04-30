@@ -1,0 +1,138 @@
+/* ================= HOW IT WORKS MODERNISED LAYOUT ================= */
+.hiw-modern-section {
+  width: 100%;
+  height: 100%;
+  padding: 36px 20px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hiw-modern-section.dark {
+  background: #0a192f;
+  color: #f1f5f9;
+}
+
+.hiw-inner {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.hiw-main-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 36px;
+  background: linear-gradient(135deg, #ff7a00, #ff9500);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hiw-grid {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  position: relative;
+}
+
+.hiw-step-box {
+  flex: 1;
+  background: #fff;
+  border-radius: 24px;
+  padding: 36px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.03);
+  transition: all 0.4s ease;
+}
+
+.dark .hiw-step-box {
+  background: #1a1a25;
+  border-color: rgba(255,255,255,0.06);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.hiw-step-box:hover {
+  transform: translateY(-10px);
+  border-color: #ff7a00;
+}
+
+.hiw-step-icon-wrap {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  background: rgba(255, 122, 0, 0.1);
+  color: #ff7a00;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.hiw-step-num {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 32px;
+  height: 32px;
+  background: #ff7a00;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 10px rgba(255,122,0,0.3);
+}
+
+.hiw-step-box h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.hiw-step-box p {
+  line-height: 1.5;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.hiw-arrow-indicator {
+  position: absolute;
+  top: 40%;
+  right: -32px;
+  z-index: 5;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 1024px) {
+  .hiw-modern-section {
+    height: auto;
+    padding: 48px 20px;
+    overflow: hidden;
+  }
+  .hiw-grid {
+    flex-direction: column;
+    gap: 32px;
+  }
+  .hiw-arrow-indicator {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .hiw-main-title { font-size: 1.8rem; margin-bottom: 24px; }
+  .hiw-step-box { padding: 28px 16px; }
+}

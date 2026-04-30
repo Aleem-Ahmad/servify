@@ -1,0 +1,209 @@
+﻿================================================================
+  SERVIFY — QUICK GUIDE: Dark Mode and Bilingual Changes
+  (Read this to make changes yourself — no coding knowledge needed)
+================================================================
+
+
+PART 1 — HOW DARK MODE WORKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FLOW (how it works step by step):
+
+  1. User clicks the sun/moon button
+  2. ThemeContext.js stores the choice as "dark" or "light"
+     File location: src/context/ThemeContext.js
+  3. It saves the choice to localStorage (browser memory)
+     so it remembers after page refresh
+  4. Every component reads this value and adds a "dark" class
+     to its HTML element when dark mode is active
+  5. In the CSS file, rules starting with ".dark" apply
+
+
+WHERE EACH SECTION'S DARK STYLES ARE:
+
+  Landing page - Services section:
+    src/components/SharedComponents/Services/services.css
+    (search for ".dark" in this file)
+
+  Landing page - How It Works section:
+    src/components/SharedComponents/HowItWorks/howItWorks.css
+
+  Landing page - Providers section:
+    src/components/SharedComponents/Providers/providers.css
+
+  Landing page - Footer/Contact section:
+    src/components/SharedComponents/Footer/footer.css
+
+  Landing page - overall section layout:
+    src/styles/landingPage.css
+
+  Login/Signup page:
+    src/styles/authentication.css
+
+  Booking Complaint Form:
+    src/app/(protected)/customerDashboard/complaintForm/bookingForm.css
+
+  Forgot Password page:
+    src/styles/publicStyles/forgot-password.css
+
+
+HOW TO CHANGE A DARK MODE COLOR (simple steps):
+
+  Step 1 - Open the CSS file for the section you want (see list above)
+  Step 2 - Press Ctrl+F and type ".dark" to find dark mode rules
+  Step 3 - Find the color you want to change (background, color, border)
+  Step 4 - Replace the hex value with your new color
+  Step 5 - Save the file
+
+  PLATFORM COLOR REFERENCE:
+    Dark Navy (main background)   = #0a192f
+    Dark Navy Card (card bg)      = #112240
+    Dark Navy Border              = #233554
+    Orange (brand color)          = #ff7a00
+    Text in dark mode             = #ccd6f6 or #f8fafc
+    Muted text in dark            = #8892b0
+
+
+  TROUBLESHOOTING:
+    If dark mode is not working on a section —
+    - Open the .js file for that component
+    - Look for className and check if "dark" is added when dark mode is on
+    - Example of correct code: className={section }
+
+
+PART 2 — HOW BILINGUAL (ENGLISH / URDU) WORKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FLOW (how it works step by step):
+
+  1. User clicks the EN/UR language button
+  2. LanguageContext.js stores the choice
+     File location: src/context/LanguageContext.js
+  3. It saves the choice to localStorage (browser memory)
+  4. Every component uses t("key") to display text
+     t("key") looks up the text in the correct language file
+  5. English text comes from: src/locales/en.json
+     Urdu text comes from:    src/locales/ur.json
+
+
+THE JSON FILES (all your text lives here):
+
+  src/locales/en.json
+    Contains:  "keyName": "English Text Here"
+    Example:   "navbar.home": "Home"
+
+  src/locales/ur.json
+    Contains:  "keyName": "اردو متن یہاں"
+    Example:   "navbar.home": "ہوم"
+
+  IMPORTANT: The key name must be IDENTICAL in both files.
+  Only the text value on the right side changes.
+
+
+HOW TO EDIT EXISTING TEXT:
+
+  To change English text:
+    1. Open src/locales/en.json
+    2. Find the key (use Ctrl+F to search)
+    3. Change the text value on the right side of the colon
+    4. Save the file
+
+  To change Urdu text:
+    1. Open src/locales/ur.json
+    2. Find the SAME key
+    3. Change the Urdu text
+    4. Save the file
+
+
+HOW TO ADD NEW TEXT:
+
+  1. Decide on a key name (follow the pattern: "section.element")
+  2. Add it to en.json:  "mySection.myText": "My English Word"
+  3. Add it to ur.json:  "mySection.myText": "میرا اردو لفظ"
+  4. In the .js component file, use: {t("mySection.myText")}
+
+
+KEY NAMING PATTERNS USED IN THIS PROJECT:
+
+  "section.element"       examples:  "navbar.home",  "auth.login"
+  "section.subElement"    examples:  "auth.forgotTitle",  "how.step1.title"
+  Plain text (with spaces) example:  "Login Required",  "Submit"
+
+  NOTE: Plain text keys must match EXACTLY including spaces and punctuation.
+
+
+PART 3 — QUICK CHEAT SHEET
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  I WANT TO...                            WHERE TO GO
+  ─────────────────────────────────────────────────────────────
+  Change dark background of a section  →  .css file for that section
+                                           search: .dark { background:
+  Change dark text color               →  .css file, search: .dark { color:
+  Change English text                  →  src/locales/en.json
+  Change Urdu text                     →  src/locales/ur.json
+  Add a new bilingual text item        →  Add key to BOTH en.json AND ur.json
+  Change default to dark theme         →  src/context/ThemeContext.js
+                                           find: useState and change "light" to "dark"
+  Change default to Urdu               →  src/context/LanguageContext.js
+                                           find: useState and change "en" to "ur"
+  Change the orange brand color        →  Find and replace #ff7a00 in .css files
+  Change dark navy background          →  Find and replace #0a192f in .css files
+
+
+PART 4 — FULL SRC FOLDER STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  src/
+   |
+   +-- context/
+   |    +-- ThemeContext.js         dark/light toggle logic + storage
+   |    +-- LanguageContext.js      EN/UR language logic + storage
+   |    +-- AuthContext.js          login/logout + dummy user accounts
+   |
+   +-- locales/
+   |    +-- en.json                 ALL English text strings (edit here)
+   |    +-- ur.json                 ALL Urdu text strings (edit here)
+   |
+   +-- styles/
+   |    +-- landingPage.css         overall layout of the public landing page
+   |    +-- authentication.css      login/signup page styles
+   |    +-- globals.css             app-wide resets and CSS variables
+   |    +-- navbar.css              dashboard top navbar styles
+   |    +-- providerDashboard.css   provider dashboard layout
+   |    +-- customerDashboard/      customer dashboard specific styles
+   |    +-- publicStyles/           styles for public-only pages
+   |         +-- forgot-password.css
+   |         +-- login-first.css
+   |
+   +-- components/
+   |    +-- SharedComponents/       used across multiple pages
+   |    |    +-- NavBar/            NavBar.js + its CSS
+   |    |    +-- Footer/            Footer.js + footer.css
+   |    |    +-- Services/          Services.js + services.css
+   |    |    +-- HowItWorks/        HowItWorks.js + howItWorks.css
+   |    |    +-- Providers/         Providers.js + providers.css
+   |    |
+   |    +-- customerDashboard/      customer dashboard sections
+   |    +-- providerDashboard/      provider dashboard sections
+   |    +-- adminDashboard/         admin panel sections
+   |    +-- publicComponents/       public-facing components (Hero)
+   |
+   +-- app/
+        +-- (public)/               pages anyone can see
+        |    +-- page.js            the main landing page
+        |    +-- authentication/    login and signup page
+        |    +-- forgot-password/   password reset page
+        |    +-- login-first/       gate page before booking
+        |
+        +-- (protected)/            pages only for logged-in users
+             +-- customerDashboard/ all customer pages and sub-pages
+             |    +-- complaintForm/ booking/complaint wizard form
+             |
+             +-- providerDashboard/ all provider pages
+             +-- adminDashboard/    admin panel pages
+
+
+================================================================
+  END OF GUIDE — SERVIFY FYP 2026
+================================================================
