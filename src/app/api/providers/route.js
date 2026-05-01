@@ -17,7 +17,7 @@ export async function GET(request) {
     rating: p.rating || 0,
     rate: p.rate || 500,
     category: p.category || 'Professional',
-    city: p.city || '',
+    city: p.tehseel || p.district || '',
     experience: p.experience || '',
     phone: p.phone || '',
   }));

@@ -32,7 +32,8 @@ export default function AccountPage() {
   const [editForm, setEditForm] = useState({
     name: "",
     phone: "",
-    city: "",
+    district: "",
+    tehseel: "",
     address: "",
     gender: "",
     religion: "",
@@ -50,7 +51,8 @@ export default function AccountPage() {
         setEditForm({
           name: data.name || "",
           phone: data.phone || "",
-          city: data.city || "",
+          district: data.district || "",
+          tehseel: data.tehseel || "",
           address: data.address || "",
           gender: data.gender || "",
           religion: data.religion || "",
@@ -182,7 +184,8 @@ export default function AccountPage() {
               </div>
               <div className="acc-card-list">
                  <div className="acc-list-row"><span>{t("Phone")}</span><strong>{profile.phone || "Not Set"}</strong></div>
-                 <div className="acc-list-row"><span>{t("City")}</span><strong>{profile.city || "Not Set"}</strong></div>
+                 <div className="acc-list-row"><span>{t("District")}</span><strong>{profile.district || "Not Set"}</strong></div>
+                 <div className="acc-list-row"><span>{t("Tehseel")}</span><strong>{profile.tehseel || "Not Set"}</strong></div>
                  <div className="acc-list-row"><span>{t("Main Address")}</span><strong className="acc-addr">{profile.address || "Not Set"}</strong></div>
               </div>
               <button className="acc-update-btn" onClick={() => setIsEditing(true)}>
@@ -215,8 +218,20 @@ export default function AccountPage() {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                <label>City</label>
-                <input name="city" value={editForm.city} onChange={handleInputChange} style={{ padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-color)', color: 'var(--text-color)' }} />
+                <label>District</label>
+                <select name="district" value={editForm.district} onChange={handleInputChange} style={{ padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-color)', color: 'var(--text-color)' }}>
+                  <option value="Okara">Okara</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                <label>Tehseel</label>
+                <select name="tehseel" value={editForm.tehseel} onChange={handleInputChange} style={{ padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-color)', color: 'var(--text-color)' }}>
+                  <option value="">Select</option>
+                  <option value="Okara">Okara</option>
+                  <option value="Depalpur">Depalpur</option>
+                  <option value="Renala">Renala Khurd</option>
+                </select>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>

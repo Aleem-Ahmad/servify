@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Sacramento } from "next/font/google";
+import { Geist, Geist_Mono, Sacramento, Outfit } from "next/font/google";
 import "@/styles/globals.css";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -11,6 +11,11 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
 });
 
@@ -33,7 +38,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} ${sacramento.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${sacramento.variable} antialiased`}>
         <ThemeProvider>
           <LanguageProvider>
             <AuthProvider>

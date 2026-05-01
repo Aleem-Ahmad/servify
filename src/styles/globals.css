@@ -33,7 +33,7 @@ body {
   color: var(--text-color);
   transition: background-color 0.3s ease, color 0.3s ease;
   min-height: 100vh;
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-outfit), var(--font-geist-sans), sans-serif;
 }
 
 main {
