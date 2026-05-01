@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import "./bookingForm.css";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -25,7 +25,7 @@ const STEPS = [
   { id: 3, label: "Provider", desc: "Choose expert & verify service" },
 ];
 
-export default function BookingForm() {
+function BookingFormContent() {
   const { t } = useLanguage();
   const { theme } = useTheme();
   const { user } = useAuth();
@@ -336,5 +336,13 @@ export default function BookingForm() {
 
       </div>
     </div>
+  );
+}
+
+export default function BookingForm() {
+  return (
+    <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center' }}>Loading form...</div>}>
+      <BookingFormContent />
+    </Suspense>
   );
 }
