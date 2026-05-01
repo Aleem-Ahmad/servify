@@ -259,24 +259,24 @@ export default function Authentication() {
               <h2>{t("auth.personalInfo")}</h2>
               <input 
                 name="name" 
-                placeholder="Full Name" 
+                placeholder={t("auth.fullName")} 
                 value={formData.name} 
                 onChange={handleInputChange} 
                 required 
               />
               <input 
                 name="cnic" 
-                placeholder="CNIC (xxxxx-xxxxxxx-x)" 
+                placeholder={t("auth.cnicPlaceholder")} 
                 value={formData.cnic} 
                 onChange={handleInputChange} 
                 required 
               />
               <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
                 <select name="gender" value={formData.gender} onChange={handleInputChange} required style={{ width: '50%' }}>
-                  <option value="">Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
+                  <option value="">{t("auth.selectGender")}</option>
+                  <option value="Male">{t("auth.male")}</option>
+                  <option value="Female">{t("auth.female")}</option>
+                  <option value="Other">{t("auth.other")}</option>
                 </select>
                 <input 
                   name="dob" 
@@ -285,21 +285,21 @@ export default function Authentication() {
                   onChange={handleInputChange} 
                   required 
                   style={{ width: '50%' }} 
-                  placeholder="Date of Birth"
+                  placeholder={t("auth.dob")}
                 />
               </div>
               <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
                 <select name="maritalStatus" value={formData.maritalStatus} onChange={handleInputChange} required style={{ width: '50%' }}>
-                  <option value="">Marital Status</option>
-                  <option value="Single">Single</option>
-                  <option value="Married">Married</option>
+                  <option value="">{t("auth.maritalStatus")}</option>
+                  <option value="Single">{t("auth.single")}</option>
+                  <option value="Married">{t("auth.married")}</option>
                 </select>
                 <select name="religion" value={formData.religion} onChange={handleInputChange} required style={{ width: '50%' }}>
-                  <option value="">Religion</option>
-                  <option value="Islam">Islam</option>
-                  <option value="Christianity">Christianity</option>
-                  <option value="Hinduism">Hinduism</option>
-                  <option value="Other">Other</option>
+                  <option value="">{t("auth.religion")}</option>
+                  <option value="Islam">{t("auth.islam")}</option>
+                  <option value="Christianity">{t("auth.christianity")}</option>
+                  <option value="Hinduism">{t("auth.hinduism")}</option>
+                  <option value="Other">{t("auth.other")}</option>
                 </select>
               </div>
 
@@ -318,7 +318,7 @@ export default function Authentication() {
                 <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.9rem', color: dark ? '#8892b0' : '#7a7a7a' }}>+92</span>
                 <input 
                   name="phone" 
-                  placeholder="Enter Phone (3xxxxxxxxx)" 
+                  placeholder={t("auth.phonePlaceholder")} 
                   value={formData.phone} 
                   onChange={handleInputChange} 
                   required 
@@ -328,26 +328,26 @@ export default function Authentication() {
               <input 
                 name="email" 
                 type="email" 
-                placeholder="Gmail Address" 
+                placeholder={t("auth.emailPlaceholder")} 
                 value={formData.email} 
                 onChange={handleInputChange} 
                 required 
               />
               <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
                 <select name="district" value={formData.district} onChange={handleInputChange} required style={{ width: '50%' }}>
-                  <option value="">Select District</option>
-                  <option value="Okara">Okara</option>
+                  <option value="">{t("auth.selectDistrict")}</option>
+                  <option value="Okara">{t("auth.okara")}</option>
                 </select>
                 <select name="tehseel" value={formData.tehseel} onChange={handleInputChange} required style={{ width: '50%' }}>
-                  <option value="">Select Tehseel</option>
-                  <option value="Okara">Okara</option>
-                  <option value="Depalpur">Depalpur</option>
-                  <option value="Renala">Renala Khurd</option>
+                  <option value="">{t("auth.selectTehseel")}</option>
+                  <option value="Okara">{t("auth.okara")}</option>
+                  <option value="Depalpur">{t("auth.depalpur")}</option>
+                  <option value="Renala">{t("auth.renala")}</option>
                 </select>
               </div>
               <input 
                 name="address" 
-                placeholder="Complete Address (House #, Street, Area...)" 
+                placeholder={t("auth.addressPlaceholder")} 
                 value={formData.address} 
                 onChange={handleInputChange} 
                 required 
@@ -368,20 +368,20 @@ export default function Authentication() {
                 <input 
                   name="password" 
                   type={showPassword ? "text" : "password"} 
-                  placeholder="Set Password" 
+                  placeholder={t("auth.setPassword")} 
                   value={formData.password}
                   onChange={handleInputChange} 
                   required 
                 />
                 <button type="button" className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
               <div className="password-input-wrapper">
                 <input 
                   name="confirmPassword" 
                   type={showPassword ? "text" : "password"} 
-                  placeholder="Confirm Password" 
+                  placeholder={t("auth.confirmPassword")} 
                   value={formData.confirmPassword}
                   onChange={handleInputChange} 
                   required 
@@ -413,29 +413,36 @@ export default function Authentication() {
               {role === "provider" && (
                 <>
                   <select name="providerType" value={formData.providerType} onChange={handleInputChange} required style={{ marginBottom: '10px' }}>
-                    <option value="Individual">Individual Professional</option>
-                    <option value="Company">Registered Company</option>
-                    <option value="Agency">Service Agency</option>
+                    <option value="Individual">{t("auth.individual")}</option>
+                    <option value="Company">{t("auth.company")}</option>
+                    <option value="Agency">{t("auth.agency")}</option>
                   </select>
                   <select name="category" value={formData.category} onChange={handleInputChange} required>
-                    <option value="">Select Service Category</option>
-                    <option value="Electrician">Electrician</option>
-                    <option value="Plumber">Plumber</option>
-                    <option value="Cleaning">Cleaning</option>
-                    <option value="Carpenter">Carpenter</option>
-                    <option value="Gardener">Gardener</option>
-                    <option value="Painter">Painter</option>
+                    <option value="">{t("auth.selectCategory")}</option>
+                    <option value="Electrician">{t("services.electrician")}</option>
+                    <option value="Plumber">{t("services.plumber")}</option>
+                    <option value="Cleaning">{t("services.cleaner")}</option>
+                    <option value="Carpenter">{t("services.carpenter")}</option>
+                    <option value="Gardener">{t("services.gardener")}</option>
+                    <option value="Painter">{t("services.painter")}</option>
                   </select>
-                  <input name="experience" type="number" placeholder="Years of Experience" value={formData.experience} onChange={handleInputChange} required />
+                  <input 
+                    name="experience" 
+                    type="number" 
+                    placeholder={t("auth.experiencePlaceholder")} 
+                    value={formData.experience} 
+                    onChange={handleInputChange} 
+                    required 
+                  />
                   <div className="cnic-upload-container">
-                    <p className="upload-label" style={{ fontSize: '0.8rem', marginBottom: '5px' }}>Upload CNIC Photos (Required)</p>
+                    <p className="upload-label" style={{ fontSize: '0.8rem', marginBottom: '5px' }}>{t("auth.uploadCnic")}</p>
                     <div className="upload-zones">
                       <div className="upload-box" style={{ borderColor: previews.cnicFront ? 'var(--primary)' : '' }}>
-                        {previews.cnicFront ? <img src={previews.cnicFront} alt="CNIC Front" className="preview-img-full" /> : <><UploadCloud size={24} className="upload-icon" /><span>Front Side</span></>}
+                        {previews.cnicFront ? <img src={previews.cnicFront} alt="CNIC Front" className="preview-img-full" /> : <><UploadCloud size={24} className="upload-icon" /><span>{t("auth.frontSide")}</span></>}
                         <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "cnicFront")} />
                       </div>
                       <div className="upload-box" style={{ borderColor: previews.cnicBack ? 'var(--primary)' : '' }}>
-                        {previews.cnicBack ? <img src={previews.cnicBack} alt="CNIC Back" className="preview-img-full" /> : <><UploadCloud size={24} className="upload-icon" /><span>Back Side</span></>}
+                        {previews.cnicBack ? <img src={previews.cnicBack} alt="CNIC Back" className="preview-img-full" /> : <><UploadCloud size={24} className="upload-icon" /><span>{t("auth.backSide")}</span></>}
                         <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "cnicBack")} />
                       </div>
                     </div>
