@@ -14,10 +14,12 @@ export default function Authentication() {
   const [loadingAuth, setLoadingAuth] = useState(false);
   const { t, locale, changeLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
-  const { login, signup } = useAuth();
+  const { login, loginWithGoogle, signup } = useAuth();
+  const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
+    username: "",
     name: "",
     email: "",
     password: "",
@@ -33,7 +35,7 @@ export default function Authentication() {
     maritalStatus: "",
     dob: "",
     address: "",
-    providerType: "Individual", // Default for providers
+    providerType: "Individual",
   });
 
   const [previews, setPreviews] = useState({
@@ -42,26 +44,210 @@ export default function Authentication() {
     cnicBack: null
   });
 
+  // Regex patterns (mirroring the backend)
+  const patterns = {
+    username: /^[a-zA-Z0-9_]{3,20}$/,
+    name: /^[a-zA-Z\s]{3,30}$/,
+    email: /^[a-zA-Z0-9._%+-]+@gmail\.com$/,
+    password: /^(?=.*[a-zA-Z])(?=.*\d).{6,}$/,
+    phone: /^[1-9]\d{9}$/,
+    district: /^[a-zA-Z\s]{3,20}$/,
+    tehseel: /^[a-zA-Z\s]{3,20}$/,
+    cnic: /^\d{5}-\d{7}-\d{1}$/,
+    experience: /^.{10,500}$/,
+    category: /^[a-zA-Z\s]{3,30}$/,
+  };
+
+  const validateField = (name, value) => {
+    let error = "";
+    if (patterns[name] && !patterns[name].test(value)) {
+      if (name === "username") error = "3-20 characters (letters, numbers, _)";
+      else if (name === "email") error = "Only @gmail.com addresses are allowed";
+      else if (name === "password") error = "6+ chars, incl. letters and numbers";
+      else if (name === "phone") error = "Format: 3xxxxxxxxx (10 digits, no leading 0)";
+      else if (name === "cnic") error = "Format: xxxxx-xxxxxxx-x";
+      else if (name === "name") error = "3-30 alphabetic characters";
+      else if (name === "experience") error = "Minimum 10 characters required";
+      else error = "Invalid format";
+    }
+    
+    if (name === "confirmPassword" && value !== formData.password) {
+      error = "Passwords do not match";
+    }
+
+    setErrors(prev => ({ ...prev, [name]: error }));
+    return error === "";
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    let finalValue = value;
     
     if (name === "cnic") {
-      // Format CNIC: xxxxx-xxxxxxx-x
       let val = value.replace(/\D/g, "");
       if (val.length > 13) val = val.slice(0, 13);
       let formatted = val;
-      if (val.length > 5) formatted = val.slice(0, 5) + "-" + val.slice(5);
-      if (val.length > 12) formatted = formatted.slice(0, 13) + "-" + formatted.slice(13);
-      setFormData({ ...formData, cnic: formatted });
+      if (val.length > 5) formatted = val.slice(0, 5) + "-" + val.slice(5, 12);
+      if (val.length > 12) formatted = formatted + "-" + val.slice(12, 13);
+      finalValue = formatted;
     } else if (name === "phone") {
-      // Format Phone: +92xxxxxxxxxx (10 digits input)
       let val = value.replace(/\D/g, "");
-      if (val.startsWith("0")) val = val.slice(1);
       if (val.length > 10) val = val.slice(0, 10);
-      setFormData({ ...formData, phone: val });
-    } else {
-      setFormData({ ...formData, [name]: value });
+      finalValue = val;
     }
+
+    setFormData(prev => ({ ...prev, [name]: finalValue }));
+    validateField(name, finalValue);
+  };
+
+  const [isVerified, setIsVerified] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState(null);
+  
+  // Username uniqueness state
+  const [usernameMessage, setUsernameMessage] = useState("");
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+
+  // Debounced username check
+  useState(() => {
+    const timer = setTimeout(async () => {
+      if (formData.username && patterns.username.test(formData.username)) {
+        setIsCheckingUsername(true);
+        try {
+          const res = await fetch(`/api/auth/check-username-unique?username=${formData.username}`);
+          const data = await res.json();
+          setUsernameMessage(data.message);
+        } catch (err) {
+          setUsernameMessage("Error checking username");
+        } finally {
+          setIsCheckingUsername(false);
+        }
+      } else {
+        setUsernameMessage("");
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [formData.username]);
+
+  const handleSendOTP = async () => {
+    if (!patterns.email.test(formData.email)) {
+      alert("Please enter a valid Gmail address first");
+      return;
+    }
+    setVerifying(true);
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Verification code sent to your Gmail!");
+        setStep(6); // Move to final OTP step
+      } else {
+        alert(data.message || "Failed to send OTP");
+      }
+    } catch (err) {
+      alert("Network error");
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    if (otp.length !== 6) {
+      alert("Please enter 6-digit code");
+      return;
+    }
+    setVerifying(true);
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, code: otp })
+      });
+      const data = await res.json();
+      if (data.success) {
+        // alert("Email verified successfully!"); // Removed to make it smoother
+        setIsVerified(true);
+        // Instead of just setting verified, we now trigger the actual signup
+        await processFinalSignup();
+      } else {
+        alert(data.message || "Invalid or expired code");
+      }
+    } catch (err) {
+      alert("Network error");
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const processFinalSignup = async () => {
+    setLoadingAuth(true);
+    try {
+      const result = await signup({ ...formData, role });
+      if (result.success) {
+        alert(role === "provider" 
+          ? "Registration Successful! Your profile is pending admin verification." 
+          : "Registration Successful! Please log in.");
+        setIsSignup(false);
+        setStep(1);
+        // Reset form
+        setFormData({ 
+          name: "", email: "", password: "", confirmPassword: "", phone: "", 
+          district: "Okara", tehseel: "", cnic: "", category: "", experience: "",
+          gender: "", religion: "", maritalStatus: "", dob: "", address: "",
+          providerType: "Individual"
+        });
+        setErrors({});
+        setPreviews({ profile: null, cnicFront: null, cnicBack: null });
+        setOtp("");
+        setIsVerified(false);
+      } else {
+        alert(result.message || "Registration failed");
+      }
+    } catch (err) {
+      alert("Something went wrong during final registration.");
+    } finally {
+      setLoadingAuth(false);
+    }
+  };
+
+  // Helper to check if a step is valid
+  const isStepValid = () => {
+    if (!isSignup) return true;
+
+    if (step === 2) {
+      return patterns.username.test(formData.username) &&
+             usernameMessage === "Username is available" &&
+             patterns.name.test(formData.name) && 
+             patterns.cnic.test(formData.cnic) && 
+             formData.gender && formData.dob && 
+             formData.maritalStatus && formData.religion;
+    }
+    if (step === 3) {
+      return patterns.phone.test(formData.phone) && 
+             patterns.email.test(formData.email) && 
+             formData.district && formData.tehseel && 
+             formData.address;
+    }
+    if (step === 4) {
+      return patterns.password.test(formData.password) && 
+             formData.password === formData.confirmPassword;
+    }
+    if (step === 5) {
+      if (role === "provider") {
+        return formData.category && patterns.experience.test(formData.experience) && 
+               previews.cnicFront && previews.cnicBack;
+      }
+      return true;
+    }
+    if (step === 6) {
+      return isVerified;
+    }
+    return true;
   };
 
   const handleFileChange = (e, type) => {
@@ -70,7 +256,7 @@ export default function Authentication() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviews(prev => ({ ...prev, [type]: reader.result }));
-        setFormData(prev => ({ ...prev, [type]: file })); // Store file object or base64 as per backend needs
+        setFormData(prev => ({ ...prev, [type]: file }));
       };
       reader.readAsDataURL(file);
     }
@@ -81,18 +267,12 @@ export default function Authentication() {
     e.preventDefault();
     setLoadingAuth(true);
     try {
-      // login() is async — must await it to get the result
       const result = await login(formData.email, formData.password);
       if (result.success) {
-        // Redirect based on role
         const role = result.user.role;
-        if (role === "admin") {
-          window.location.href = "/adminDashboard";
-        } else if (role === "provider") {
-          window.location.href = "/providerDashboard";
-        } else {
-          window.location.href = "/customerDashboard";
-        }
+        if (role === "admin") window.location.href = "/adminDashboard";
+        else if (role === "provider") window.location.href = "/providerDashboard";
+        else window.location.href = "/customerDashboard";
       } else {
         alert(result.message || "Invalid email or password");
       }
@@ -105,44 +285,11 @@ export default function Authentication() {
 
   // ─── SIGNUP ────────────────────────────────────────────────────────────────
   const handleSignup = async (e) => {
-    e.preventDefault();
-    setLoadingAuth(true);
-    try {
-      // Validation
-      if (formData.password !== formData.confirmPassword) {
-        alert("Passwords do not match!");
-        setLoadingAuth(false);
-        return;
-      }
-
-      if (role === "provider" && (!formData.category || !formData.cnicFront || !formData.cnicBack)) {
-        alert("Please provide all required professional details and CNIC photos.");
-        setLoadingAuth(false);
-        return;
-      }
-
-      const result = await signup({ ...formData, role });
-      if (result.success) {
-        alert(role === "provider" 
-          ? "Registration Successful! Your profile is pending admin verification." 
-          : "Registration Successful! Please log in.");
-        setIsSignup(false);
-        setStep(1);
-        setFormData({ 
-          name: "", email: "", password: "", confirmPassword: "", phone: "", 
-          district: "Okara", tehseel: "", cnic: "", category: "", experience: "",
-          gender: "", religion: "", maritalStatus: "", dob: "", address: "",
-          providerType: "Individual"
-        });
-        setPreviews({ profile: null, cnicFront: null, cnicBack: null });
-      } else {
-        alert(result.message || "Registration failed");
-      }
-    } catch (err) {
-      alert("Something went wrong. Please try again.");
-    } finally {
-      setLoadingAuth(false);
-    }
+    if (e) e.preventDefault();
+    if (!isStepValid()) return;
+    
+    // This now only triggers the OTP flow
+    await handleSendOTP();
   };
 
   const dark = theme === "dark";
@@ -201,6 +348,22 @@ export default function Authentication() {
             {loadingAuth ? "Please wait..." : t("auth.login")}
           </button>
 
+          <div className="social-login">
+            <p>{t("auth.orContinueWith") || "Or continue with"}</p>
+            <button 
+              type="button" 
+              className="google-btn" 
+              onClick={loginWithGoogle}
+              disabled={loadingAuth}
+            >
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20" />
+              Google
+            </button>
+            <span style={{ fontSize: '0.7rem', opacity: 0.7, marginTop: '4px' }}>
+              * For Customers only
+            </span>
+          </div>
+
           <p className="switch-link">
             {t("auth.noAccount")}{" "}
             <span onClick={() => {
@@ -257,6 +420,24 @@ export default function Authentication() {
           {step === 2 && (
             <>
               <h2>{t("auth.personalInfo")}</h2>
+              
+              <div className="input-group">
+                <input 
+                  name="username" 
+                  placeholder="Username" 
+                  value={formData.username} 
+                  onChange={handleInputChange} 
+                  required 
+                />
+                {isCheckingUsername && <span className="loader-text">Checking...</span>}
+                {usernameMessage && (
+                  <span className={`msg-text ${usernameMessage === "Username is available" ? "success" : "error"}`}>
+                    {usernameMessage}
+                  </span>
+                )}
+                {errors.username && <span className="error-text">{errors.username}</span>}
+              </div>
+
               <input 
                 name="name" 
                 placeholder={t("auth.fullName")} 
@@ -264,6 +445,8 @@ export default function Authentication() {
                 onChange={handleInputChange} 
                 required 
               />
+              {errors.name && <span className="error-text">{errors.name}</span>}
+
               <input 
                 name="cnic" 
                 placeholder={t("auth.cnicPlaceholder")} 
@@ -271,6 +454,8 @@ export default function Authentication() {
                 onChange={handleInputChange} 
                 required 
               />
+              {errors.cnic && <span className="error-text">{errors.cnic}</span>}
+
               <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
                 <select name="gender" value={formData.gender} onChange={handleInputChange} required style={{ width: '50%' }}>
                   <option value="">{t("auth.selectGender")}</option>
@@ -305,11 +490,12 @@ export default function Authentication() {
 
               <div className="step-controls">
                 <button type="button" onClick={() => setStep(1)}>{t("auth.back")}</button>
-                <button type="button" onClick={() => setStep(3)}>{t("auth.next")}</button>
+                <button type="button" onClick={() => setStep(3)} disabled={!isStepValid()}>{t("auth.next")}</button>
               </div>
             </>
           )}
 
+          {/* STEP 3: CONTACT & LOCATION */}
           {/* STEP 3: CONTACT & LOCATION */}
           {step === 3 && (
             <>
@@ -325,6 +511,8 @@ export default function Authentication() {
                   style={{ paddingLeft: '45px' }}
                 />
               </div>
+              {errors.phone && <span className="error-text">{errors.phone}</span>}
+
               <input 
                 name="email" 
                 type="email" 
@@ -333,6 +521,8 @@ export default function Authentication() {
                 onChange={handleInputChange} 
                 required 
               />
+              {errors.email && <span className="error-text">{errors.email}</span>}
+
               <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
                 <select name="district" value={formData.district} onChange={handleInputChange} required style={{ width: '50%' }}>
                   <option value="">{t("auth.selectDistrict")}</option>
@@ -355,7 +545,13 @@ export default function Authentication() {
 
               <div className="step-controls">
                 <button type="button" onClick={() => setStep(2)}>{t("auth.back")}</button>
-                <button type="button" onClick={() => setStep(4)}>{t("auth.next")}</button>
+                <button 
+                  type="button" 
+                  onClick={() => setStep(4)} 
+                  disabled={!isStepValid()}
+                >
+                  {t("auth.next")}
+                </button>
               </div>
             </>
           )}
@@ -377,6 +573,8 @@ export default function Authentication() {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              {errors.password && <span className="error-text">{errors.password}</span>}
+
               <div className="password-input-wrapper">
                 <input 
                   name="confirmPassword" 
@@ -390,10 +588,11 @@ export default function Authentication() {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
 
               <div className="step-controls">
                 <button type="button" onClick={() => setStep(3)}>{t("auth.back")}</button>
-                <button type="button" onClick={() => setStep(5)}>{t("auth.next")}</button>
+                <button type="button" onClick={() => setStep(5)} disabled={!isStepValid()}>{t("auth.next")}</button>
               </div>
             </>
           )}
@@ -428,12 +627,14 @@ export default function Authentication() {
                   </select>
                   <input 
                     name="experience" 
-                    type="number" 
+                    type="text" 
                     placeholder={t("auth.experiencePlaceholder")} 
                     value={formData.experience} 
                     onChange={handleInputChange} 
                     required 
                   />
+                  {errors.experience && <span className="error-text">{errors.experience}</span>}
+
                   <div className="cnic-upload-container">
                     <p className="upload-label" style={{ fontSize: '0.8rem', marginBottom: '5px' }}>{t("auth.uploadCnic")}</p>
                     <div className="upload-zones">
@@ -452,10 +653,41 @@ export default function Authentication() {
 
               <div className="step-controls">
                 <button type="button" onClick={() => setStep(4)}>{t("auth.back")}</button>
-                <button type="submit" disabled={loadingAuth}>
+                <button type="submit" disabled={loadingAuth || !isStepValid()}>
                   {loadingAuth ? "Please wait..." : t("auth.create")}
                 </button>
               </div>
+            </>
+          )}
+
+          {/* STEP 6: OTP VERIFICATION */}
+          {step === 6 && (
+            <>
+              <h2>Verify Email</h2>
+              <p style={{ fontSize: '0.8rem', opacity: 0.7, textAlign: 'center', marginBottom: '15px' }}>
+                We've sent a 6-digit code to <strong>{formData.email}</strong>
+              </p>
+              <input 
+                type="text" 
+                placeholder="6-Digit OTP" 
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                style={{ textAlign: 'center', fontSize: '1.2rem', letterSpacing: '8px' }}
+                required 
+              />
+              <div className="step-controls">
+                <button type="button" onClick={() => setStep(5)}>{t("auth.back")}</button>
+                <button 
+                  type="button" 
+                  onClick={handleVerifyOTP} 
+                  disabled={otp.length !== 6 || verifying || loadingAuth}
+                >
+                  {verifying || loadingAuth ? "Processing..." : "Verify & Finish"}
+                </button>
+              </div>
+              <p style={{ fontSize: '0.7rem', marginTop: '10px', textAlign: 'center' }}>
+                Didn't receive it? <span onClick={handleSendOTP} style={{ color: 'var(--primary)', cursor: 'pointer' }}>Resend OTP</span>
+              </p>
             </>
           )}
         </form>

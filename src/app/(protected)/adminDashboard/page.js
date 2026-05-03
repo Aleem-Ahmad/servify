@@ -4,26 +4,30 @@ import { useState, useEffect } from "react";
 import "./adminPanel.css";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function AdminHome() {
   const { t } = useLanguage();
   const { theme } = useTheme();
   const dark = theme === "dark";
-  const [view, setView] = useState(null); // "new" | "old" | null
+  const [view, setView] = useState(null); // "new" | "old" | "admins" | null
+  const [adminData, setAdminData] = useState({ name: "", email: "", password: "" });
+  const [isAddingAdmin, setIsAddingAdmin] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [surveyDate, setSurveyDate] = useState("");
   const [surveyTime, setSurveyTime] = useState("");
   const [providerList, setProviderList] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+  const { user } = useAuth(); // Assuming useAuth provides the logged-in user
+
+  const isOwner = user?.email === "www.aleemahmadghias@gmail.com";
+
   useEffect(() => {
     const fetchProviders = async () => {
       try {
         const res = await fetch('/api/providers');
         if (res.ok) {
           const data = await res.json();
-          // The /api/providers route currently returns formatted objects.
-          // We might need a more detailed list for admin
           setProviderList(data);
         }
       } catch (error) {
@@ -37,6 +41,30 @@ export default function AdminHome() {
 
   const newProviders = providerList.filter((p) => !p.verified);
   const oldProviders = providerList.filter((p) => p.verified);
+
+  const handleAddAdmin = async (e) => {
+    e.preventDefault();
+    setIsAddingAdmin(true);
+    try {
+      const res = await fetch('/api/admin/add-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(adminData)
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("New Admin added successfully!");
+        setAdminData({ name: "", email: "", password: "" });
+        setView(null);
+      } else {
+        alert(data.message || "Failed to add admin");
+      }
+    } catch (error) {
+      alert("Network error");
+    } finally {
+      setIsAddingAdmin(false);
+    }
+  };
 
   // Actions
   const handleApprove = async (providerId) => {
@@ -97,7 +125,7 @@ export default function AdminHome() {
 
   return (
     <div className={`admin-page ${dark ? "dark" : ""}`} style={{ minHeight: '100vh' }}>
-      {/* Home: New / Old Provider Overview */}
+      {/* Home: Overview Cards */}
       {!view && (
         <div className="admin-home">
           <div className="admin-card" onClick={() => setView("new")}>
@@ -108,6 +136,48 @@ export default function AdminHome() {
             <h2>{t("Verified Partners")}</h2>
             <p>{oldProviders.length} {t("Active Providers")}</p>
           </div>
+          {isOwner && (
+            <div className="admin-card owner-card" onClick={() => setView("admins")} style={{ border: '1px solid var(--primary)' }}>
+              <h2>{t("Admin Management")}</h2>
+              <p>{t("Add More Admins")}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Admin Management View */}
+      {view === "admins" && (
+        <div className="provider-list">
+          <button className="back-btn" onClick={() => setView(null)}>
+            ← {t("Back to Overview")}
+          </button>
+          <h2 style={{ color: 'var(--primary)', marginBottom: '20px' }}>{t("Create New Admin")}</h2>
+          <form onSubmit={handleAddAdmin} style={{ maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '15px', background: 'rgba(255,122,0,0.05)', padding: '30px', borderRadius: '20px' }}>
+            <input 
+              type="text" 
+              placeholder="Full Name" 
+              value={adminData.name} 
+              onChange={(e) => setAdminData({...adminData, name: e.target.value})}
+              required 
+            />
+            <input 
+              type="email" 
+              placeholder="Admin Email" 
+              value={adminData.email} 
+              onChange={(e) => setAdminData({...adminData, email: e.target.value})}
+              required 
+            />
+            <input 
+              type="password" 
+              placeholder="Admin Password" 
+              value={adminData.password} 
+              onChange={(e) => setAdminData({...adminData, password: e.target.value})}
+              required 
+            />
+            <button type="submit" className="approve-btn" disabled={isAddingAdmin}>
+              {isAddingAdmin ? "Creating..." : "Add Admin Account"}
+            </button>
+          </form>
         </div>
       )}
 

@@ -1,47 +1,29 @@
 "use client";
 
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useContext } from "react";
+import { SessionProvider, signIn, signOut, useSession } from "next-auth/react";
 
 const AuthContext = createContext({});
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const res = await fetch('/api/user/profile');
-        if (res.ok) {
-          const userData = await res.json();
-          setUser(userData);
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    checkUser();
-  }, []);
+function AuthInternalProvider({ children }) {
+  const { data: session, status } = useSession();
+  const loading = status === "loading";
+  const user = session?.user;
 
   const login = async (email, password) => {
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setUser(data.user);
-        return { success: true, user: data.user };
-      }
-      return { success: false, message: data.message };
-    } catch (error) {
-      return { success: false, message: "Network error" };
+    const result = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    });
+    
+    if (result?.error) {
+      return { success: false, message: result.error };
     }
+    return { success: true };
   };
+
+  const loginWithGoogle = () => signIn("google");
 
   const signup = async (userData) => {
     try {
@@ -54,22 +36,30 @@ export function AuthProvider({ children }) {
       if (data.success) {
         return { success: true };
       }
-      return { success: false, message: data.message };
+      return { success: false, message: data.message, errors: data.errors };
     } catch (error) {
       return { success: false, message: "Network error" };
     }
   };
 
   const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    setUser(null);
-    window.location.href = "/";
+    await signOut({ callbackUrl: "/" });
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, loginWithGoogle, signup, logout, loading }}>
       {children}
     </AuthContext.Provider>
+  );
+}
+
+export function AuthProvider({ children }) {
+  return (
+    <SessionProvider>
+      <AuthInternalProvider>
+        {children}
+      </AuthInternalProvider>
+    </SessionProvider>
   );
 }
 

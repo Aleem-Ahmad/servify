@@ -175,16 +175,9 @@ export default function Navbar({ type = "public" }) {
     if (now - lastTapTime < 600) {
       const newCount = tapCount + 1;
       setTapCount(newCount);
-      if (newCount >= 5) {
+      if (newCount >= 10) {
         e.preventDefault();
-        const pass = prompt("Servify Access Key:");
-        if (pass === "admin_servify") {
-          window.location.href = "/adminDashboard";
-        } else if (pass === "customer_dummy") {
-          window.location.href = "/customerDashboard";
-        } else if (pass === "provider_dummy") {
-          window.location.href = "/providerDashboard";
-        }
+        window.location.href = "/admin/login";
         setTapCount(0);
       }
     } else {

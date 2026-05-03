@@ -334,6 +334,73 @@ form button:disabled {
   transform: none;
 }
 
+/* Social Login Styles */
+.social-login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin-top: 5px;
+}
+
+.social-login p {
+  font-size: 0.85rem;
+  color: var(--muted);
+  position: relative;
+  width: 100%;
+  text-align: center;
+}
+
+.social-login p::before,
+.social-login p::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 30%;
+  height: 1px;
+  background: var(--border-light);
+}
+
+.social-login p::before { left: 0; }
+.social-login p::after { right: 0; }
+
+.auth-container.dark .social-login p::before,
+.auth-container.dark .social-login p::after {
+  background: var(--border-dark);
+}
+
+.google-btn {
+  width: 100%;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: white !important;
+  color: #334155 !important;
+  border: 1px solid var(--border-light) !important;
+  box-shadow: var(--shadow-sm) !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+}
+
+.auth-container.dark .google-btn {
+  background: #1e293b !important;
+  color: #f1f5f9 !important;
+  border-color: var(--border-dark) !important;
+}
+
+.google-btn:hover {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.auth-container.dark .google-btn:hover {
+  background: #334155 !important;
+  border-color: #475569 !important;
+}
+
 .role-select {
   display: flex;
   gap: 12px;
@@ -610,4 +677,19 @@ form button:disabled {
     padding: 12px 20px;
     font-size: 0.9rem;
   }
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: -12px;
+  margin-left: 4px;
+  font-weight: 500;
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
