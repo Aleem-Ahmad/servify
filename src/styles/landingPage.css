@@ -28,13 +28,13 @@ body {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
-  background: #faf8f5;
+  background: #ffffff;
   color: #1a1a1a;
   transition: background 0.3s ease, color 0.3s ease;
 }
 
 .lp-page.dark {
-  background: #0f0f0f;
+  background: #0a1128;
   color: #eee;
 }
 
@@ -99,28 +99,28 @@ body {
 
 /* ── Dark mode section tints ─────────────────────────────────────── */
 .lp-page.dark .lp-services {
-  background: rgba(255,255,255,0.015);
+  background: #0a1128;
 }
 
 .lp-page.dark .lp-hiw {
-  background: #0a192f;
+  background: #0a1128;
 }
 
 .lp-page.dark .lp-providers {
-  background: rgba(255,255,255,0.015);
+  background: #0a1128;
 }
 
 /* ── Light mode alternating section tints ───────────────────────── */
 .lp-page:not(.dark) .lp-services {
-  background: rgba(255,122,0,0.03);
+  background: #ffffff;
 }
 
 .lp-page:not(.dark) .lp-hiw {
-  background: #fff;
+  background: #ffffff;
 }
 
 .lp-page:not(.dark) .lp-providers {
-  background: rgba(255,122,0,0.03);
+  background: #ffffff;
 }
 
 /* ═══════════════════════════════════════════════════════════════════

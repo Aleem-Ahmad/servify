@@ -281,7 +281,7 @@ export default function Authentication() {
 
   return (
     <div className={`min-h-screen flex items-center justify-center relative overflow-hidden transition-colors duration-500 p-4 ${
-      dark ? "bg-[#050a14] text-slate-100" : "bg-slate-50 text-slate-900"
+      dark ? "bg-[#0a1128] text-slate-100" : "bg-white text-slate-900"
     }`} dir={isUrdu ? "rtl" : "ltr"}>
       
       {/* Decorative Glow Ambient Elements */}
@@ -290,9 +290,13 @@ export default function Authentication() {
 
       {/* ================= TOP UTILITIES ================= */}
       <div className="absolute top-6 right-6 left-6 flex justify-between items-center z-50">
-        <Link href="/" className="flex items-center gap-2 font-black text-xl tracking-tight">
-          <span className="text-orange-500">Servi</span>
-          <span className={dark ? "text-white" : "text-slate-900"}>fy</span>
+        <Link href="/" className="flex items-center group">
+          <span 
+            style={{ fontFamily: 'var(--font-sacramento)', fontStyle: 'normal' }}
+            className="text-4xl font-normal tracking-wide bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent transform hover:scale-105 transition-transform"
+          >
+            Servify
+          </span>
         </Link>
         
         <div className="flex items-center gap-2">
@@ -704,14 +708,17 @@ export default function Authentication() {
                   <div className="space-y-4">
                     <h4 className="font-bold text-base">{t("auth.profile")}</h4>
 
-                    <div className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed rounded-3xl dark:border-slate-800 dark:bg-slate-900/30">
-                      <label className="relative cursor-pointer group">
-                        <div className="w-24 h-24 rounded-full border-4 border-orange-500/20 overflow-hidden flex items-center justify-center">
-                          {previews.profile ? <img src={previews.profile} alt="Profile" className="w-full h-full object-cover" /> : <UploadCloud className="w-10 h-10 text-orange-500" />}
+                    <div className="flex items-center gap-4 p-4 border border-dashed rounded-2xl dark:border-slate-800 dark:bg-slate-950/30">
+                      <label className="relative cursor-pointer group flex-shrink-0">
+                        <div className="w-16 h-16 rounded-full border-2 border-orange-500/30 overflow-hidden flex items-center justify-center bg-slate-100 dark:bg-slate-800">
+                          {previews.profile ? <img src={previews.profile} alt="Profile" className="w-full h-full object-cover" /> : <UploadCloud className="w-6 h-6 text-orange-500" />}
                         </div>
                         <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "profile")} className="hidden" />
                       </label>
-                      <span className="text-xs font-bold text-slate-400">Upload Profile Image</span>
+                      <div className="flex flex-col text-left">
+                        <span className="text-sm font-extrabold">{t("auth.uploadPhoto") || "Profile Picture"}</span>
+                        <span className="text-xs text-slate-400">Click the circle to upload your photo</span>
+                      </div>
                     </div>
 
                     {role === "provider" && (
@@ -767,28 +774,36 @@ export default function Authentication() {
                     <p className={`text-xs ${dark ? "text-slate-400" : "text-slate-500"}`}>{t("auth.uploadCnic")}</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="relative border-2 border-dashed rounded-3xl p-4 flex flex-col items-center gap-2 overflow-hidden h-36 justify-center dark:border-slate-800">
+                      <div className="relative border-2 border-dashed rounded-3xl overflow-hidden h-36 flex flex-col items-center justify-center dark:border-slate-800 bg-slate-950/20">
                         {previews.cnicFront ? (
-                          <img src={previews.cnicFront} alt="CNIC Front" className="w-full h-full object-cover rounded-xl" />
+                          <img src={previews.cnicFront} alt="CNIC Front" className="w-full h-full object-cover" />
                         ) : (
                           <>
-                            <UploadCloud className="w-8 h-8 text-orange-500" />
-                            <span className="text-[10px] font-bold">{t("auth.frontSide")}</span>
+                            <img src="/CNIC_FRONT.jpeg" alt="CNIC Front Placeholder" className="absolute inset-0 w-full h-full object-cover opacity-25" />
+                            <div className="relative z-10 flex flex-col items-center justify-center p-4 text-center">
+                              <UploadCloud className="w-7 h-7 text-orange-500 drop-shadow" />
+                              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1 drop-shadow-sm">{t("auth.frontSide") || "CNIC Front Side"}</span>
+                              <span className="text-[9px] text-slate-400">Click to Upload</span>
+                            </div>
                           </>
                         )}
-                        <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "cnicFront")} className="absolute inset-0 opacity-0 cursor-pointer" />
+                        <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "cnicFront")} className="absolute inset-0 opacity-0 cursor-pointer z-20" />
                       </div>
 
-                      <div className="relative border-2 border-dashed rounded-3xl p-4 flex flex-col items-center gap-2 overflow-hidden h-36 justify-center dark:border-slate-800">
+                      <div className="relative border-2 border-dashed rounded-3xl overflow-hidden h-36 flex flex-col items-center justify-center dark:border-slate-800 bg-slate-950/20">
                         {previews.cnicBack ? (
-                          <img src={previews.cnicBack} alt="CNIC Back" className="w-full h-full object-cover rounded-xl" />
+                          <img src={previews.cnicBack} alt="CNIC Back" className="w-full h-full object-cover" />
                         ) : (
                           <>
-                            <UploadCloud className="w-8 h-8 text-orange-500" />
-                            <span className="text-[10px] font-bold">{t("auth.backSide")}</span>
+                            <img src="/CNIC_BACK.jpeg" alt="CNIC Back Placeholder" className="absolute inset-0 w-full h-full object-cover opacity-25" />
+                            <div className="relative z-10 flex flex-col items-center justify-center p-4 text-center">
+                              <UploadCloud className="w-7 h-7 text-orange-500 drop-shadow" />
+                              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1 drop-shadow-sm">{t("auth.backSide") || "CNIC Back Side"}</span>
+                              <span className="text-[9px] text-slate-400">Click to Upload</span>
+                            </div>
                           </>
                         )}
-                        <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "cnicBack")} className="absolute inset-0 opacity-0 cursor-pointer" />
+                        <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "cnicBack")} className="absolute inset-0 opacity-0 cursor-pointer z-20" />
                       </div>
                     </div>
 

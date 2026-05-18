@@ -68,12 +68,12 @@ export default function Navbar({ type = "public" }) {
         )}>
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-orange-500/30 group-hover:rotate-12 transition-transform duration-300">
-                <Wrench className="w-6 h-6" />
-              </div>
-              <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
-                {t("navbar.brand")}
+            <Link href="/" className="flex items-center group">
+              <span 
+                style={{ fontFamily: 'var(--font-sacramento)', fontStyle: 'normal' }}
+                className="text-4xl font-normal tracking-wide bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent transform hover:scale-105 transition-transform"
+              >
+                Servify
               </span>
             </Link>
 
