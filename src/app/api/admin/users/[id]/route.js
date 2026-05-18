@@ -1,22 +1,24 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { cookies } from 'next/headers';
-
-// Optional: you could add an admin check here by reading the cookie, 
-// fetching the user, and ensuring role === 'admin'.
+import connectDB from '@/lib/mongodb';
+import User from '@/models/User';
 
 export async function PATCH(request, { params }) {
+  await connectDB();
   try {
-    const { id } = params;
+    const { id } = await params;
     const updateData = await request.json();
 
-    // Prevent overwriting the id itself just in case
-    delete updateData.id;
+    // Prevent overwriting ID fields
     delete updateData._id;
+    delete updateData.id;
 
-    const result = await db.collection('users').update({ id }, updateData);
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
 
-    if (result.updatedCount === 0) {
+    if (!updatedUser) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
     }
 
@@ -28,18 +30,19 @@ export async function PATCH(request, { params }) {
     console.error("Admin user update error:", error);
     return NextResponse.json({
       success: false,
-      message: "Failed to update user"
+      message: error.message || "Failed to update user"
     }, { status: 500 });
   }
 }
 
 export async function DELETE(request, { params }) {
+  await connectDB();
   try {
-    const { id } = params;
+    const { id } = await params;
     
-    const result = await db.collection('users').delete({ id });
+    const deletedUser = await User.findByIdAndDelete(id);
 
-    if (result.deletedCount === 0) {
+    if (!deletedUser) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
     }
 

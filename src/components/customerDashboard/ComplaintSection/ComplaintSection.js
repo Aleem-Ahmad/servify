@@ -38,7 +38,13 @@ export default function ComplaintsSection() {
               title: b.description || b.category,
               status: b.status || "Pending",
               provider: b.providerName || "Unassigned",
+              providerId: b.provider,
+              providerPhone: b.providerPhone || null,
+              customerPhone: b.customerPhone,
+              customerId: b.customer,
               time: b.date ? new Date(b.date).toLocaleString() : "Recently",
+              category: b.category,
+              description: b.description,
             }));
             setComplaints(formatted);
           }

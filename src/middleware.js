@@ -1,3 +1,4 @@
+/*
 import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
@@ -34,3 +35,7 @@ export const config = {
     '/profile/:path*',
   ],
 };
+*/
+
+export default function middleware() {}
+export const config = { matcher: [] };

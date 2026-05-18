@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import connectDB from '@/lib/mongodb';
+import User from '@/models/User';
 import { cookies } from 'next/headers';
 
 // GET /api/user/profile — returns current logged-in user's profile
 export async function GET() {
+  await connectDB();
   try {
-    // In Next.js 15+, cookies() must be awaited
     const cookieStore = await cookies();
     const userId = cookieStore.get('userId')?.value;
 
@@ -13,15 +14,19 @@ export async function GET() {
       return NextResponse.json({ message: "Not authenticated" }, { status: 401 });
     }
 
-    const user = await db.collection('users').findOne({ id: userId });
+    // Use findById for MongoDB/Mongoose
+    const user = await User.findById(userId);
 
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     // Strip password before returning
-    const { password, ...userProfile } = user;
-    return NextResponse.json(userProfile);
+    const userObj = user.toObject();
+    delete userObj.password;
+    userObj.id = user._id.toString(); // ensure 'id' always present
+    
+    return NextResponse.json(userObj);
   } catch (error) {
     console.error("Profile GET error:", error);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
@@ -30,6 +35,7 @@ export async function GET() {
 
 // PUT /api/user/profile — update current user's profile fields
 export async function PUT(request) {
+  await connectDB();
   try {
     const cookieStore = await cookies();
     const userId = cookieStore.get('userId')?.value;
@@ -41,27 +47,32 @@ export async function PUT(request) {
     const updateData = await request.json();
 
     // Prevent overwriting critical fields
-    delete updateData.id;
     delete updateData._id;
     delete updateData.email;
     delete updateData.password;
     delete updateData.role;
+    delete updateData.isVerified;
 
-    const result = await db.collection('users').update({ id: userId }, updateData);
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
 
-    if (result.updatedCount === 0) {
-      return NextResponse.json({ success: false, message: "No changes made" });
+    if (!updatedUser) {
+      return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({
       success: true,
-      message: "Profile updated successfully"
+      message: "Profile updated successfully",
+      user: updatedUser
     });
   } catch (error) {
     console.error("Profile PUT error:", error);
     return NextResponse.json({
       success: false,
-      message: "Failed to update profile"
+      message: error.message || "Failed to update profile"
     }, { status: 500 });
   }
 }

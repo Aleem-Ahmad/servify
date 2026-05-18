@@ -179,3 +179,206 @@
   --muted: #cbd5e1;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
+
+/* ================= STATUS extras ================= */
+.status-inprogress {
+  background: rgba(168, 85, 247, 0.12);
+  color: #7c3aed;
+}
+
+/* ================= FEEDBACK OVERLAY ================= */
+.feedback-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.feedback-modal {
+  background: #fff;
+  border-radius: 24px;
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.feedback-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.feedback-modal-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.close-x {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  transition: background 0.2s;
+}
+.close-x:hover { background: rgba(0,0,0,0.07); }
+
+.feedback-provider-name {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 16px;
+}
+
+/* ── STARS ── */
+.star-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #d1d5db;
+  transition: color 0.15s, transform 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+
+.star-btn.filled { color: #f59e0b; }
+.star-btn:hover  { transform: scale(1.2); }
+
+.rating-label {
+  font-size: 0.82rem;
+  color: #6b7280;
+  margin-bottom: 14px;
+  min-height: 18px;
+}
+
+/* ── TEXTAREA ── */
+.feedback-textarea {
+  width: 100%;
+  border-radius: 12px;
+  border: 1.5px solid #e5e7eb;
+  padding: 10px 14px;
+  font-size: 0.92rem;
+  resize: vertical;
+  font-family: inherit;
+  color: #1f2937;
+  background: #f9fafb;
+  margin-bottom: 14px;
+  transition: border-color 0.2s;
+}
+.feedback-textarea:focus {
+  outline: none;
+  border-color: #ff7a00;
+}
+
+/* ── MEDIA BUTTONS ── */
+.media-label {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.media-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.media-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1.5px dashed #d1d5db;
+  background: #f9fafb;
+  color: #374151;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+.media-btn:hover {
+  border-color: #ff7a00;
+  color: #ff7a00;
+  background: rgba(255,122,0,0.06);
+}
+
+/* ── SUBMIT ── */
+.feedback-submit-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #ff7a00, #ff9a3d);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.feedback-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255,122,0,0.35);
+}
+.feedback-submit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── SUCCESS ── */
+.feedback-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  text-align: center;
+}
+.feedback-success h3 { font-size: 1.4rem; font-weight: 700; color: #1f2937; }
+.feedback-success p  { color: #6b7280; }
+
+.close-feedback-btn {
+  margin-top: 8px;
+  padding: 10px 32px;
+  border-radius: 999px;
+  border: none;
+  background: #f3f4f6;
+  color: #374151;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.close-feedback-btn:hover { background: #e5e7eb; }

@@ -1,46 +1,63 @@
 "use client";
 
-import "@/styles/landingPage.css";
-
-// COMPONENTS
-import NavBar from "@/components/SharedComponents/NavBar/NavBar";
-import CustomerHero from "@/components/publicComponents/Hero";
+import React from "react";
+import Navbar from "@/components/SharedComponents/NavBar/NavBar";
+import Hero from "@/components/publicComponents/Hero";
 import Services from "@/components/SharedComponents/Services/Services";
 import HowItWorks from "@/components/SharedComponents/HowItWorks/HowItWorks";
 import Providers from "@/components/SharedComponents/Providers/Providers";
 import Footer from "@/components/SharedComponents/Footer/Footer";
 import { useTheme } from "@/context/ThemeContext";
+import { motion } from "framer-motion";
 
 export default function LandingPage() {
   const { theme } = useTheme();
   const darkMode = theme === "dark";
 
   return (
-    <div className={`lp-page ${darkMode ? "dark" : ""}`}>
-      <NavBar type="public" />
+    <div className={darkMode ? "dark" : ""}>
+      <Navbar type="public" />
 
-      <main className="lp-main">
-
-        <section id="home" className="lp-section lp-hero">
-          <CustomerHero />
+      <main className="overflow-hidden">
+        {/* Hero Section */}
+        <section id="home">
+          <Hero />
         </section>
 
-        <section id="services" className="lp-section lp-services">
+        {/* Services Section */}
+        <motion.section 
+          id="services"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="py-12 bg-white dark:bg-slate-950"
+        >
           <Services />
-        </section>
+        </motion.section>
 
-        <section id="how-it-works" className="lp-section lp-hiw">
+        {/* How It Works Section */}
+        <motion.section 
+          id="how-it-works"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="py-12 bg-slate-50 dark:bg-slate-900/50"
+        >
           <HowItWorks />
-        </section>
+        </motion.section>
 
-        <section id="providers" className="lp-section lp-providers">
+        {/* Top Rated Providers */}
+        <motion.section 
+          id="providers"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="py-12 bg-white dark:bg-slate-950"
+        >
           <Providers />
-        </section>
+        </motion.section>
 
-        <footer id="footer" className="lp-footer">
-          <Footer />
-        </footer>
-
+        <Footer />
       </main>
     </div>
   );

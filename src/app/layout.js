@@ -30,7 +30,6 @@ export const metadata = {
   description: "FYP - Professional Home Services",
   icons: {
     icon: "/favicon.png",
-    shortcut: "/favicon.ico",
     apple: "/favicon.png",
   },
 };

@@ -1,37 +1,81 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import connectDB from '@/lib/mongodb';
+import User from '@/models/User';
+import mongoose from 'mongoose';
 
 export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const search = searchParams.get('search')?.toLowerCase() || '';
-  const category = searchParams.get('category')?.toLowerCase() || '';
-  const location = searchParams.get('location')?.toLowerCase() || '';
+  try {
+    await connectDB();
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    const search = searchParams.get('search')?.toLowerCase() || '';
+    const category = searchParams.get('category')?.toLowerCase() || '';
 
-  const providers = await db.collection('users').find({ role: 'provider' });
-  
-  // Transform to match components expected format
-  let formattedProviders = providers.map(p => ({
-    id: p.id,
-    name: p.name,
-    image: `https://i.pravatar.cc/150?u=${p.email}`,
-    rating: p.rating || 0,
-    rate: p.rate || 500,
-    category: p.category || 'Professional',
-    city: p.tehseel || p.district || '',
-    experience: p.experience || '',
-    phone: p.phone || '',
-  }));
+    // Single provider by ID
+    if (id) {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return NextResponse.json({ error: "Invalid provider ID" }, { status: 400 });
+      }
+      const p = await User.findById(id);
+      if (!p || p.role !== 'provider') {
+        return NextResponse.json({ error: "Provider not found" }, { status: 404 });
+      }
+      return NextResponse.json({
+        id: p._id.toString(),
+        name: p.name,
+        email: p.email,
+        image: p.image || null,
+        phone: p.phone || null,
+        district: p.district || null,
+        tehseel: p.tehseel || null,
+        address: p.address || null,
+        rating: p.performance?.rating || 0,
+        rate: p.rate || 500,
+        category: p.category || 'Professional',
+        trustScore: p.trustScore || 0,
+        badge: p.badge || 'Basic',
+        experience: p.experience || null,
+        services: p.services || null,
+        status: p.status,
+        isOnline: p.isOnline || false,
+      });
+    }
 
-  if (search) {
-    formattedProviders = formattedProviders.filter(p => p.name.toLowerCase().includes(search) || p.category.toLowerCase().includes(search));
-  }
-  if (category) {
-    formattedProviders = formattedProviders.filter(p => p.category.toLowerCase().includes(category));
-  }
-  if (location) {
-    formattedProviders = formattedProviders.filter(p => p.city.toLowerCase().includes(location));
-  }
+    let query = { role: 'provider', status: 'Active' };
 
-  return NextResponse.json(formattedProviders);
+    if (category) {
+      query.category = { $regex: category, $options: 'i' };
+    }
+
+    const providers = await User.find(query).sort({ trustScore: -1 });
+
+    const formattedProviders = providers.map(p => ({
+      id: p._id.toString(),
+      name: p.name,
+      email: p.email,
+      image: p.image || `https://i.pravatar.cc/150?u=${p.email}`,
+      rating: p.performance?.rating || 0,
+      rate: p.rate || 500,
+      category: p.category || 'Professional',
+      trustScore: p.trustScore || 0,
+      badge: p.badge || 'Basic',
+      experience: p.experience || '',
+      phone: p.phone || null,
+      district: p.district || null,
+    }));
+
+    let filtered = formattedProviders;
+    if (search) {
+      filtered = formattedProviders.filter(p =>
+        p.name.toLowerCase().includes(search) ||
+        p.category.toLowerCase().includes(search)
+      );
+    }
+
+    return NextResponse.json(filtered);
+
+  } catch (error) {
+    console.error("Fetch providers error:", error);
+    return NextResponse.json({ error: "Failed to fetch providers" }, { status: 500 });
+  }
 }
-

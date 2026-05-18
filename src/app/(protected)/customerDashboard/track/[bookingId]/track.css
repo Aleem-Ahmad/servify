@@ -1,0 +1,125 @@
+.track-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: #f8fafc;
+}
+
+.track-header {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: 90%;
+  max-width: 400px;
+}
+
+.provider-info-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.track-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ff7a00;
+}
+
+.provider-info-card h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.status {
+  font-size: 0.8rem;
+  color: #10b981;
+  font-weight: 700;
+  margin: 0;
+}
+
+.eta-badge {
+  margin-left: auto;
+  background: #ff7a00;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+#map-container {
+  flex: 1;
+  width: 100%;
+  z-index: 1;
+}
+
+.track-footer {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.action-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.call-btn, .msg-btn {
+  padding: 1rem;
+  border-radius: 16px;
+  border: none;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.call-btn {
+  background: #ff7a00;
+  color: white;
+}
+
+.msg-btn {
+  background: white;
+  color: #000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.call-btn:hover, .msg-btn:hover {
+  transform: scale(1.02);
+}
+
+.guarantee-note {
+  text-align: center;
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+  color: #ff7a00;
+}
+
+/* Fix for Leaflet marker default icons */
+.leaflet-container {
+  font-family: inherit;
+}

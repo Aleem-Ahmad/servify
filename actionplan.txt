@@ -1,0 +1,279 @@
+================================================================================
+          SERVIFY DATABASE MIGRATION ACTION PLAN: MONGO TO POSTGRESQL
+================================================================================
+
+This document provides a complete guide for moving Servify's data layer from a 
+document-based NoSQL database (MongoDB) to a robust relational database (PostgreSQL).
+
+--------------------------------------------------------------------------------
+1. HOW MANY DATABASES DO YOU NEED TO CREATE?
+--------------------------------------------------------------------------------
+You only need to create ONE database (e.g., "servify_db"). 
+In relational databases, different collections are mapped to individual TABLES 
+with relational constraints inside a single, unified database schema.
+
+--------------------------------------------------------------------------------
+2. DATABASE MODEL NORMALIZATION & SCHEMA RELATIONS
+--------------------------------------------------------------------------------
+Because PostgreSQL is relational, flat MongoDB documents with nested sub-arrays 
+(like CNIC uploads, coordinates, and reviews media) should be NORMALIZED into 
+separate tables linked by FOREIGN KEY (FK) constraints.
+
+Here is the blueprint of the 12 normalized tables:
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 1. users                                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ PK  id               UUID / INT      (Unique User Identifier)                │
+│     username         VARCHAR(50)     (Unique Handle)                         │
+│     name             VARCHAR(100)                                            │
+│     email            VARCHAR(100)    (Unique Email)                          │
+│     password         VARCHAR(255)                                            │
+│     google_id        VARCHAR(255)    (Nullable for Social Login)             │
+│     role             VARCHAR(20)     ('customer', 'provider', 'admin')       │
+│     status           VARCHAR(20)     ('Active', 'Pending', 'Blocked')        │
+│     is_verified      BOOLEAN         (Default FALSE)                         │
+│     phone            VARCHAR(20)                                             │
+│     cnic             VARCHAR(20)                                             │
+│     address          TEXT                                                    │
+│     gender           VARCHAR(10)                                             │
+│     dob              DATE                                                    │
+│     category         VARCHAR(50)     (For Providers)                         │
+│     experience       TEXT            (For Providers)                         │
+│     image            TEXT            (Avatar URL)                            │
+│     is_online        BOOLEAN         (Default FALSE)                         │
+│     created_at       TIMESTAMP       (Default NOW())                         │
+│     updated_at       TIMESTAMP       (Default NOW())                         │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                  │
+         ┌────────────────────────┼────────────────────────┐
+         ▼ 1:1                    ▼ 1:1                    ▼ 1:1
+┌──────────────────┐     ┌──────────────────┐     ┌───────────────────────┐
+│2. user_documents │     │3. provider_stats │     │4. user_subscriptions  │
+├──────────────────┤     ├──────────────────┤     ├───────────────────────┤
+│FK user_id  UUID  │     │FK user_id  UUID  │     │FK user_id  UUID       │
+│ cnic_front TEXT  │     │ trust_score INT  │     │ plan      VARCHAR(20) │
+│ cnic_back  TEXT  │     │ badge VARCHAR(10)│     │ expiry_date TIMESTAMP │
+│ skill_demo TEXT  │     │ rating   DECIMAL │     └───────────────────────┘
+│ addr_proof TEXT  │     │ completed_jobs INT│
+└──────────────────┘     │ resp_time INT    │
+                         │ complaints INT   │
+                         │ points INT       │
+                         └──────────────────┘
+                                  │
+         ┌────────────────────────┴────────────────────────┐
+         ▼ 1:M                                             ▼ 1:M
+┌──────────────────┐                               ┌───────────────────────┐
+│5. user_locations │                               │6. chat_messages       │
+├──────────────────┤                               ├───────────────────────┤
+│FK user_id   UUID │                               │PK id        UUID / INT│
+│ latitude    DEC  │                               │FK sender_id UUID      │
+│ longitude   DEC  │                               │FK rcvr_id   UUID      │
+│ updated_at  TS   │                               │   content   TEXT      │
+└──────────────────┘                               │   sent_at   TS        │
+                                                   └───────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                7. bookings                                   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ PK  id               UUID / INT                                              │
+│ FK  customer_id      UUID            (References users.id)                   │
+│ FK  provider_id      UUID            (References users.id)                   │
+│     service          VARCHAR(50)                                             │
+│     details          TEXT                                                    │
+│     budget           DECIMAL(10,2)                                           │
+│     customer_name    VARCHAR(100)                                            │
+│     customer_phone   VARCHAR(20)                                             │
+│     customer_address TEXT                                                    │
+│     location_str     VARCHAR(255)                                            │
+│     provider_name    VARCHAR(100)                                            │
+│     date             TIMESTAMP                                               │
+│     status           VARCHAR(20)     ('Pending', 'In-Progress', 'Completed') │
+│     urgency          VARCHAR(20)     ('Normal', 'Urgent', 'Emergency')       │
+│     created_at       TIMESTAMP                                               │
+│     updated_at       TIMESTAMP                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+         │
+         ├─────────────────────────────────────────────────┐
+         ▼ 1:1                                             ▼ 1:1
+┌──────────────────┐                               ┌───────────────────────┐
+│8. booking_gtee   │                               │9. booking_payments    │
+├──────────────────┤                               ├───────────────────────┤
+│FK booking_id UUID│                               │FK booking_id UUID     │
+│ is_active   BOOL │                               │ method    VARCHAR(20) │
+│ expiry_time TS   │                               │ status    VARCHAR(20) │
+│ reworked    BOOL │                               │ txn_id    VARCHAR(100)│
+│ refunded    BOOL │                               │ fee       DECIMAL     │
+└──────────────────┘                               └───────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 10. reviews                                  │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ PK  id               UUID / INT                                              │
+│ FK  booking_id       UUID            (References bookings.id)                │
+│ FK  customer_id      UUID            (References users.id)                   │
+│ FK  provider_id      UUID            (References users.id)                   │
+│     rating           INT             (Constraint: 1 to 5)                    │
+│     comment          TEXT                                                    │
+│     is_flagged       BOOLEAN         (Default FALSE)                         │
+│     created_at       TIMESTAMP                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+         │
+         ▼ 1:M
+┌──────────────────┐
+│11. review_media  │
+├──────────────────┤
+│PK id         INT │
+│FK review_id  UUID│
+│ media_url    TEXT│
+│ media_type   VAR │
+└──────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              12. verify_codes                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ PK  id               INT                                                     │
+│     email            VARCHAR(100)                                            │
+│     code             VARCHAR(10)                                             │
+│     expires_at       TIMESTAMP                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+--------------------------------------------------------------------------------
+3. SQL TABLE RELATION DECLARATIONS (DDL)
+--------------------------------------------------------------------------------
+
+-- Users core details
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    username VARCHAR(50) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    google_id VARCHAR(255) UNIQUE,
+    role VARCHAR(20) DEFAULT 'customer' CHECK (role IN ('customer', 'provider', 'admin')),
+    status VARCHAR(20) DEFAULT 'Active' CHECK (status IN ('Active', 'Pending', 'Blocked')),
+    is_verified BOOLEAN DEFAULT FALSE,
+    phone VARCHAR(20),
+    cnic VARCHAR(20),
+    address TEXT,
+    gender VARCHAR(10),
+    dob DATE,
+    category VARCHAR(50),
+    experience TEXT,
+    image TEXT,
+    is_online BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Provider specific stats (1:1 Relation with users)
+CREATE TABLE provider_stats (
+    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    trust_score INT DEFAULT 0,
+    badge VARCHAR(20) DEFAULT 'Basic' CHECK (badge IN ('Basic', 'Pro', 'Elite')),
+    rating DECIMAL(3,2) DEFAULT 5.0,
+    completed_jobs INT DEFAULT 0,
+    avg_response_time INT DEFAULT 0,
+    complaint_history INT DEFAULT 0,
+    leaderboard_points INT DEFAULT 0
+);
+
+-- Bookings (Relates customer and provider)
+CREATE TABLE bookings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID NOT NULL REFERENCES users(id),
+    provider_id UUID NOT NULL REFERENCES users(id),
+    service VARCHAR(50) NOT NULL,
+    details TEXT NOT NULL,
+    budget DECIMAL(10,2) NOT NULL,
+    customer_name VARCHAR(100),
+    customer_phone VARCHAR(20),
+    customer_address TEXT,
+    location_str VARCHAR(255),
+    provider_name VARCHAR(100),
+    date TIMESTAMP,
+    status VARCHAR(20) DEFAULT 'Pending' CHECK (status IN ('Pending', 'Accepted', 'In-Progress', 'Completed', 'Cancelled')),
+    urgency VARCHAR(20) DEFAULT 'Normal' CHECK (urgency IN ('Normal', 'Urgent', 'Emergency')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Reviews table (Relates booking, customer, and provider)
+CREATE TABLE reviews (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+    customer_id UUID NOT NULL REFERENCES users(id),
+    provider_id UUID NOT NULL REFERENCES users(id),
+    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT DEFAULT '',
+    is_flagged BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Multi-media uploads connected to a review (1:M Relation)
+CREATE TABLE review_media (
+    id SERIAL PRIMARY KEY,
+    review_id UUID NOT NULL REFERENCES reviews(id) ON DELETE CASCADE,
+    media_url TEXT NOT NULL,
+    media_type VARCHAR(20) CHECK (media_type IN ('photo', 'video', 'audio'))
+);
+
+--------------------------------------------------------------------------------
+4. CRITICAL SQL JOINS YOU WILL NEED
+--------------------------------------------------------------------------------
+
+--- A. FETCHING A PROVIDER PROFILE WITH ALL THEIR REAL CUSTOMER REVIEWS
+SELECT 
+    r.id AS review_id,
+    r.rating,
+    r.comment,
+    r.created_at,
+    c.name AS customer_name,
+    c.image AS customer_avatar,
+    m.media_url,
+    m.media_type
+FROM reviews r
+JOIN users c ON r.customer_id = c.id
+LEFT JOIN review_media m ON r.id = m.review_id
+WHERE r.provider_id = 'PROVIDER_UUID_HERE'
+ORDER BY r.created_at DESC;
+
+--- B. FETCHING ACTIVE CUSTOMER BOOKINGS WITH ASSIGNED PROVIDER PHONE & TRUST SCORE
+SELECT 
+    b.id AS booking_id,
+    b.service,
+    b.details,
+    b.budget,
+    b.status,
+    p.name AS provider_name,
+    p.phone AS provider_phone,
+    p.image AS provider_avatar,
+    s.trust_score,
+    s.badge
+FROM bookings b
+JOIN users p ON b.provider_id = p.id
+JOIN provider_stats s ON p.id = s.user_id
+WHERE b.customer_id = 'CUSTOMER_UUID_HERE' AND b.status != 'Completed';
+
+--- C. DYNAMICALLY UPDATING PROVIDER RATINGS WHEN A NEW REVIEW IS SUBMITTED
+-- Step 1: Query the average score
+SELECT AVG(rating) as avg_rating FROM reviews WHERE provider_id = 'PROVIDER_UUID';
+-- Step 2: Write calculation updates to stats
+UPDATE provider_stats 
+SET rating = (SELECT AVG(rating) FROM reviews WHERE provider_id = 'PROVIDER_UUID'),
+    trust_score = (SELECT AVG(rating) * 20 FROM reviews WHERE provider_id = 'PROVIDER_UUID')
+WHERE user_id = 'PROVIDER_UUID';
+
+--------------------------------------------------------------------------------
+5. ORM RECOMMENDATION FOR NEXT.JS
+--------------------------------------------------------------------------------
+Since your `package.json` already contains Prisma (`"prisma": "^7.7.0"` and 
+`"@prisma/client": "^7.7.0"`), moving to PostgreSQL is exceptionally easy:
+
+1. Update `.env.local` to point to your Postgres instance:
+   DATABASE_URL="postgresql://username:password@localhost:5432/servify_db?schema=public"
+
+2. Run Prisma migration commands to automatically create these PostgreSQL tables:
+   npx prisma db push
+   npx prisma generate
+================================================================================

@@ -91,7 +91,15 @@ function AllProvidersContent() {
                 </div>
                 <p className="pro-price-sum"><strong>PKR {p.rate}</strong> / service</p>
                 <div className="pro-avail-chip available-now">Available Now</div>
-                <button className="pro-view-btn">{t("View Full Profile")}</button>
+                <button 
+                  className="pro-view-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.href = `/customerDashboard/viewProvider?id=${p.id}`;
+                  }}
+                >
+                  {t("View Full Profile")}
+                </button>
               </div>
             </div>
           ))}
@@ -121,11 +129,14 @@ function AllProvidersContent() {
                  <h3 className="section-title"><CheckSquare size={18} color="#ff7a00" /> {t("Overview")}</h3>
                  <p>This is a registered professional on the Servify platform.</p>
 
-                 <div className="modal-price-footer" style={{ marginTop: 'auto' }}>
-                    <div className="modal-price-data">
-                      <span>{t("Estimated Price")}</span>
-                      <h2>PKR {selectedProvider.rate}</h2>
-                    </div>
+                 <div className="modal-price-footer" style={{ marginTop: 'auto', display: 'flex', gap: '12px' }}>
+                    <button 
+                       className="book-now-modal-btn" 
+                       style={{ background: 'rgba(255,122,0,0.1)', color: '#ff7a00', border: '1px solid #ff7a00' }}
+                       onClick={() => window.location.href = `/customerDashboard/viewProvider?id=${selectedProvider.id}`}
+                     >
+                       {t("View Full Profile")}
+                     </button>
                     <button className="book-now-modal-btn" onClick={() => window.location.href = `/customerDashboard/complaintForm?provider=${selectedProvider.id}`}>{t("Instant Booking")}</button>
                  </div>
               </div>

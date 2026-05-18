@@ -1,0 +1,125 @@
+.leaderboard-page {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.leaderboard-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+@keyframes fadeInDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.leaderboard-header h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 1rem 0 0.5rem;
+}
+
+.leaderboard-header p {
+  opacity: 0.7;
+}
+
+.leaderboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.leader-card {
+  background: var(--bg-color, #fff);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 1.2rem;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.leader-card:hover {
+  transform: scale(1.01);
+  box-shadow: 0 8px 24px rgba(255, 122, 0, 0.1);
+}
+
+.rank-badge {
+  width: 50px;
+  display: flex;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+
+.gold { color: #ffd700; }
+.silver { color: #c0c0c0; }
+.bronze { color: #cd7f32; }
+
+.leader-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ff7a00;
+}
+
+.leader-info {
+  flex: 1;
+}
+
+.leader-info h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.leader-category {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  text-transform: uppercase;
+}
+
+.leader-badge-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 4px;
+}
+
+.leader-badge-tag.elite { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+.leader-badge-tag.pro { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+.leader-badge-tag.basic { background: #fdf2f8; color: #9d174d; border: 1px solid #fbcfe8; }
+
+.leader-points {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 122, 0, 0.1);
+  color: #ff7a00;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+/* Rank specific styles */
+.rank-1 { background: linear-gradient(to right, #fff, #fff9e6); border-color: #ffd700; }
+.rank-2 { background: linear-gradient(to right, #fff, #f8f8f8); border-color: #c0c0c0; }
+.rank-3 { background: linear-gradient(to right, #fff, #fff5eb); border-color: #cd7f32; }
+
+/* Dark mode */
+.dark .leader-card {
+  background: #1a1a1a;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.dark .rank-1 { background: linear-gradient(to right, #1a1a1a, #2d2600); }
+.dark .rank-2 { background: linear-gradient(to right, #1a1a1a, #222); }
+.dark .rank-3 { background: linear-gradient(to right, #1a1a1a, #2d1a00); }

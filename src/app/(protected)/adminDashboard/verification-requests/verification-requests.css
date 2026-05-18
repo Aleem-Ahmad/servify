@@ -1,0 +1,130 @@
+.admin-verification-page {
+  padding: 3rem 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.admin-header {
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.admin-header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0.5rem 0;
+}
+
+.requests-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.request-card {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 2rem;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.request-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.req-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.docs-preview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 16px;
+}
+
+.doc-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.doc-item button {
+  margin-left: auto;
+  padding: 4px 12px;
+  background: #ff7a00;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.action-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding-top: 20px;
+}
+
+.badge-selector {
+  display: flex;
+  gap: 10px;
+}
+
+.approve-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: white;
+  transition: opacity 0.2s;
+}
+
+.approve-btn.elite { background: #b8860b; }
+.approve-btn.pro { background: #707070; }
+.approve-btn.basic { background: #cd7f32; }
+
+.reject-btn {
+  background: none;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.reject-btn:hover {
+  background: #fee2e2;
+}
+
+/* Dark mode */
+.dark .request-card {
+  background: #1a1a1a;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.dark .docs-preview {
+  background: #222;
+}

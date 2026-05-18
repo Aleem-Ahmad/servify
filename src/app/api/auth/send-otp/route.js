@@ -5,8 +5,8 @@ import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
 import { emailSchema } from "@/Schemas/verifySchema";
 
 export async function POST(request) {
-  await connectDB();
   try {
+    await connectDB();
     const { email } = await request.json();
 
     // 1. Validate email
@@ -17,13 +17,14 @@ export async function POST(request) {
 
     const user = await User.findOne({ email });
     if (!user) {
-      return NextResponse.json({ success: false, message: "User not found with this email" }, { status: 404 });
+      // If user not found, we might want to check if they are in the middle of signup
+      return NextResponse.json({ success: false, message: "User not found with this email. Please sign up first." }, { status: 404 });
     }
 
     // 2. Generate new OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     user.verifyCode = otp;
-    user.verifyCodeExpiry = new Date(Date.now() + 3600000);
+    user.verifyCodeExpiry = new Date(Date.now() + 3600000); // 1 hour
     await user.save();
 
     // 3. Send Email
@@ -40,7 +41,7 @@ export async function POST(request) {
     console.error("Resend OTP Error:", error);
     return NextResponse.json({ 
       success: false, 
-      message: "An unexpected error occurred during OTP resending." 
+      message: error.message || "An unexpected error occurred during OTP resending." 
     }, { status: 500 });
   }
 }

@@ -1,27 +1,32 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/authOptions";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 export async function POST(request) {
   try {
-    const session = await getServerSession(authOptions);
+    await connectDB();
+    
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+    
+    if (!userId) {
+      return NextResponse.json({ success: false, message: "Unauthorized access" }, { status: 401 });
+    }
 
-    // 1. Check if the requester is an admin
-    if (!session || session.user.role !== 'admin') {
-      return NextResponse.json({ success: false, message: "Unauthorized access" }, { status: 403 });
+    const requester = await User.findById(userId);
+    
+    // ONLY owner admin can add admins
+    if (!requester || requester.email !== 'www.aleemahmadghias@gmail.com') {
+      return NextResponse.json({ success: false, message: "Forbidden: Only the Owner Admin can add new admins" }, { status: 403 });
     }
 
     const { name, email, password } = await request.json();
 
-    // 2. Validate input
     if (!name || !email || !password) {
       return NextResponse.json({ success: false, message: "Missing required fields" }, { status: 400 });
     }
-
-    await connectDB();
 
     // 3. Check if admin already exists
     const existing = await User.findOne({ email });

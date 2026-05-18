@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight, ShieldCheck, Award, Medal } from "lucide-react";
 import Link from "next/link";
 import "./providers.css";
 import { useLanguage } from "@/context/LanguageContext";
@@ -59,15 +59,27 @@ export default function Providers({ exploreHref = "/login-first" }) {
             <p style={{ padding: '20px', opacity: 0.7 }}>{t("Loading providers...")}</p>
           ) : (
             providers.map((p, i) => (
-              <div className="provider-card" key={i}>
-                <img src={p.image} alt={p.name} />
-                <h3>{p.name}</h3>
-                <div className="rating">
-                  <Star size={16} fill="#ff7a00" />
-                  {p.rating}
+              <Link href={`/customerDashboard/viewProvider?id=${p.id}`} className={`provider-card ${p.badge?.toLowerCase() || 'basic'}`} key={i} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div className="badge-overlay">
+                  {p.badge === 'Elite' && <Medal size={16} className="badge-icon elite" />}
+                  {p.badge === 'Pro' && <Award size={16} className="badge-icon pro" />}
+                  {p.badge === 'Basic' && <ShieldCheck size={16} className="badge-icon basic" />}
+                  <span className="badge-text">{p.badge || 'Basic'}</span>
                 </div>
-                <p className="price-tag">{t("providers.startsFrom", { rate: p.rate })}</p>
-              </div>
+                <img src={p.image || `https://i.pravatar.cc/150?u=${p.email}`} alt={p.name} />
+                <h3>{p.name}</h3>
+                <div className="card-stats">
+                  <div className="rating">
+                    <Star size={14} fill="#ff7a00" stroke="#ff7a00" />
+                    {p.rating || 0}
+                  </div>
+                  <div className="trust-score">
+                    Trust: {p.trustScore || 0}%
+                  </div>
+                </div>
+                <p className="category-tag">{p.category}</p>
+                <p className="price-tag">{t("providers.startsFrom", { rate: p.rate || 500 })}</p>
+              </Link>
             ))
           )}
         </div>
