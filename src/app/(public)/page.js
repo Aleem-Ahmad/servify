@@ -9,28 +9,29 @@ import Providers from "@/components/SharedComponents/Providers/Providers";
 import Footer from "@/components/SharedComponents/Footer/Footer";
 import { useTheme } from "@/context/ThemeContext";
 import { motion } from "framer-motion";
+import "@/styles/landingPage.css";
 
 export default function LandingPage() {
   const { theme } = useTheme();
   const darkMode = theme === "dark";
 
   return (
-    <div className={darkMode ? "dark" : ""}>
+    <div className={`lp-page ${darkMode ? "dark" : ""}`}>
       <Navbar type="public" />
 
-      <main className="overflow-hidden">
+      <main className="lp-main">
         {/* Hero Section */}
-        <section id="home">
+        <section id="home" className="lp-section lp-hero">
           <Hero />
         </section>
 
         {/* Services Section */}
         <motion.section 
           id="services"
+          className="lp-section lp-services"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="py-12 bg-white dark:bg-slate-950"
         >
           <Services />
         </motion.section>
@@ -38,10 +39,10 @@ export default function LandingPage() {
         {/* How It Works Section */}
         <motion.section 
           id="how-it-works"
+          className="lp-section lp-hiw"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="py-12 bg-slate-50 dark:bg-slate-900/50"
         >
           <HowItWorks />
         </motion.section>
@@ -49,15 +50,18 @@ export default function LandingPage() {
         {/* Top Rated Providers */}
         <motion.section 
           id="providers"
+          className="lp-section lp-providers"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="py-12 bg-white dark:bg-slate-950"
         >
           <Providers />
         </motion.section>
 
-        <Footer />
+        {/* Snapping Footer */}
+        <footer className="lp-footer">
+          <Footer />
+        </footer>
       </main>
     </div>
   );

@@ -1,11 +1,12 @@
 "use client";
+
 import { useState, useEffect } from "react";
-import "@/styles/authentication.css";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
-import { Sun, Moon, Globe, UploadCloud, Eye, EyeOff } from "lucide-react";
+import { Sun, Moon, Globe, UploadCloud, Eye, EyeOff, User, Lock, Mail, ChevronRight, ArrowLeft, Shield, Wrench, CheckCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Authentication() {
   const [isSignup, setIsSignup] = useState(false);
@@ -44,7 +45,6 @@ export default function Authentication() {
     cnicBack: null
   });
 
-  // Regex patterns (mirroring the backend)
   const patterns = {
     username: /^[a-zA-Z0-9_]{3,20}$/,
     name: /^[a-zA-Z\s]{3,30}$/,
@@ -103,13 +103,10 @@ export default function Authentication() {
   const [isVerified, setIsVerified] = useState(false);
   const [otp, setOtp] = useState("");
   const [verifying, setVerifying] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState(null);
 
-  // Username uniqueness state
   const [usernameMessage, setUsernameMessage] = useState("");
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
 
-  // Debounced username check (Fixed: changed useState to useEffect)
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (formData.username && patterns.username.test(formData.username)) {
@@ -145,7 +142,7 @@ export default function Authentication() {
       const data = await res.json();
       if (data.success) {
         alert("Verification code sent to your Gmail!");
-        setStep(6); // Move to final OTP step
+        setStep(7);
       } else {
         alert(data.message || "Failed to send OTP");
       }
@@ -172,7 +169,6 @@ export default function Authentication() {
       const data = await res.json();
       if (data.success) {
         setIsVerified(true);
-        // OTP verified, now redirect to login
         alert("Email verified successfully! You can now log in.");
         setIsSignup(false);
         setStep(1);
@@ -188,38 +184,6 @@ export default function Authentication() {
     }
   };
 
-  const processFinalSignup = async () => {
-    setLoadingAuth(true);
-    try {
-      const result = await signup({ ...formData, role });
-      if (result.success) {
-        alert(role === "provider"
-          ? "Registration Successful! Your profile is pending admin verification."
-          : "Registration Successful! Please log in.");
-        setIsSignup(false);
-        setStep(1);
-        // Reset form
-        setFormData({
-          name: "", email: "", password: "", confirmPassword: "", phone: "",
-          district: "Okara", tehseel: "", cnic: "", category: "", experience: "",
-          gender: "", religion: "", maritalStatus: "", dob: "", address: "",
-          providerType: "Individual"
-        });
-        setErrors({});
-        setPreviews({ profile: null, cnicFront: null, cnicBack: null });
-        setOtp("");
-        setIsVerified(false);
-      } else {
-        alert(result.message || "Registration failed");
-      }
-    } catch (err) {
-      alert("Something went wrong during final registration.");
-    } finally {
-      setLoadingAuth(false);
-    }
-  };
-
-  // Helper to check if a step is valid
   const isStepValid = () => {
     if (!isSignup) return true;
 
@@ -271,7 +235,6 @@ export default function Authentication() {
     }
   };
 
-  // ─── LOGIN ─────────────────────────────────────────────────────────────────
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoadingAuth(true);
@@ -292,19 +255,16 @@ export default function Authentication() {
     }
   };
 
-  // ─── SIGNUP ────────────────────────────────────────────────────────────────
   const handleSignup = async (e) => {
     if (e) e.preventDefault();
     if (!isStepValid()) return;
 
     setLoadingAuth(true);
     try {
-      // 1. Trigger the signup API which creates unverified user and sends OTP
       const result = await signup({ ...formData, role });
-
       if (result.success) {
         alert("Verification code sent to your Gmail!");
-        setStep(7); // Move to OTP step 7
+        setStep(7);
       } else {
         alert(result.message || "Registration failed. Please try again.");
       }
@@ -317,452 +277,574 @@ export default function Authentication() {
   };
 
   const dark = theme === "dark";
+  const isUrdu = locale === "ur";
 
   return (
-    <div
-      className={`auth-container 
-        ${isSignup ? "right-panel-active" : ""} 
-        ${dark ? "dark" : ""}`}
-    >
-      {/* ================= TOP TOOLS ================= */}
-      <div className="top-tools">
-        <button className="icon-btn" onClick={toggleTheme} title="Toggle Theme">
-          {dark ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
+    <div className={`min-h-screen flex items-center justify-center relative overflow-hidden transition-colors duration-500 p-4 ${
+      dark ? "bg-[#050a14] text-slate-100" : "bg-slate-50 text-slate-900"
+    }`} dir={isUrdu ? "rtl" : "ltr"}>
+      
+      {/* Decorative Glow Ambient Elements */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-500/10 rounded-full blur-3xl pointer-events-none -translate-y-1/3 translate-x-1/3" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-3xl pointer-events-none translate-y-1/3 -translate-x-1/3" />
 
-        <button className="icon-btn lang-btn" onClick={() => changeLanguage(locale === "en" ? "ur" : "en")}>
-          <Globe size={20} style={{ marginRight: "6px" }} /> {locale.toUpperCase()}
-        </button>
-      </div>
-
-      {/* ================= SIGN IN ================= */}
-      <div id="login" className="form-container sign-in-container">
-        <form onSubmit={handleLogin}>
-          <h1>{t("auth.login")}</h1>
-
-          <input
-            type="email"
-            name="email"
-            placeholder="Gmail Address"
-            onChange={handleInputChange}
-            required
-          />
-          <div className="password-input-wrapper">
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="Password"
-              onChange={handleInputChange}
-              required
-            />
-            <button
-              type="button"
-              className="eye-icon"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
-          </div>
-
-          <Link href="/forgot-password" title="Go to Forgot Password Page" className="link-left">
-            {t("auth.forgot")}
-          </Link>
-
-          <button type="submit" disabled={loadingAuth}>
-            {loadingAuth ? "Please wait..." : t("auth.login")}
+      {/* ================= TOP UTILITIES ================= */}
+      <div className="absolute top-6 right-6 left-6 flex justify-between items-center z-50">
+        <Link href="/" className="flex items-center gap-2 font-black text-xl tracking-tight">
+          <span className="text-orange-500">Servi</span>
+          <span className={dark ? "text-white" : "text-slate-900"}>fy</span>
+        </Link>
+        
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={toggleTheme}
+            className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all ${
+              dark ? "bg-slate-900 border-slate-800 text-yellow-500 hover:bg-slate-800" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"
+            }`}
+          >
+            {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
-
-
-          <p className="switch-link">
-            {t("auth.noAccount")}{" "}
-            <span onClick={() => {
-              setIsSignup(true);
-              setStep(1);
-            }}>
-              {t("auth.signup")}
-            </span>
-          </p>
-        </form>
-      </div>
-
-      {/* ================= SIGN UP ================= */}
-      <div id="signup" className="form-container sign-up-container">
-        <form onSubmit={handleSignup}>
-          {step === 1 && (
-            <>
-              <h1>{t("auth.signup")}</h1>
-
-              <div className="role-select">
-                <button
-                  type="button"
-                  className={role === "customer" ? "active" : ""}
-                  onClick={() => {
-                    setRole("customer");
-                    setStep(2);
-                  }}
-                >
-                  {t("auth.customer")}
-                </button>
-
-                <button
-                  type="button"
-                  className={role === "provider" ? "active" : ""}
-                  onClick={() => {
-                    setRole("provider");
-                    setStep(2);
-                  }}
-                >
-                  {t("auth.provider")}
-                </button>
-              </div>
-
-              <p className="switch-link">
-                {t("auth.haveAccount")}{" "}
-                <span onClick={() => setIsSignup(false)}>
-                  {t("auth.login")}
-                </span>
-              </p>
-            </>
-          )}
-
-          {/* STEP 2: PERSONAL IDENTITY */}
-          {step === 2 && (
-            <>
-              <h2>{t("auth.personalInfo")}</h2>
-
-              <div className="input-group">
-                <input
-                  name="username"
-                  placeholder="Username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  required
-                />
-                {isCheckingUsername && <span className="loader-text">Checking...</span>}
-                {usernameMessage && (
-                  <span className={`msg-text ${usernameMessage === "Username is available" ? "success" : "error"}`}>
-                    {usernameMessage}
-                  </span>
-                )}
-                {errors.username && <span className="error-text">{errors.username}</span>}
-              </div>
-
-              <input
-                name="name"
-                placeholder={t("auth.fullName")}
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-              />
-              {errors.name && <span className="error-text">{errors.name}</span>}
-
-              <input
-                name="cnic"
-                placeholder={t("auth.cnicPlaceholder")}
-                value={formData.cnic}
-                onChange={handleInputChange}
-                required
-              />
-              {errors.cnic && <span className="error-text">{errors.cnic}</span>}
-
-              <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
-                <select name="gender" value={formData.gender} onChange={handleInputChange} required style={{ width: '50%' }}>
-                  <option value="">{t("auth.selectGender")}</option>
-                  <option value="Male">{t("auth.male")}</option>
-                  <option value="Female">{t("auth.female")}</option>
-                  <option value="Other">{t("auth.other")}</option>
-                </select>
-                <input
-                  name="dob"
-                  type="date"
-                  value={formData.dob}
-                  onChange={handleInputChange}
-                  required
-                  style={{ width: '50%' }}
-                  placeholder={t("auth.dob")}
-                />
-              </div>
-              <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
-                <select name="maritalStatus" value={formData.maritalStatus} onChange={handleInputChange} required style={{ width: '50%' }}>
-                  <option value="">{t("auth.maritalStatus")}</option>
-                  <option value="Single">{t("auth.single")}</option>
-                  <option value="Married">{t("auth.married")}</option>
-                </select>
-                <select name="religion" value={formData.religion} onChange={handleInputChange} required style={{ width: '50%' }}>
-                  <option value="">{t("auth.religion")}</option>
-                  <option value="Islam">{t("auth.islam")}</option>
-                  <option value="Christianity">{t("auth.christianity")}</option>
-                  <option value="Hinduism">{t("auth.hinduism")}</option>
-                  <option value="Other">{t("auth.other")}</option>
-                </select>
-              </div>
-
-              <div className="step-controls">
-                <button type="button" onClick={() => setStep(1)}>{t("auth.back")}</button>
-                <button type="button" onClick={() => setStep(3)} disabled={!isStepValid()}>{t("auth.next")}</button>
-              </div>
-            </>
-          )}
-
-          {/* STEP 3: CONTACT & LOCATION */}
-          {/* STEP 3: CONTACT & LOCATION */}
-          {step === 3 && (
-            <>
-              <h2>{t("auth.contactInfo")}</h2>
-              <div className="phone-input-group" style={{ position: 'relative', width: '100%' }}>
-                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.9rem', color: dark ? '#8892b0' : '#7a7a7a' }}>+92</span>
-                <input
-                  name="phone"
-                  placeholder={t("auth.phonePlaceholder")}
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  required
-                  style={{ paddingLeft: '45px' }}
-                />
-              </div>
-              {errors.phone && <span className="error-text">{errors.phone}</span>}
-
-              <input
-                name="email"
-                type="email"
-                placeholder={t("auth.emailPlaceholder")}
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-              {errors.email && <span className="error-text">{errors.email}</span>}
-
-              <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
-                <select name="district" value={formData.district} onChange={handleInputChange} required style={{ width: '50%' }}>
-                  <option value="">{t("auth.selectDistrict")}</option>
-                  <option value="Okara">{t("auth.okara")}</option>
-                </select>
-                <select name="tehseel" value={formData.tehseel} onChange={handleInputChange} required style={{ width: '50%' }}>
-                  <option value="">{t("auth.selectTehseel")}</option>
-                  <option value="Okara">{t("auth.okara")}</option>
-                  <option value="Depalpur">{t("auth.depalpur")}</option>
-                  <option value="Renala">{t("auth.renala")}</option>
-                </select>
-              </div>
-              <input
-                name="address"
-                placeholder={t("auth.addressPlaceholder")}
-                value={formData.address}
-                onChange={handleInputChange}
-                required
-              />
-
-              <div className="step-controls">
-                <button type="button" onClick={() => setStep(2)}>{t("auth.back")}</button>
-                <button
-                  type="button"
-                  onClick={() => setStep(4)}
-                  disabled={!isStepValid()}
-                >
-                  {t("auth.next")}
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* STEP 4: SECURITY */}
-          {step === 4 && (
-            <>
-              <h2>{t("auth.security")}</h2>
-              <div className="password-input-wrapper">
-                <input
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder={t("auth.setPassword")}
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  required
-                />
-                <button type="button" className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              {errors.password && <span className="error-text">{errors.password}</span>}
-
-              <div className="password-input-wrapper">
-                <input
-                  name="confirmPassword"
-                  type={showPassword ? "text" : "password"}
-                  placeholder={t("auth.confirmPassword")}
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  required
-                />
-                <button type="button" className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
-
-              <div className="step-controls">
-                <button type="button" onClick={() => setStep(3)}>{t("auth.back")}</button>
-                <button type="button" onClick={() => setStep(5)} disabled={!isStepValid()}>{t("auth.next")}</button>
-              </div>
-            </>
-          )}
-
-          {/* STEP 5: PROFILE & PROFESSIONAL */}
-          {step === 5 && (
-            <>
-              <h2>{t("auth.profile")}</h2>
-              <div className="profile-preview-wrapper">
-                <label className="circular-preview">
-                  {previews.profile ? <img src={previews.profile} alt="Profile" /> : <UploadCloud size={32} className="placeholder-icon" />}
-                  <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "profile")} style={{ display: 'none' }} />
-                </label>
-                <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>Upload Profile Picture</span>
-              </div>
-
-              {role === "provider" && (
-                <>
-                  <select name="providerType" value={formData.providerType} onChange={handleInputChange} required style={{ marginBottom: '10px' }}>
-                    <option value="Individual">{t("auth.individual")}</option>
-                    <option value="Company">{t("auth.company")}</option>
-                    <option value="Agency">{t("auth.agency")}</option>
-                  </select>
-                  <select name="category" value={formData.category} onChange={handleInputChange} required>
-                    <option value="">{t("auth.selectCategory")}</option>
-                    <option value="Electrician">{t("services.electrician")}</option>
-                    <option value="Plumber">{t("services.plumber")}</option>
-                    <option value="Cleaning">{t("services.cleaner")}</option>
-                    <option value="Carpenter">{t("services.carpenter")}</option>
-                    <option value="Gardener">{t("services.gardener")}</option>
-                    <option value="Painter">{t("services.painter")}</option>
-                  </select>
-                  <input
-                    name="experience"
-                    type="text"
-                    placeholder={t("auth.experiencePlaceholder")}
-                    value={formData.experience}
-                    onChange={handleInputChange}
-                    required
-                  />
-                  {errors.experience && <span className="error-text">{errors.experience}</span>}
-                </>
-              )}
-
-              <div className="step-controls">
-                <button type="button" onClick={() => setStep(4)}>{t("auth.back")}</button>
-                <button type="button" onClick={() => {
-                  if (role === "customer") handleSignup(); // Customers go to OTP directly
-                  else setStep(6); // Providers go to CNIC
-                }} disabled={!isStepValid()}>
-                  {role === "customer" ? t("auth.next") : t("auth.next")}
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* STEP 6: CNIC UPLOAD (Providers Only) */}
-          {step === 6 && (
-            <>
-              <h2>ID Verification</h2>
-              <div className="cnic-upload-container">
-                <p className="upload-label" style={{ fontSize: '0.8rem', marginBottom: '5px' }}>{t("auth.uploadCnic")}</p>
-                  <div className="upload-zones">
-                    <div className="upload-box" style={{ borderColor: previews.cnicFront ? 'var(--primary)' : '', overflow: 'hidden', position: 'relative' }}>
-                      {previews.cnicFront ? (
-                        <img src={previews.cnicFront} alt="CNIC Front" className="preview-img-full" />
-                      ) : (
-                        <>
-                          <img src="/CNIC_FRONT.jpeg" alt="Front Template" className="placeholder-template-img" />
-                          <div className="upload-overlay">
-                            <UploadCloud size={24} className="upload-icon" />
-                            <span>{t("auth.frontSide")}</span>
-                          </div>
-                        </>
-                      )}
-                      <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "cnicFront")} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', zIndex: 10 }} />
-                    </div>
-                    <div className="upload-box" style={{ borderColor: previews.cnicBack ? 'var(--primary)' : '', overflow: 'hidden', position: 'relative' }}>
-                      {previews.cnicBack ? (
-                        <img src={previews.cnicBack} alt="CNIC Back" className="preview-img-full" />
-                      ) : (
-                        <>
-                          <img src="/CNIC_BACK.jpeg" alt="Back Template" className="placeholder-template-img" />
-                          <div className="upload-overlay">
-                            <UploadCloud size={24} className="upload-icon" />
-                            <span>{t("auth.backSide")}</span>
-                          </div>
-                        </>
-                      )}
-                      <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "cnicBack")} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', zIndex: 10 }} />
-                    </div>
-                  </div>
-              </div>
-
-              <div className="step-controls">
-                <button type="button" onClick={() => setStep(5)}>{t("auth.back")}</button>
-                <button type="submit" onClick={handleSignup} disabled={loadingAuth || !isStepValid()}>
-                  {loadingAuth ? "Please wait..." : t("auth.create")}
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* STEP 7: OTP VERIFICATION */}
-          {step === 7 && (
-            <>
-              <h2>Verify Email</h2>
-              <p style={{ fontSize: '0.8rem', opacity: 0.7, textAlign: 'center', marginBottom: '15px' }}>
-                We've sent a 6-digit code to <strong>{formData.email}</strong>
-              </p>
-              <input
-                type="text"
-                placeholder="6-Digit OTP"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                style={{ textAlign: 'center', fontSize: '1.2rem', letterSpacing: '8px' }}
-                required
-              />
-              <div className="step-controls">
-                <button type="button" onClick={() => setStep(role === "provider" ? 6 : 5)}>{t("auth.back")}</button>
-                <button
-                  type="button"
-                  onClick={handleVerifyOTP}
-                  disabled={otp.length !== 6 || verifying || loadingAuth}
-                >
-                  {verifying || loadingAuth ? "Processing..." : "Verify & Finish"}
-                </button>
-              </div>
-              <p style={{ fontSize: '0.7rem', marginTop: '10px', textAlign: 'center' }}>
-                Didn't receive it? <span onClick={handleSendOTP} style={{ color: 'var(--primary)', cursor: 'pointer' }}>Resend OTP</span>
-              </p>
-            </>
-          )}
-        </form>
-      </div>
-
-      {/* ================= OVERLAY ================= */}
-      <div className="overlay-container">
-        <div className="overlay">
-          <div className="overlay-panel overlay-left">
-            <h1>{t("auth.welcomeBack")}</h1>
-            <p>{t("auth.loginDesc")}</p>
-            <button onClick={() => {
-              setIsSignup(false);
-              setStep(1);
-            }}>
-              {t("auth.login")}
-            </button>
-          </div>
-
-          <div className="overlay-panel overlay-right">
-            <h1>{t("auth.join")}</h1>
-            <p>{t("auth.signupDesc")}</p>
-            <button onClick={() => {
-              setIsSignup(true);
-              setStep(1);
-            }}>
-              {t("auth.signup")}
-            </button>
-          </div>
+          
+          <button 
+            onClick={() => changeLanguage(locale === "en" ? "ur" : "en")}
+            className={`px-4 h-10 rounded-full flex items-center gap-2 border font-bold text-xs transition-all ${
+              dark ? "bg-slate-900 border-slate-800 hover:bg-slate-800" : "bg-white border-slate-200 hover:bg-slate-100"
+            }`}
+          >
+            <Globe className="w-4 h-4 text-orange-500" />
+            <span>{locale.toUpperCase()}</span>
+          </button>
         </div>
+      </div>
+
+      {/* ================= MAIN CONTAINER ================= */}
+      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10 pt-20 pb-10">
+        
+        {/* Left Grid: Copywriting & Theme Intro */}
+        <div className="lg:col-span-5 flex flex-col justify-center text-center lg:text-left space-y-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex self-center lg:self-start items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 text-orange-500 font-bold text-sm border border-orange-500/20"
+          >
+            <Shield className="w-4 h-4" /> Real-time OTP Verified Network
+          </motion.div>
+          
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl md:text-5xl font-black leading-tight tracking-tight"
+          >
+            {isSignup 
+              ? (isUrdu ? "نئے سفر کا آغاز کریں" : "Join Servify Community") 
+              : (isUrdu ? "اپنے اکاؤنٹ میں لاگ ان کریں" : "Welcome Back To Servify")
+            }
+          </motion.h1>
+
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className={`text-lg leading-relaxed max-w-md mx-auto lg:mx-0 ${dark ? "text-slate-400" : "text-slate-500"}`}
+          >
+            {isSignup 
+              ? (isUrdu ? "ہمارے ساتھ شامل ہوں اور بہترین ماہرین کی خدمات حاصل کریں یا اپنی مہارت پیش کریں۔" : "Discover top local experts or monetize your technical expertise on the safest, OTP-secured platform.")
+              : (isUrdu ? "اپنے اکاؤنٹ تک رسائی کے لیے اپنی اسناد درج کریں۔" : "Securely sign in to connect with service professionals and manage your bookings.")
+            }
+          </motion.p>
+        </div>
+
+        {/* Right Grid: Glassmorphic Auth Card */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 100, damping: 15 }}
+          className={`lg:col-span-7 rounded-[2.5rem] p-8 md:p-12 border shadow-2xl relative overflow-hidden backdrop-blur-md ${
+            dark ? "bg-slate-900/60 border-slate-800/80 shadow-black/20" : "bg-white/80 border-slate-200/80 shadow-slate-200/50"
+          }`}
+        >
+          {/* Subtle inside ambient accent */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
+
+          <AnimatePresence mode="wait">
+            {!isSignup ? (
+              // ─── LOGIN FORM ───
+              <motion.form 
+                key="login-form"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                onSubmit={handleLogin}
+                className="space-y-6"
+              >
+                <div className="space-y-2 text-center lg:text-left">
+                  <h2 className="text-3xl font-black">{t("auth.login")}</h2>
+                  <p className={`text-sm ${dark ? "text-slate-400" : "text-slate-500"}`}>Enter your registered credentials below</p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input 
+                      type="email" 
+                      name="email" 
+                      placeholder="Gmail Address (e.g. name@gmail.com)"
+                      onChange={handleInputChange} 
+                      required
+                      className={`w-full pl-12 pr-4 py-4 rounded-2xl outline-none border transition-all ${
+                        dark ? "bg-slate-800/30 border-slate-800 text-white focus:border-orange-500" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-orange-500"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input 
+                      type={showPassword ? "text" : "password"} 
+                      name="password" 
+                      placeholder="Password"
+                      onChange={handleInputChange} 
+                      required
+                      className={`w-full pl-12 pr-12 py-4 rounded-2xl outline-none border transition-all ${
+                        dark ? "bg-slate-800/30 border-slate-800 text-white focus:border-orange-500" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-orange-500"
+                      }`}
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-orange-500 transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <Link href="/forgot-password" className="text-sm font-bold text-orange-500 hover:underline">
+                    {t("auth.forgot")}
+                  </Link>
+                </div>
+
+                <button 
+                  type="submit" 
+                  disabled={loadingAuth}
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-bold transition-all shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 hover:scale-[1.01]"
+                >
+                  {loadingAuth ? "Signing in..." : t("auth.login")}
+                </button>
+
+                <p className={`text-center text-sm ${dark ? "text-slate-400" : "text-slate-500"}`}>
+                  {t("auth.noAccount")}{" "}
+                  <button 
+                    type="button" 
+                    onClick={() => { setIsSignup(true); setStep(1); }}
+                    className="font-bold text-orange-500 hover:underline"
+                  >
+                    {t("auth.signup")}
+                  </button>
+                </p>
+              </motion.form>
+            ) : (
+              // ─── SIGNUP STEPPER ───
+              <motion.div 
+                key="signup-form"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
+              >
+                
+                {/* Step Indicators */}
+                <div className="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800">
+                  <div>
+                    <h3 className="text-2xl font-black">{t("auth.signup")}</h3>
+                    <p className={`text-xs mt-1 ${dark ? "text-slate-500" : "text-slate-400"}`}>Step {step} of {role === "provider" ? 7 : 5}</p>
+                  </div>
+                  
+                  {step > 1 && (
+                    <button 
+                      onClick={() => setStep(prev => prev - 1)}
+                      className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1 transition-all ${
+                        dark ? "border-slate-800 hover:bg-slate-800" : "border-slate-200 hover:bg-slate-100"
+                      }`}
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" /> Back
+                    </button>
+                  )}
+                </div>
+
+                {/* ── STEP 1: ROLE SELECT ── */}
+                {step === 1 && (
+                  <div className="space-y-6">
+                    <p className="text-center font-bold text-lg">Choose Your Account Role</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <button 
+                        type="button" 
+                        onClick={() => { setRole("customer"); setStep(2); }}
+                        className={`p-6 rounded-3xl border flex flex-col items-center gap-3 transition-all ${
+                          dark ? "bg-slate-800/30 border-slate-800 hover:border-orange-500/50" : "bg-slate-50 border-slate-200 hover:border-orange-300"
+                        }`}
+                      >
+                        <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                          <User className="w-6 h-6" />
+                        </div>
+                        <span className="font-extrabold text-lg">{t("auth.customer")}</span>
+                        <span className="text-xs text-slate-400 text-center">I want to hire local service pros</span>
+                      </button>
+
+                      <button 
+                        type="button" 
+                        onClick={() => { setRole("provider"); setStep(2); }}
+                        className={`p-6 rounded-3xl border flex flex-col items-center gap-3 transition-all ${
+                          dark ? "bg-slate-800/30 border-slate-800 hover:border-orange-500/50" : "bg-slate-50 border-slate-200 hover:border-orange-300"
+                        }`}
+                      >
+                        <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                          <Wrench className="w-6 h-6" />
+                        </div>
+                        <span className="font-extrabold text-lg">{t("auth.provider")}</span>
+                        <span className="text-xs text-slate-400 text-center">I want to sell my skill services</span>
+                      </button>
+                    </div>
+
+                    <p className="text-center text-sm">
+                      {t("auth.haveAccount")}{" "}
+                      <button type="button" onClick={() => setIsSignup(false)} className="font-bold text-orange-500 hover:underline">
+                        {t("auth.login")}
+                      </button>
+                    </p>
+                  </div>
+                )}
+
+                {/* ── STEP 2: PERSONAL IDENTITY ── */}
+                {step === 2 && (
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-base">{t("auth.personalInfo")}</h4>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1.5">
+                        <input 
+                          name="username" placeholder="Username" value={formData.username} onChange={handleInputChange} required 
+                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                        />
+                        {isCheckingUsername && <span className="text-[10px] text-slate-400 animate-pulse">Checking uniqueness...</span>}
+                        {usernameMessage && (
+                          <span className={`text-[10px] font-bold ${usernameMessage === "Username is available" ? "text-emerald-500" : "text-red-500"}`}>
+                            {usernameMessage}
+                          </span>
+                        )}
+                        {errors.username && <span className="text-[10px] text-red-500">{errors.username}</span>}
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <input 
+                          name="name" placeholder={t("auth.fullName")} value={formData.name} onChange={handleInputChange} required 
+                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                        />
+                        {errors.name && <span className="text-[10px] text-red-500">{errors.name}</span>}
+                      </div>
+
+                      <div className="flex flex-col gap-1.5 md:col-span-2">
+                        <input 
+                          name="cnic" placeholder={t("auth.cnicPlaceholder")} value={formData.cnic} onChange={handleInputChange} required 
+                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                        />
+                        {errors.cnic && <span className="text-[10px] text-red-500">{errors.cnic}</span>}
+                      </div>
+
+                      <select 
+                        name="gender" value={formData.gender} onChange={handleInputChange} required
+                        className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                      >
+                        <option value="">{t("auth.selectGender")}</option>
+                        <option value="Male">{t("auth.male")}</option>
+                        <option value="Female">{t("auth.female")}</option>
+                        <option value="Other">{t("auth.other")}</option>
+                      </select>
+
+                      <input 
+                        name="dob" type="date" value={formData.dob} onChange={handleInputChange} required 
+                        className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                      />
+
+                      <select 
+                        name="maritalStatus" value={formData.maritalStatus} onChange={handleInputChange} required
+                        className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                      >
+                        <option value="">{t("auth.maritalStatus")}</option>
+                        <option value="Single">{t("auth.single")}</option>
+                        <option value="Married">{t("auth.married")}</option>
+                      </select>
+
+                      <select 
+                        name="religion" value={formData.religion} onChange={handleInputChange} required
+                        className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                      >
+                        <option value="">{t("auth.religion")}</option>
+                        <option value="Islam">{t("auth.islam")}</option>
+                        <option value="Christianity">{t("auth.christianity")}</option>
+                        <option value="Hinduism">{t("auth.hinduism")}</option>
+                        <option value="Other">{t("auth.other")}</option>
+                      </select>
+                    </div>
+
+                    <button 
+                      type="button" 
+                      onClick={() => setStep(3)}
+                      disabled={!isStepValid()}
+                      className="w-full py-4 rounded-xl bg-orange-500 text-white font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    >
+                      Continue <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* ── STEP 3: CONTACT & LOCATION ── */}
+                {step === 3 && (
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-base">{t("auth.contactInfo")}</h4>
+
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">+92</span>
+                        <input 
+                          name="phone" placeholder={t("auth.phonePlaceholder")} value={formData.phone} onChange={handleInputChange} required 
+                          className={`w-full pl-14 pr-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                        />
+                        {errors.phone && <span className="text-[10px] text-red-500">{errors.phone}</span>}
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <input 
+                          name="email" type="email" placeholder={t("auth.emailPlaceholder")} value={formData.email} onChange={handleInputChange} required 
+                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                        />
+                        {errors.email && <span className="text-[10px] text-red-500">{errors.email}</span>}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <select 
+                          name="district" value={formData.district} onChange={handleInputChange} required
+                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                        >
+                          <option value="">{t("auth.selectDistrict")}</option>
+                          <option value="Okara">{t("auth.okara")}</option>
+                        </select>
+                        <select 
+                          name="tehseel" value={formData.tehseel} onChange={handleInputChange} required
+                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                        >
+                          <option value="">{t("auth.selectTehseel")}</option>
+                          <option value="Okara">{t("auth.okara")}</option>
+                          <option value="Depalpur">{t("auth.depalpur")}</option>
+                          <option value="Renala">{t("auth.renala")}</option>
+                        </select>
+                      </div>
+
+                      <input 
+                        name="address" placeholder={t("auth.addressPlaceholder")} value={formData.address} onChange={handleInputChange} required 
+                        className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                      />
+                    </div>
+
+                    <button 
+                      type="button" 
+                      onClick={() => setStep(4)}
+                      disabled={!isStepValid()}
+                      className="w-full py-4 rounded-xl bg-orange-500 text-white font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    >
+                      Continue <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* ── STEP 4: SECURITY ── */}
+                {step === 4 && (
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-base">{t("auth.security")}</h4>
+
+                    <div className="space-y-4">
+                      <div className="relative">
+                        <input 
+                          name="password" type={showPassword ? "text" : "password"} placeholder={t("auth.setPassword")} value={formData.password} onChange={handleInputChange} required 
+                          className={`w-full pl-4 pr-12 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                        />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                      {errors.password && <span className="text-[10px] text-red-500">{errors.password}</span>}
+
+                      <div className="relative">
+                        <input 
+                          name="confirmPassword" type={showPassword ? "text" : "password"} placeholder={t("auth.confirmPassword")} value={formData.confirmPassword} onChange={handleInputChange} required 
+                          className={`w-full pl-4 pr-12 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                        />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                      {errors.confirmPassword && <span className="text-[10px] text-red-500">{errors.confirmPassword}</span>}
+                    </div>
+
+                    <button 
+                      type="button" 
+                      onClick={() => setStep(5)}
+                      disabled={!isStepValid()}
+                      className="w-full py-4 rounded-xl bg-orange-500 text-white font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    >
+                      Continue <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* ── STEP 5: PROFILE PICTURE & SPECS ── */}
+                {step === 5 && (
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-base">{t("auth.profile")}</h4>
+
+                    <div className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed rounded-3xl dark:border-slate-800 dark:bg-slate-900/30">
+                      <label className="relative cursor-pointer group">
+                        <div className="w-24 h-24 rounded-full border-4 border-orange-500/20 overflow-hidden flex items-center justify-center">
+                          {previews.profile ? <img src={previews.profile} alt="Profile" className="w-full h-full object-cover" /> : <UploadCloud className="w-10 h-10 text-orange-500" />}
+                        </div>
+                        <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "profile")} className="hidden" />
+                      </label>
+                      <span className="text-xs font-bold text-slate-400">Upload Profile Image</span>
+                    </div>
+
+                    {role === "provider" && (
+                      <div className="space-y-4">
+                        <select 
+                          name="providerType" value={formData.providerType} onChange={handleInputChange} required
+                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                        >
+                          <option value="Individual">{t("auth.individual")}</option>
+                          <option value="Company">{t("auth.company")}</option>
+                          <option value="Agency">{t("auth.agency")}</option>
+                        </select>
+                        
+                        <select 
+                          name="category" value={formData.category} onChange={handleInputChange} required
+                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                        >
+                          <option value="">{t("auth.selectCategory")}</option>
+                          <option value="Electrician">{t("services.electrician")}</option>
+                          <option value="Plumber">{t("services.plumber")}</option>
+                          <option value="Cleaning">{t("services.cleaner")}</option>
+                          <option value="Carpenter">{t("services.carpenter")}</option>
+                          <option value="Gardener">{t("services.gardener")}</option>
+                          <option value="Painter">{t("services.painter")}</option>
+                        </select>
+                        
+                        <input 
+                          name="experience" placeholder={t("auth.experiencePlaceholder")} value={formData.experience} onChange={handleInputChange} required 
+                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                        />
+                        {errors.experience && <span className="text-[10px] text-red-500">{errors.experience}</span>}
+                      </div>
+                    )}
+
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        if (role === "customer") handleSignup();
+                        else setStep(6);
+                      }}
+                      disabled={!isStepValid()}
+                      className="w-full py-4 rounded-xl bg-orange-500 text-white font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    >
+                      {role === "customer" ? (loadingAuth ? "Sending OTP..." : "Get OTP Verification") : "Continue"} <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* ── STEP 6: CNIC UPLOAD (Providers Only) ── */}
+                {step === 6 && (
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-base">CNIC Card Verification</h4>
+                    <p className={`text-xs ${dark ? "text-slate-400" : "text-slate-500"}`}>{t("auth.uploadCnic")}</p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="relative border-2 border-dashed rounded-3xl p-4 flex flex-col items-center gap-2 overflow-hidden h-36 justify-center dark:border-slate-800">
+                        {previews.cnicFront ? (
+                          <img src={previews.cnicFront} alt="CNIC Front" className="w-full h-full object-cover rounded-xl" />
+                        ) : (
+                          <>
+                            <UploadCloud className="w-8 h-8 text-orange-500" />
+                            <span className="text-[10px] font-bold">{t("auth.frontSide")}</span>
+                          </>
+                        )}
+                        <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "cnicFront")} className="absolute inset-0 opacity-0 cursor-pointer" />
+                      </div>
+
+                      <div className="relative border-2 border-dashed rounded-3xl p-4 flex flex-col items-center gap-2 overflow-hidden h-36 justify-center dark:border-slate-800">
+                        {previews.cnicBack ? (
+                          <img src={previews.cnicBack} alt="CNIC Back" className="w-full h-full object-cover rounded-xl" />
+                        ) : (
+                          <>
+                            <UploadCloud className="w-8 h-8 text-orange-500" />
+                            <span className="text-[10px] font-bold">{t("auth.backSide")}</span>
+                          </>
+                        )}
+                        <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "cnicBack")} className="absolute inset-0 opacity-0 cursor-pointer" />
+                      </div>
+                    </div>
+
+                    <button 
+                      type="button" 
+                      onClick={handleSignup}
+                      disabled={loadingAuth || !isStepValid()}
+                      className="w-full py-4 rounded-xl bg-orange-500 text-white font-bold transition-all disabled:opacity-50"
+                    >
+                      {loadingAuth ? "Sending OTP..." : t("auth.create")}
+                    </button>
+                  </div>
+                )}
+
+                {/* ── STEP 7: OTP VERIFICATION ── */}
+                {step === 7 && (
+                  <div className="space-y-6 text-center">
+                    <h4 className="font-bold text-xl">Verify Email Address</h4>
+                    <p className={`text-sm ${dark ? "text-slate-400" : "text-slate-500"}`}>
+                      We've sent a 6-digit security code to <strong>{formData.email}</strong>
+                    </p>
+
+                    <input 
+                      type="text" 
+                      placeholder="6-Digit OTP" 
+                      value={otp} 
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      className={`w-full text-center text-3xl font-bold tracking-[0.2em] py-4 rounded-2xl border outline-none transition-all ${
+                        dark ? "bg-slate-800/30 border-slate-800 text-white focus:border-orange-500" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-orange-500"
+                      }`}
+                    />
+
+                    <button 
+                      type="button" 
+                      onClick={handleVerifyOTP}
+                      disabled={otp.length !== 6 || verifying || loadingAuth}
+                      className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-bold transition-all disabled:opacity-50 shadow-lg shadow-orange-500/20"
+                    >
+                      {verifying || loadingAuth ? "Processing..." : "Verify & Complete Signup"}
+                    </button>
+
+                    <p className="text-xs">
+                      Didn't receive it?{" "}
+                      <button type="button" onClick={handleSendOTP} className="text-orange-500 font-bold hover:underline">
+                        Resend OTP
+                      </button>
+                    </p>
+                  </div>
+                )}
+
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+        </motion.div>
+
       </div>
     </div>
   );
