@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Sacramento, Outfit } from "next/font/google";
+import { Geist, Geist_Mono, Sacramento, Outfit, Great_Vibes } from "next/font/google";
 import "@/styles/globals.css";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -25,6 +25,12 @@ const sacramento = Sacramento({
   subsets: ["latin"],
 });
 
+const greatVibes = Great_Vibes({
+  variable: "--font-great-vibes",
+  weight: "400",
+  subsets: ["latin"],
+});
+
 export const metadata = {
   title: "Servify",
   description: "FYP - Professional Home Services",
@@ -37,7 +43,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${sacramento.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${sacramento.variable} ${greatVibes.variable} antialiased`}>
         <ThemeProvider>
           <LanguageProvider>
             <AuthProvider>

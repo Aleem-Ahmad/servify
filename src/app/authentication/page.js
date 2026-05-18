@@ -292,7 +292,7 @@ export default function Authentication() {
       <div className="absolute top-6 right-6 left-6 flex justify-between items-center z-50">
         <Link href="/" className="flex items-center group">
           <span 
-            style={{ fontFamily: 'var(--font-sacramento)', fontStyle: 'normal' }}
+            style={{ fontFamily: 'var(--font-great-vibes)', fontStyle: 'normal' }}
             className="text-4xl font-normal tracking-wide bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent transform hover:scale-105 transition-transform"
           >
             Servify
