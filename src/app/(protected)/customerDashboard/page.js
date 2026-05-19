@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { 
   Search, MapPin, Star, Clock, Shield, ArrowRight, 
-  Calendar, Zap, CheckCircle2, ChevronRight, Activity, Wrench
+  Calendar, Zap, CheckCircle2, ChevronRight, Activity, Wrench, User
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -99,22 +99,22 @@ export default function CustomerDashboard() {
           {/* Quick Search */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}
-            className={`w-full md:w-[400px] p-2 rounded-3xl flex items-center gap-2 shadow-lg ${
+            className={`w-full md:w-[400px] p-1.5 md:p-2 rounded-[2rem] flex items-center gap-1.5 md:gap-2 shadow-lg ${
               dark ? "bg-slate-800/80 border border-slate-700 backdrop-blur-md" : "bg-white border border-slate-200 backdrop-blur-md"
             }`}
           >
-            <div className={`w-12 h-12 flex items-center justify-center rounded-2xl ${dark ? "bg-slate-700" : "bg-slate-100"}`}>
-              <Search className="w-5 h-5 text-orange-500" />
+            <div className={`w-9 h-9 md:w-12 md:h-12 flex items-center justify-center rounded-2xl shrink-0 ${dark ? "bg-slate-700" : "bg-slate-100"}`}>
+              <Search className="w-4 h-4 md:w-5 md:h-5 text-orange-500" />
             </div>
             <input 
               type="text" 
               placeholder={t("search.placeholder")} 
-              className="flex-1 bg-transparent border-none outline-none font-medium px-2"
+              className="flex-1 min-w-0 bg-transparent border-none outline-none font-medium px-1.5 text-sm md:text-base"
               onClick={() => router.push("/customerDashboard/allProviders")}
             />
             <button 
               onClick={() => router.push("/customerDashboard/allProviders")}
-              className="px-6 py-3 rounded-2xl bg-orange-500 text-white font-bold hover:bg-orange-600 transition-colors"
+              className="px-4 md:px-6 py-2 md:py-3 rounded-2xl bg-orange-500 text-white font-bold hover:bg-orange-600 transition-colors text-xs md:text-sm whitespace-nowrap shrink-0"
             >
               {isUrdu ? "تلاش کریں" : "Search"}
             </button>

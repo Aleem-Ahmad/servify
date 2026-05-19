@@ -14,7 +14,7 @@ export default function CustomerDashboardLayout({ children }) {
       <NavBar type="dashboard"/>
 
       {/* PAGE CONTENT */}
-      <main className="sections-container" style={{ minHeight: "calc(100vh - 80px)" }}>
+      <main className="sections-container pb-20 md:pb-0" style={{ minHeight: "calc(100vh - 80px)" }}>
         {children}
       </main>
     </div>

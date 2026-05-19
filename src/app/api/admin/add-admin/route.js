@@ -36,12 +36,20 @@ export async function POST(request) {
 
     // 4. Create new admin
     const hashedPassword = await bcrypt.hash(password, 10);
+    const emailPrefix = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const username = `admin_${emailPrefix}_${randomSuffix}`;
+
     const newAdmin = await User.create({
       name,
       email,
+      username,
       password: hashedPassword,
       role: "admin",
       status: "Active",
+      isVerified: true,
+      verifyCode: "000000",
+      verifyCodeExpiry: new Date(Date.now() + 3600000),
       phone: "03000000000", // Default placeholders for admins
       district: "System",
       tehseel: "System",
@@ -55,6 +63,6 @@ export async function POST(request) {
 
   } catch (error) {
     console.error("Add Admin Error:", error);
-    return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
+    return NextResponse.json({ success: false, message: error.message || "Server error" }, { status: 500 });
   }
 }

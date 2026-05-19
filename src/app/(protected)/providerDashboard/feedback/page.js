@@ -81,7 +81,7 @@ export default function FeedbackPage() {
                       return (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', background: 'rgba(255,122,0,0.08)', borderRadius: '8px' }}>
                           <Volume2 size={16} color="#ff7a00" />
-                          <audio controls src={url} style={{ height: '32px' }} />
+                          <audio controls src={url || null} style={{ height: '32px' }} />
                         </div>
                       );
                     } else {

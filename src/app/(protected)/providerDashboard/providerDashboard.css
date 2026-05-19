@@ -337,3 +337,9 @@ body {
     display: none;
   }
 }
+
+@media (max-width: 768px) {
+  .dashboard-home, .dashboard-shop, .dashboard-feedback {
+    padding-bottom: 80px;
+  }
+}

@@ -135,66 +135,78 @@ export default function Navbar({ type = "public" }) {
         </nav>
       </header>
 
+      {/* ─── MOBILE TOP HEADER (Visible on screens below md) ─── */}
+      <header className="fixed top-0 left-0 right-0 z-50 md:hidden bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 py-3.5 shadow-sm">
+        <div className="flex items-center justify-between">
+          <Link href="/" className="flex items-center">
+            <span 
+              style={{ fontFamily: 'var(--font-great-vibes)', fontStyle: 'normal' }}
+              className="text-3xl font-normal tracking-wide bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent"
+            >
+              Servify
+            </span>
+          </Link>
+
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={toggleTheme}
+              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 transition-transform active:scale-95"
+            >
+              {darkMode ? <Sun className="w-4 h-4 text-yellow-500" /> : <Moon className="w-4 h-4" />}
+            </button>
+            
+            <button 
+              onClick={() => changeLanguage(locale === "en" ? "ur" : "en")}
+              className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 transition-transform active:scale-95"
+            >
+              <Globe className="w-4 h-4 text-orange-500" />
+              <span className="text-[10px] font-bold uppercase">{locale}</span>
+            </button>
+
+            {type === "public" ? (
+              <Link href="/authentication" className="px-3.5 py-2.5 text-xs font-bold bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors">
+                {t("auth.login")}
+              </Link>
+            ) : (
+              <Link 
+                href="/customerDashboard/complaintForm"
+                className="px-3.5 py-2.5 text-xs font-bold bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors"
+              >
+                {t("navbar.bookService") || "Book"}
+              </Link>
+            )}
+          </div>
+        </div>
+      </header>
+
       {/* ─── MOBILE BOTTOM TAB BAR (Visible on screens below md) ─── */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 px-4 py-2 pb-safe shadow-2xl">
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-4 py-2 pb-safe shadow-2xl">
         <div className="max-w-md mx-auto flex items-center justify-around">
-          {navLinks.map((link) => {
+          {navLinks.filter(l => !l.isSpecial).map((link) => {
             const active = isActive(link.href);
             return (
               <Link 
                 key={link.name} 
                 href={link.href}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-2xl transition-all relative",
-                  link.isSpecial ? "scale-110 -translate-y-2" : ""
-                )}
+                className="flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-2xl transition-all"
               >
-                {link.isSpecial ? (
-                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-orange-500/40 transform hover:scale-105 transition-all">
-                    {link.icon}
-                  </div>
-                ) : (
-                  <>
-                    <div className={cn(
-                      "p-1.5 rounded-xl transition-all",
-                      active 
-                        ? "bg-orange-500/10 text-orange-500" 
-                        : "text-slate-400 dark:text-slate-500"
-                    )}>
-                      {link.icon}
-                    </div>
-                    <span className={cn(
-                      "text-[10px] font-bold tracking-tight transition-colors",
-                      active ? "text-orange-500" : "text-slate-500 dark:text-slate-400"
-                    )}>
-                      {link.name}
-                    </span>
-                  </>
-                )}
+                <div className={cn(
+                  "p-1.5 rounded-xl transition-all",
+                  active 
+                    ? "bg-orange-500/10 text-orange-500" 
+                    : "text-slate-400 dark:text-slate-500"
+                )}>
+                  {link.icon}
+                </div>
+                <span className={cn(
+                  "text-[10px] font-bold tracking-tight transition-colors",
+                  active ? "text-orange-500" : "text-slate-500 dark:text-slate-400"
+                )}>
+                  {link.name}
+                </span>
               </Link>
             );
           })}
-          
-          {/* Quick theme and language toggle inside mobile drawer tabs */}
-          <button 
-            onClick={toggleTheme} 
-            className="flex flex-col items-center justify-center gap-1 py-1 px-3 text-slate-400 dark:text-slate-500"
-          >
-            <div className="p-1.5 rounded-xl">
-              {darkMode ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5" />}
-            </div>
-            <span className="text-[10px] font-bold">Theme</span>
-          </button>
-
-          <button 
-            onClick={() => changeLanguage(locale === "en" ? "ur" : "en")} 
-            className="flex flex-col items-center justify-center gap-1 py-1 px-3 text-slate-400 dark:text-slate-500"
-          >
-            <div className="p-1.5 rounded-xl">
-              <Globe className="w-5 h-5 text-orange-500" />
-            </div>
-            <span className="text-[10px] font-bold uppercase">{locale}</span>
-          </button>
         </div>
       </div>
     </>

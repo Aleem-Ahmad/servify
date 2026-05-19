@@ -345,7 +345,7 @@ export default function ShopPage() {
                         return (
                           <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', background: 'rgba(255,122,0,0.08)', borderRadius: '8px' }}>
                             <span style={{ fontSize: '14px' }}>🎤</span>
-                            <audio controls src={url} style={{ height: '32px' }} />
+                            <audio controls src={url || null} style={{ height: '32px' }} />
                           </div>
                         );
                       } else {

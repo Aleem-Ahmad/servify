@@ -144,7 +144,7 @@ function ViewProviderContent() {
               </div>
 
               <button 
-                onClick={() => setShowBooking(true)}
+                onClick={() => router.push(`/customerDashboard/complaintForm?provider=${providerId}`)}
                 className="w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white shadow-lg shadow-orange-500/20 transition-transform hover:scale-[1.02]"
               >
                 <Zap className="w-5 h-5" /> {t("Book Service Now")}

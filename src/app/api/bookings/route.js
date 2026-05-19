@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Booking from '@/models/Booking';
+import User from '@/models/User';
 import mongoose from 'mongoose';
 
 export async function POST(request) {
@@ -8,13 +9,23 @@ export async function POST(request) {
   try {
     const bookingData = await request.json();
     
+    // Calculate total price transparently based on hours and provider's hourly rate if provided
+    const hourlyRate = Number(bookingData.hourlyRate) || 0;
+    const hours = Number(bookingData.hours) || 1;
+    const calculatedBudget = hourlyRate > 0 ? (hourlyRate * hours) : (Number(bookingData.price) || 0);
+
     // mapping frontend fields to backend model
     const newBooking = new Booking({
       customer: new mongoose.Types.ObjectId(bookingData.userId),
-      provider: new mongoose.Types.ObjectId(bookingData.providerId),
+      provider: bookingData.providerId ? new mongoose.Types.ObjectId(bookingData.providerId) : undefined,
       service: bookingData.category,
       details: bookingData.description,
-      budget: bookingData.price || 0,
+      voiceUrl: bookingData.voiceUrl || undefined,
+      mediaUrls: bookingData.mediaUrls || [],
+      urgency: bookingData.urgency || 'Normal',
+      hours: hours,
+      hourlyRate: hourlyRate,
+      budget: calculatedBudget,
       customerName: bookingData.customerName,
       customerPhone: bookingData.customerPhone,
       customerAddress: bookingData.customerAddress,
@@ -22,6 +33,10 @@ export async function POST(request) {
       providerName: bookingData.providerName,
       date: bookingData.date ? new Date(bookingData.date) : new Date(),
       status: "Pending",
+      payment: {
+        method: bookingData.paymentMethod || 'Cash',
+        status: 'Unpaid'
+      }
     });
 
     await newBooking.save();
@@ -36,7 +51,7 @@ export async function POST(request) {
     console.error("Booking error:", error);
     return NextResponse.json({
       success: false,
-      message: "Failed to process booking"
+      message: "Failed to process booking: " + error.message
     }, { status: 500 });
   }
 }
@@ -53,7 +68,28 @@ export async function GET(request) {
       try { query.customer = new mongoose.Types.ObjectId(userId); } catch(e) { query.customer = userId; }
     }
     if (providerId) {
-      try { query.provider = new mongoose.Types.ObjectId(providerId); } catch(e) { query.provider = providerId; }
+      let provIdObj;
+      try { provIdObj = new mongoose.Types.ObjectId(providerId); } catch(e) { provIdObj = providerId; }
+
+      // Fetch provider category to show matching open bookings
+      const providerUser = await User.findById(providerId);
+      const providerCategory = providerUser?.category;
+
+      query = {
+        $or: [
+          { provider: provIdObj },
+          {
+            provider: { $exists: false },
+            service: providerCategory,
+            status: "Pending"
+          },
+          {
+            provider: null,
+            service: providerCategory,
+            status: "Pending"
+          }
+        ]
+      };
     }
 
     const bookings = await Booking.find(query)
@@ -68,6 +104,11 @@ export async function GET(request) {
       providerName: b.providerName || b.provider?.name,
       category: b.service,
       description: b.details,
+      voiceUrl: b.voiceUrl,
+      mediaUrls: b.mediaUrls,
+      urgency: b.urgency,
+      hours: b.hours,
+      hourlyRate: b.hourlyRate,
       price: b.budget,
       status: b.status,
       customerName: b.customerName,
@@ -75,6 +116,9 @@ export async function GET(request) {
       customerAddress: b.customerAddress,
       location: b.locationStr,
       date: b.date,
+      visitTime: b.visitTime,
+      paymentMethod: b.payment?.method || 'Cash',
+      paymentStatus: b.payment?.status || 'Unpaid',
       createdAt: b.createdAt
     }));
 
