@@ -1,21 +1,16 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import User from '@/models/User';
+import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
 
 export async function POST(request) {
   console.log("LOGIN API CALLED!");
   try {
-    console.log("Connecting to DB...");
-    await connectDB();
-    console.log("Connected to DB.");
-
     const { email, password } = await request.json();
     console.log("Login attempt for:", email);
 
     // 1. Find user by email
-    const user = await User.findOne({ email });
+    const user = await prisma.user.findUnique({ where: { email } });
     console.log("User found:", user ? "Yes" : "No");
 
     if (!user) {
@@ -48,7 +43,7 @@ export async function POST(request) {
     // 4. Set session cookie
     console.log("Setting cookie...");
     const cookieStore = await cookies();
-    cookieStore.set('userId', user._id.toString(), {
+    cookieStore.set('userId', user.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -61,7 +56,7 @@ export async function POST(request) {
       success: true,
       message: "Login successful",
       user: {
-        id: user._id.toString(),
+        id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,

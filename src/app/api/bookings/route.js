@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import Booking from '@/models/Booking';
-import User from '@/models/User';
-import mongoose from 'mongoose';
+import prisma from '@/lib/prisma';
 
 export async function POST(request) {
-  await connectDB();
   try {
     const bookingData = await request.json();
     
@@ -14,38 +10,39 @@ export async function POST(request) {
     const hours = Number(bookingData.hours) || 1;
     const calculatedBudget = hourlyRate > 0 ? (hourlyRate * hours) : (Number(bookingData.price) || 0);
 
-    // mapping frontend fields to backend model
-    const newBooking = new Booking({
-      customer: new mongoose.Types.ObjectId(bookingData.userId),
-      provider: bookingData.providerId ? new mongoose.Types.ObjectId(bookingData.providerId) : undefined,
-      service: bookingData.category,
-      details: bookingData.description,
-      voiceUrl: bookingData.voiceUrl || undefined,
-      mediaUrls: bookingData.mediaUrls || [],
-      urgency: bookingData.urgency || 'Normal',
-      hours: hours,
-      hourlyRate: hourlyRate,
-      budget: calculatedBudget,
-      customerName: bookingData.customerName,
-      customerPhone: bookingData.customerPhone,
-      customerAddress: bookingData.customerAddress,
-      locationStr: bookingData.location,
-      providerName: bookingData.providerName,
-      date: bookingData.date ? new Date(bookingData.date) : new Date(),
-      status: "Pending",
-      payment: {
-        method: bookingData.paymentMethod || 'Cash',
-        status: 'Unpaid'
-      },
-      otp: bookingData.otp || Math.floor(1000 + Math.random() * 9000).toString()
-    });
+    const otp = bookingData.otp || Math.floor(1000 + Math.random() * 9000).toString();
 
-    await newBooking.save();
+    const newBooking = await prisma.booking.create({
+      data: {
+        customerId: bookingData.userId,
+        providerId: bookingData.providerId || null,
+        service: bookingData.category,
+        details: bookingData.description,
+        voiceUrl: bookingData.voiceUrl || null,
+        mediaUrls: bookingData.mediaUrls || [],
+        urgency: bookingData.urgency || 'Normal',
+        hours: hours,
+        hourlyRate: hourlyRate,
+        budget: calculatedBudget,
+        customerName: bookingData.customerName,
+        customerPhone: bookingData.customerPhone,
+        customerAddress: bookingData.customerAddress,
+        locationStr: bookingData.location,
+        providerName: bookingData.providerName,
+        date: bookingData.date ? new Date(bookingData.date) : new Date(),
+        status: "Pending",
+        payment: {
+          method: bookingData.paymentMethod || 'Cash',
+          status: 'Unpaid'
+        },
+        otp: otp
+      }
+    });
 
     return NextResponse.json({
       success: true,
       message: "Booking request submitted successfully!",
-      bookingId: newBooking._id,
+      bookingId: newBooking.id,
       details: newBooking
     });
   } catch (error) {
@@ -58,7 +55,6 @@ export async function POST(request) {
 }
 
 export async function GET(request) {
-  await connectDB();
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
@@ -66,50 +62,51 @@ export async function GET(request) {
 
     let query = {};
     if (userId) {
-      try { query.customer = new mongoose.Types.ObjectId(userId); } catch(e) { query.customer = userId; }
+      query.customerId = userId;
     }
+    
     if (providerId) {
-      let provIdObj;
-      try { provIdObj = new mongoose.Types.ObjectId(providerId); } catch(e) { provIdObj = providerId; }
-
-      // Fetch provider category to show matching open bookings
-      const providerUser = await User.findById(providerId);
+      const providerUser = await prisma.user.findUnique({ where: { id: providerId } });
       const providerCategory = providerUser?.category;
 
       query = {
-        $or: [
-          { provider: provIdObj },
+        OR: [
+          { providerId: providerId },
           {
-            provider: { $exists: false },
-            service: providerCategory,
-            status: "Pending"
-          },
-          {
-            provider: null,
-            service: providerCategory,
+            providerId: null,
+            service: providerCategory || undefined,
             status: "Pending"
           }
         ]
       };
     }
 
-    const bookings = await Booking.find(query)
-      .populate('provider', 'name phone')
-      .sort({ createdAt: -1 });
+    let bookings = await prisma.booking.findMany({
+      where: query,
+      include: {
+        provider: {
+          select: { name: true, phone: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
 
     // Robust Auto-OTP Generation and DB Persistence
     for (let b of bookings) {
       if (!b.otp) {
         const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
         b.otp = generatedOtp;
-        await Booking.updateOne({ _id: b._id }, { $set: { otp: generatedOtp } });
+        await prisma.booking.update({
+          where: { id: b.id },
+          data: { otp: generatedOtp }
+        });
       }
     }
 
     const mappedBookings = bookings.map(b => ({
-      id: b._id.toString(),
-      customer: b.customer?.toString(),
-      provider: b.provider?._id?.toString() || b.provider?.toString(),
+      id: b.id,
+      customer: b.customerId,
+      provider: b.providerId,
       providerPhone: b.provider?.phone || null,
       providerName: b.providerName || b.provider?.name,
       category: b.service,

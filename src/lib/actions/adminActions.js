@@ -1,18 +1,15 @@
 "use server";
 
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
-import Booking from "@/models/Booking";
+import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 export async function getAdminStats() {
   try {
-    await connectDB();
-    const totalUsers = await User.countDocuments();
-    const totalProviders = await User.countDocuments({ role: "provider" });
-    const pendingProviders = await User.countDocuments({ role: "provider", status: "Pending" });
-    const totalBookings = await Booking.countDocuments();
-    const completedBookings = await Booking.countDocuments({ status: "Completed" });
+    const totalUsers = await prisma.user.count();
+    const totalProviders = await prisma.user.count({ where: { role: "provider" } });
+    const pendingProviders = await prisma.user.count({ where: { role: "provider", status: "Pending" } });
+    const totalBookings = await prisma.booking.count();
+    const completedBookings = await prisma.booking.count({ where: { status: "Completed" } });
 
     return {
       success: true,
@@ -32,9 +29,10 @@ export async function getAdminStats() {
 
 export async function verifyProvider(providerId, status) {
   try {
-    await connectDB();
-    const user = await User.findByIdAndUpdate(providerId, { status }, { new: true });
-    if (!user) return { success: false, message: "User not found" };
+    const user = await prisma.user.update({
+      where: { id: providerId },
+      data: { status }
+    });
     
     revalidatePath("/adminDashboard");
     return { success: true, user: JSON.parse(JSON.stringify(user)) };
@@ -46,9 +44,17 @@ export async function verifyProvider(providerId, status) {
 
 export async function getAllUsers() {
   try {
-    await connectDB();
-    const users = await User.find().select("-password").sort({ createdAt: -1 });
-    return { success: true, users: JSON.parse(JSON.stringify(users)) };
+    const users = await prisma.user.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    
+    // Remove passwords before returning
+    const safeUsers = users.map(user => {
+      const { password, ...safeUser } = user;
+      return safeUser;
+    });
+
+    return { success: true, users: JSON.parse(JSON.stringify(safeUsers)) };
   } catch (error) {
     console.error("Get All Users Error:", error);
     return { success: false, message: error.message };

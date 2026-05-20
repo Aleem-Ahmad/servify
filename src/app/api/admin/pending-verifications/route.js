@@ -1,21 +1,20 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
+import prisma from "@/lib/prisma";
 
 export async function GET() {
-  await connectDB();
   try {
-    // Fetch users with role provider and status Pending (or has documents)
-    const pendingProviders = await User.find({ 
-      role: 'provider',
-      $or: [
-        { status: 'Pending' },
-        { "documents.cnicFront": { $exists: true } }
-      ]
-    }).sort({ createdAt: -1 });
+    // Fetch users with role provider and status Pending
+    const pendingProviders = await prisma.user.findMany({ 
+      where: {
+        role: 'provider',
+        status: 'Pending'
+      },
+      orderBy: { createdAt: 'desc' }
+    });
 
     return NextResponse.json({ success: true, providers: pendingProviders });
   } catch (error) {
+    console.error("Error fetching requests:", error);
     return NextResponse.json({ success: false, message: "Error fetching requests" }, { status: 500 });
   }
 }

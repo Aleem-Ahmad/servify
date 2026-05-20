@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
+import prisma from "@/lib/prisma";
 import { verifySchema } from "@/Schemas/verifySchema";
 
 export async function POST(request) {
-  await connectDB();
   try {
     const { email, code } = await request.json();
 
@@ -15,7 +13,7 @@ export async function POST(request) {
     }
 
     // 2. Find the user in database
-    const user = await User.findOne({ email });
+    const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
@@ -26,8 +24,12 @@ export async function POST(request) {
     const isCodeNotExpired = new Date(user.verifyCodeExpiry) > new Date();
 
     if (isCodeValid && isCodeNotExpired) {
-      user.isVerified = true;
-      await user.save();
+      await prisma.user.update({
+        where: { email },
+        data: {
+          isVerified: true
+        }
+      });
       return NextResponse.json({ success: true, message: "Account verified successfully" });
     } else if (!isCodeNotExpired) {
       return NextResponse.json({ success: false, message: "Verification code has expired. Please signup again to get a new code." }, { status: 400 });

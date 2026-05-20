@@ -307,7 +307,7 @@ export default function ActionPlanPage() {
         </div>
         <h1>Servify PostgreSQL Migration Action Plan</h1>
         <p>
-          A comprehensive database migration roadmap translating Servify’s NoSQL MongoDB collections into highly optimized, fully normalized SQL tables inside a single PostgreSQL database instance.
+          A comprehensive database migration roadmap translating Servify’s legacy NoSQL collections into highly optimized, fully normalized SQL tables inside a single PostgreSQL database instance.
         </p>
         <button className="btn-download" onClick={handlePrint}>
           <Download size={18} /> Download Printable PDF

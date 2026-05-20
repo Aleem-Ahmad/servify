@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import User from '@/models/User';
+import prisma from '@/lib/prisma';
 import { signupSchema } from '@/Schemas/signupSchema';
 import bcrypt from 'bcryptjs';
 import { sendVerificationEmail } from '@/helpers/sendVerificationEmail';
 import { uploadImage } from '@/helpers/uploadImage';
 
 export async function POST(request) {
-  await connectDB();
   try {
     const contentType = request.headers.get("content-type") || "";
     let body;
@@ -36,9 +34,11 @@ export async function POST(request) {
     const { username, email, password, role } = validation.data;
 
     // 2. Check if username is already taken by a verified user
-    const existingUserVerifiedByUsername = await User.findOne({
-      username,
-      isVerified: true
+    const existingUserVerifiedByUsername = await prisma.user.findFirst({
+      where: {
+        username,
+        isVerified: true
+      }
     });
 
     if (existingUserVerifiedByUsername) {
@@ -46,7 +46,9 @@ export async function POST(request) {
     }
 
     // 3. Check if email is already taken
-    const existingUserByEmail = await User.findOne({ email });
+    const existingUserByEmail = await prisma.user.findUnique({
+      where: { email }
+    });
     const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiryDate = new Date(Date.now() + 3600000); // 1 hour
 
@@ -83,27 +85,37 @@ export async function POST(request) {
         return NextResponse.json({ success: false, message: "User already exists with this email" }, { status: 400 });
       } else {
         // Update unverified user
-        Object.assign(existingUserByEmail, validation.data);
-        existingUserByEmail.password = hashedPassword;
-        existingUserByEmail.verifyCode = verifyCode;
-        existingUserByEmail.verifyCodeExpiry = expiryDate;
-        existingUserByEmail.documents = { ...existingUserByEmail.documents, ...documents };
-        if (profileImageUrl) existingUserByEmail.image = profileImageUrl;
-        await existingUserByEmail.save();
+        const mergedDocs = { 
+          ...(existingUserByEmail.documents ? existingUserByEmail.documents : {}), 
+          ...documents 
+        };
+        
+        await prisma.user.update({
+          where: { email },
+          data: {
+            ...validation.data,
+            password: hashedPassword,
+            verifyCode,
+            verifyCodeExpiry: expiryDate,
+            documents: mergedDocs,
+            ...(profileImageUrl && { image: profileImageUrl })
+          }
+        });
       }
     } else {
       // Create new user
-      const newUser = new User({
-        ...validation.data,
-        password: hashedPassword,
-        verifyCode,
-        verifyCodeExpiry: expiryDate,
-        isVerified: false,
-        status: role === 'provider' ? 'Pending' : 'Active',
-        documents,
-        image: profileImageUrl
+      await prisma.user.create({
+        data: {
+          ...validation.data,
+          password: hashedPassword,
+          verifyCode,
+          verifyCodeExpiry: expiryDate,
+          isVerified: false,
+          status: role === 'provider' ? 'Pending' : 'Active',
+          documents,
+          ...(profileImageUrl && { image: profileImageUrl })
+        }
       });
-      await newUser.save();
     }
 
     // 5. Send verification email

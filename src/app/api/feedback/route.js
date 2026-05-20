@@ -1,12 +1,7 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import Review from '@/models/Review';
-import Booking from '@/models/Booking';
-import User from '@/models/User';
-import mongoose from 'mongoose';
+import prisma from '@/lib/prisma';
 
 export async function POST(request) {
-  await connectDB();
   try {
     const formData = await request.formData();
     const bookingId = formData.get('bookingId');
@@ -19,12 +14,10 @@ export async function POST(request) {
       return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(bookingId) || !mongoose.Types.ObjectId.isValid(customerId) || !mongoose.Types.ObjectId.isValid(providerId)) {
-      return NextResponse.json({ success: false, message: 'Invalid IDs' }, { status: 400 });
-    }
-
     // Check if review already exists for this booking
-    const existing = await Review.findOne({ booking: bookingId });
+    const existing = await prisma.review.findFirst({
+      where: { bookingId }
+    });
     if (existing) {
       return NextResponse.json({ success: false, message: 'You have already reviewed this booking.' }, { status: 409 });
     }
@@ -42,22 +35,36 @@ export async function POST(request) {
       }
     }
 
-    const review = new Review({
-      booking: new mongoose.Types.ObjectId(bookingId),
-      customer: new mongoose.Types.ObjectId(customerId),
-      provider: new mongoose.Types.ObjectId(providerId),
-      rating,
-      comment,
-      mediaUrls,
+    await prisma.review.create({
+      data: {
+        bookingId,
+        customerId,
+        providerId,
+        rating,
+        comment,
+        mediaUrls,
+      }
     });
-    await review.save();
 
     // Update provider's trust score (average of all ratings * 20)
-    const allReviews = await Review.find({ provider: new mongoose.Types.ObjectId(providerId) });
+    const allReviews = await prisma.review.findMany({
+      where: { providerId }
+    });
     const avgRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
-    await User.findByIdAndUpdate(providerId, {
-      'performance.rating': parseFloat(avgRating.toFixed(1)),
-      trustScore: Math.round(avgRating * 20),
+    
+    // Fetch provider to preserve other performance metrics
+    const provider = await prisma.user.findUnique({ where: { id: providerId } });
+    const performance = provider?.performance || {};
+    
+    await prisma.user.update({
+      where: { id: providerId },
+      data: {
+        performance: {
+          ...performance,
+          rating: parseFloat(avgRating.toFixed(1))
+        },
+        trustScore: Math.round(avgRating * 20),
+      }
     });
 
     return NextResponse.json({ success: true, message: 'Thank you for your feedback!' });
@@ -68,27 +75,30 @@ export async function POST(request) {
 }
 
 export async function GET(request) {
-  await connectDB();
   try {
     const { searchParams } = new URL(request.url);
     const providerId = searchParams.get('providerId');
     const bookingId = searchParams.get('bookingId');
 
     let query = {};
-    if (providerId && mongoose.Types.ObjectId.isValid(providerId)) {
-      query.provider = new mongoose.Types.ObjectId(providerId);
+    if (providerId) {
+      query.providerId = providerId;
     }
-    if (bookingId && mongoose.Types.ObjectId.isValid(bookingId)) {
-      query.booking = new mongoose.Types.ObjectId(bookingId);
+    if (bookingId) {
+      query.bookingId = bookingId;
     }
 
-    const reviews = await Review.find(query)
-      .populate('customer', 'name')
-      .sort({ createdAt: -1 });
+    const reviews = await prisma.review.findMany({
+      where: query,
+      include: {
+        customer: { select: { name: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
 
     // Normalize to always include customerName
     const normalized = reviews.map(r => ({
-      _id: r._id,
+      _id: r.id,
       rating: r.rating,
       comment: r.comment,
       mediaUrls: r.mediaUrls || [],

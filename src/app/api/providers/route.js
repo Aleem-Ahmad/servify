@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import User from '@/models/User';
-import mongoose from 'mongoose';
+import prisma from '@/lib/prisma';
 
 export async function GET(request) {
   try {
-    await connectDB();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const search = searchParams.get('search')?.toLowerCase() || '';
@@ -13,15 +10,12 @@ export async function GET(request) {
 
     // Single provider by ID
     if (id) {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return NextResponse.json({ error: "Invalid provider ID" }, { status: 400 });
-      }
-      const p = await User.findById(id);
+      const p = await prisma.user.findUnique({ where: { id } });
       if (!p || p.role !== 'provider') {
         return NextResponse.json({ error: "Provider not found" }, { status: 404 });
       }
       return NextResponse.json({
-        id: p._id.toString(),
+        id: p.id,
         name: p.name,
         email: p.email,
         image: p.image || null,
@@ -44,13 +38,16 @@ export async function GET(request) {
     let query = { role: 'provider', status: 'Active' };
 
     if (category) {
-      query.category = { $regex: category, $options: 'i' };
+      query.category = { contains: category, mode: 'insensitive' };
     }
 
-    const providers = await User.find(query).sort({ trustScore: -1 });
+    const providers = await prisma.user.findMany({
+      where: query,
+      orderBy: { trustScore: 'desc' }
+    });
 
     const formattedProviders = providers.map(p => ({
-      id: p._id.toString(),
+      id: p.id,
       name: p.name,
       email: p.email,
       image: p.image || `https://i.pravatar.cc/150?u=${p.email}`,

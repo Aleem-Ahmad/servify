@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
+import prisma from "@/lib/prisma";
 import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
 import { emailSchema } from "@/Schemas/verifySchema";
 
 export async function POST(request) {
   try {
-    await connectDB();
     const { email } = await request.json();
 
     // 1. Validate email
@@ -15,7 +13,7 @@ export async function POST(request) {
       return NextResponse.json({ success: false, message: validation.error.errors[0].message }, { status: 400 });
     }
 
-    const user = await User.findOne({ email });
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       // If user not found, we might want to check if they are in the middle of signup
       return NextResponse.json({ success: false, message: "User not found with this email. Please sign up first." }, { status: 404 });
@@ -23,9 +21,15 @@ export async function POST(request) {
 
     // 2. Generate new OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    user.verifyCode = otp;
-    user.verifyCodeExpiry = new Date(Date.now() + 3600000); // 1 hour
-    await user.save();
+    const verifyCodeExpiry = new Date(Date.now() + 3600000); // 1 hour
+    
+    await prisma.user.update({
+      where: { email },
+      data: {
+        verifyCode: otp,
+        verifyCodeExpiry
+      }
+    });
 
     // 3. Send Email
     console.log(`[DEVELOPMENT] New OTP for ${email}: ${otp}`);

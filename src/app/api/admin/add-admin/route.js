@@ -1,13 +1,10 @@
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
+import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
   try {
-    await connectDB();
-    
     const cookieStore = await cookies();
     const userId = cookieStore.get('userId')?.value;
     
@@ -15,7 +12,7 @@ export async function POST(request) {
       return NextResponse.json({ success: false, message: "Unauthorized access" }, { status: 401 });
     }
 
-    const requester = await User.findById(userId);
+    const requester = await prisma.user.findUnique({ where: { id: userId } });
     
     // ONLY owner admin can add admins
     if (!requester || requester.email !== 'www.aleemahmadghias@gmail.com') {
@@ -29,7 +26,7 @@ export async function POST(request) {
     }
 
     // 3. Check if admin already exists
-    const existing = await User.findOne({ email });
+    const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return NextResponse.json({ success: false, message: "User already exists" }, { status: 400 });
     }
@@ -40,20 +37,22 @@ export async function POST(request) {
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const username = `admin_${emailPrefix}_${randomSuffix}`;
 
-    const newAdmin = await User.create({
-      name,
-      email,
-      username,
-      password: hashedPassword,
-      role: "admin",
-      status: "Active",
-      isVerified: true,
-      verifyCode: "000000",
-      verifyCodeExpiry: new Date(Date.now() + 3600000),
-      phone: "03000000000", // Default placeholders for admins
-      district: "System",
-      tehseel: "System",
-      cnic: "00000-0000000-0",
+    await prisma.user.create({
+      data: {
+        name,
+        email,
+        username,
+        password: hashedPassword,
+        role: "admin",
+        status: "Active",
+        isVerified: true,
+        verifyCode: "000000",
+        verifyCodeExpiry: new Date(Date.now() + 3600000),
+        phone: "03000000000", // Default placeholders for admins
+        district: "System",
+        tehseel: "System",
+        cnic: "00000-0000000-0",
+      }
     });
 
     return NextResponse.json({ 

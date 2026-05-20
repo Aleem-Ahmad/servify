@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
+import prisma from "@/lib/prisma";
 import { z } from "zod";
 
 const UsernameQuerySchema = z.object({
@@ -8,7 +7,6 @@ const UsernameQuerySchema = z.object({
 });
 
 export async function GET(request) {
-  await connectDB();
   try {
     const { searchParams } = new URL(request.url);
     const queryParam = {
@@ -27,7 +25,9 @@ export async function GET(request) {
 
     const { username } = result.data;
 
-    const existingVerifiedUser = await User.findOne({ username, isVerified: true });
+    const existingVerifiedUser = await prisma.user.findFirst({
+      where: { username, isVerified: true }
+    });
 
     if (existingVerifiedUser) {
       return NextResponse.json({

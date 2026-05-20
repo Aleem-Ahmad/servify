@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import User from '@/models/User';
+import prisma from '@/lib/prisma';
 
 export async function PATCH(request, { params }) {
-  await connectDB();
   try {
     const { id } = await params;
     const updateData = await request.json();
@@ -12,15 +10,10 @@ export async function PATCH(request, { params }) {
     delete updateData._id;
     delete updateData.id;
 
-    const updatedUser = await User.findByIdAndUpdate(
-      id,
-      { $set: updateData },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedUser) {
-      return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
-    }
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: updateData
+    });
 
     return NextResponse.json({
       success: true,
@@ -36,15 +29,10 @@ export async function PATCH(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-  await connectDB();
   try {
     const { id } = await params;
     
-    const deletedUser = await User.findByIdAndDelete(id);
-
-    if (!deletedUser) {
-      return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
-    }
+    await prisma.user.delete({ where: { id } });
 
     return NextResponse.json({
       success: true,

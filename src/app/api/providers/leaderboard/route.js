@@ -1,14 +1,23 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
-import User from "@/models/User";
+import prisma from "@/lib/prisma";
 
 export async function GET() {
-  await connectDB();
   try {
-    // Fetch top providers based on leaderboard points
-    const topProviders = await User.find({ role: 'provider' })
-      .sort({ "performance.leaderboardPoints": -1 })
-      .limit(10);
+    // Fetch top providers
+    // Since performance is a JSON field, sorting natively can be tricky, 
+    // so we fetch all providers and sort in memory (or use a raw query if necessary)
+    const providers = await prisma.user.findMany({
+      where: { role: 'provider' }
+    });
+    
+    // Sort by leaderboardPoints descending
+    providers.sort((a, b) => {
+      const ptsA = a.performance?.leaderboardPoints || 0;
+      const ptsB = b.performance?.leaderboardPoints || 0;
+      return ptsB - ptsA;
+    });
+    
+    const topProviders = providers.slice(0, 10);
 
     const formatted = topProviders.map((p, index) => ({
       rank: index + 1,

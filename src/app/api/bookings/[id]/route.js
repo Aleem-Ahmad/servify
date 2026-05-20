@@ -1,23 +1,14 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import Booking from '@/models/Booking';
-import User from '@/models/User';
-import mongoose from 'mongoose';
+import prisma from '@/lib/prisma';
 
 export async function PATCH(request, { params }) {
-  await connectDB();
   try {
     const { id } = await params;
     const { status, providerId, providerName, visitTime, otp } = await request.json();
     console.log(`PATCH booking id=${id} status=${status} providerId=${providerId} otp=${otp}`);
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, message: "Invalid booking ID" }, { status: 400 });
-    }
-
-    // If trying to set status to In-Progress, verify OTP first!
     if (status === "In-Progress") {
-      const booking = await Booking.findById(id);
+      const booking = await prisma.booking.findUnique({ where: { id } });
       if (!booking) {
         return NextResponse.json({ success: false, message: "Booking not found" }, { status: 404 });
       }
@@ -29,21 +20,18 @@ export async function PATCH(request, { params }) {
       }
     }
 
-    // Build update object dynamically
     const updateData = { status };
     
     if (providerId) {
-      updateData.provider = new mongoose.Types.ObjectId(providerId);
+      updateData.providerId = providerId;
       
-      // Fetch provider to get their rate for transparent pricing
-      const providerUser = await User.findById(providerId);
+      const providerUser = await prisma.user.findUnique({ where: { id: providerId } });
       if (providerUser) {
         updateData.providerName = providerUser.name;
-        updateData.providerPhone = providerUser.phone;
+        updateData.providerPhone = providerUser.phone || undefined;
         updateData.hourlyRate = Number(providerUser.rate) || 0;
         
-        // Update the total budget based on the hours of this booking
-        const booking = await Booking.findById(id);
+        const booking = await prisma.booking.findUnique({ where: { id } });
         if (booking) {
           const hours = Number(booking.hours) || 1;
           updateData.budget = (Number(providerUser.rate) || 0) * hours;
@@ -59,12 +47,10 @@ export async function PATCH(request, { params }) {
       updateData.visitTime = new Date(visitTime);
     }
 
-    const result = await Booking.findByIdAndUpdate(id, updateData, { new: true });
-    console.log("Update result:", result ? "found" : "not found");
-
-    if (!result) {
-      return NextResponse.json({ success: false, message: "Booking not found" }, { status: 404 });
-    }
+    const result = await prisma.booking.update({
+      where: { id },
+      data: updateData
+    });
 
     return NextResponse.json({
       success: true,
@@ -81,10 +67,14 @@ export async function PATCH(request, { params }) {
 }
 
 export async function GET(request, { params }) {
-  await connectDB();
   try {
     const { id } = await params;
-    const booking = await Booking.findById(id);
+    let booking = await prisma.booking.findUnique({
+      where: { id },
+      include: {
+        provider: true
+      }
+    });
 
     if (!booking) {
       return NextResponse.json({ message: "Booking not found" }, { status: 404 });
@@ -92,19 +82,17 @@ export async function GET(request, { params }) {
 
     if (!booking.otp) {
       const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
-      booking.otp = generatedOtp;
-      await Booking.updateOne({ _id: booking._id }, { $set: { otp: generatedOtp } });
-    }
-
-    let providerUser = null;
-    if (booking.provider) {
-      providerUser = await User.findById(booking.provider);
+      booking = await prisma.booking.update({
+        where: { id },
+        data: { otp: generatedOtp },
+        include: { provider: true }
+      });
     }
 
     return NextResponse.json({
-      id: booking._id.toString(),
-      customer: booking.customer,
-      provider: booking.provider,
+      id: booking.id,
+      customer: booking.customerId,
+      provider: booking.providerId,
       category: booking.service,
       description: booking.details,
       voiceUrl: booking.voiceUrl,
@@ -119,8 +107,8 @@ export async function GET(request, { params }) {
       customerAddress: booking.customerAddress,
       location: booking.locationStr,
       providerName: booking.providerName,
-      providerPhone: providerUser?.phone || booking.providerPhone,
-      providerImage: providerUser?.image || null,
+      providerPhone: booking.provider?.phone || booking.providerPhone,
+      providerImage: booking.provider?.image || null,
       date: booking.date,
       visitTime: booking.visitTime,
       paymentMethod: booking.payment?.method || 'Cash',

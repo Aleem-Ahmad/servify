@@ -1,8 +1,6 @@
 "use server";
 
-import connectDB from "@/lib/mongodb";
-import Booking from "@/models/Booking";
-import User from "@/models/User";
+import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -16,17 +14,17 @@ import { revalidatePath } from "next/cache";
  */
 export async function createBooking(formData) {
   try {
-    await connectDB();
-    const newBooking = new Booking({
-      customer: formData.customerId,
-      provider: formData.providerId,
-      service: formData.service,
-      details: formData.details,
-      budget: formData.budget,
-      urgency: formData.urgency || "Normal",
-      status: "Pending",
+    const newBooking = await prisma.booking.create({
+      data: {
+        customerId: formData.customerId,
+        providerId: formData.providerId,
+        service: formData.service,
+        details: formData.details,
+        budget: formData.budget,
+        urgency: formData.urgency || "Normal",
+        status: "Pending",
+      }
     });
-    await newBooking.save();
     revalidatePath("/customerDashboard");
     return { success: true, booking: JSON.parse(JSON.stringify(newBooking)) };
   } catch (error) {
@@ -37,9 +35,10 @@ export async function createBooking(formData) {
 
 export async function updateBookingStatus(bookingId, status) {
   try {
-    await connectDB();
-    const booking = await Booking.findByIdAndUpdate(bookingId, { status }, { new: true });
-    if (!booking) return { success: false, message: "Booking not found" };
+    const booking = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { status }
+    });
     
     revalidatePath("/customerDashboard");
     revalidatePath("/providerDashboard");
@@ -52,8 +51,15 @@ export async function updateBookingStatus(bookingId, status) {
 
 export async function getProviderBookings(providerId) {
   try {
-    await connectDB();
-    const bookings = await Booking.find({ provider: providerId }).populate("customer", "name email phone image").sort({ createdAt: -1 });
+    const bookings = await prisma.booking.findMany({
+      where: { providerId: providerId },
+      include: {
+        customer: {
+          select: { name: true, email: true, phone: true, image: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
     return { success: true, bookings: JSON.parse(JSON.stringify(bookings)) };
   } catch (error) {
     console.error("Get Provider Bookings Error:", error);
@@ -63,8 +69,15 @@ export async function getProviderBookings(providerId) {
 
 export async function getCustomerBookings(customerId) {
   try {
-    await connectDB();
-    const bookings = await Booking.find({ customer: customerId }).populate("provider", "name email phone image category").sort({ createdAt: -1 });
+    const bookings = await prisma.booking.findMany({
+      where: { customerId: customerId },
+      include: {
+        provider: {
+          select: { name: true, email: true, phone: true, image: true, category: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
     return { success: true, bookings: JSON.parse(JSON.stringify(bookings)) };
   } catch (error) {
     console.error("Get Customer Bookings Error:", error);
