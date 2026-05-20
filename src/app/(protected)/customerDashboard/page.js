@@ -20,6 +20,19 @@ export default function CustomerDashboard() {
   const dark = theme === "dark";
   const isUrdu = locale === "ur";
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      return isUrdu ? "صبح بخیر،" : "Good morning,";
+    } else if (hour >= 12 && hour < 17) {
+      return isUrdu ? "دوپہر بخیر،" : "Good afternoon,";
+    } else if (hour >= 17 && hour < 21) {
+      return isUrdu ? "شام بخیر،" : "Good evening,";
+    } else {
+      return isUrdu ? "شب بخیر،" : "Good night,";
+    }
+  };
+
   const [activeBookings, setActiveBookings] = useState([]);
   const [topProviders, setTopProviders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -86,7 +99,7 @@ export default function CustomerDashboard() {
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
               className="text-3xl md:text-5xl font-extrabold tracking-tight mb-2"
             >
-              {isUrdu ? "خوش آمدید،" : "Welcome back,"} <span className="text-gradient">{user?.name || "User"}</span>
+              {getGreeting()} <span className="text-gradient">{user?.name || "User"}</span>
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
@@ -201,9 +214,9 @@ export default function CustomerDashboard() {
               </div>
             ) : (
               <div className="space-y-4">
-                {activeBookings.map((booking) => (
+                {activeBookings.map((booking, i) => (
                   <motion.div 
-                    key={booking._id}
+                    key={booking.id || booking._id || i}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     className={`p-6 rounded-3xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all hover:shadow-lg ${
@@ -219,6 +232,14 @@ export default function CustomerDashboard() {
                         <p className={`text-sm flex items-center gap-1 ${dark ? "text-slate-400" : "text-slate-500"}`}>
                           <User className="w-3.5 h-3.5" /> {booking.providerName || "Assigned Provider"}
                         </p>
+                        {booking.otp && (
+                          <div className={`mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black border ${
+                            dark ? "bg-orange-500/10 border-orange-500/20 text-orange-400" : "bg-orange-50 border-orange-200 text-orange-600"
+                          }`}>
+                            <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
+                            🔑 {isUrdu ? `او ٹی پی: ${booking.otp}` : `Verification OTP: ${booking.otp}`}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-4 w-full sm:w-auto">
@@ -261,8 +282,8 @@ export default function CustomerDashboard() {
                 <div className="divide-y divide-slate-200 dark:divide-slate-800">
                   {topProviders.map((provider, i) => (
                     <div 
-                      key={provider.id}
-                      onClick={() => router.push(`/customerDashboard/viewProvider?id=${provider.id}`)}
+                      key={provider.id || provider._id || i}
+                      onClick={() => router.push(`/customerDashboard/viewProvider?id=${provider.id || provider._id}`)}
                       className={`p-4 flex items-center gap-4 cursor-pointer transition-colors ${
                         dark ? "hover:bg-slate-800/50" : "hover:bg-slate-50"
                       }`}

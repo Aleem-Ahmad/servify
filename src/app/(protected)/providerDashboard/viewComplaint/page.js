@@ -29,6 +29,10 @@ function ComplaintsList() {
   const [schedulingBookingId, setSchedulingBookingId] = useState(null);
   const [visitTimeInput, setVisitTimeInput] = useState("");
 
+  // OTP Verification Modal
+  const [verifyingBookingId, setVerifyingBookingId] = useState(null);
+  const [enteredOtp, setEnteredOtp] = useState("");
+
   // Audio Playback State
   const [playingAudioId, setPlayingAudioId] = useState(null);
   const audioRef = useRef(null);
@@ -43,7 +47,7 @@ function ComplaintsList() {
         const mappedData = data.map(c => ({
           ...c,
           frontendStatus: c.status === "Pending" ? "new"
-            : c.status === "Accepted" ? "pending"
+            : (c.status === "Accepted" || c.status === "In-Progress") ? "pending"
             : c.status === "Completed" ? "done"
             : c.status
         }));
@@ -127,7 +131,7 @@ function ComplaintsList() {
     if (!confirm(t("Are you sure you want to mark this job as completed?"))) return;
     setActionLoading(id + "_complete");
     try {
-      const res = await fetch(`/api/bookings/${id}`, {
+       const res = await fetch(`/api/bookings/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Completed' })
@@ -138,6 +142,42 @@ function ComplaintsList() {
         alert(t("Job marked as completed!"));
       } else {
         alert(data.message || "Failed to update status");
+      }
+    } catch (error) {
+      alert("Network error. Please try again.");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleStartWork = async () => {
+    if (!verifyingBookingId) return;
+    const id = verifyingBookingId;
+    
+    if (!enteredOtp) {
+      alert("Please enter the customer's verification OTP.");
+      return;
+    }
+
+    setActionLoading(id + "_start");
+    
+    try {
+      const res = await fetch(`/api/bookings/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          status: 'In-Progress',
+          otp: enteredOtp
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setVerifyingBookingId(null);
+        setEnteredOtp("");
+        await fetchComplaints(user.id);
+        alert("Verification successful! The job is now In-Progress.");
+      } else {
+        alert(data.message || "Failed to verify OTP");
       }
     } catch (error) {
       alert("Network error. Please try again.");
@@ -278,6 +318,72 @@ function ComplaintsList() {
         </div>
       )}
 
+      {/* OTP Verification Modal */}
+      {verifyingBookingId && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+          zIndex: 1001, display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{
+            background: dark ? '#1e293b' : '#ffffff', borderRadius: '24px', padding: '32px',
+            maxWidth: '440px', width: '90%', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            border: dark ? '1px solid #334155' : '1px solid #e2e8f0',
+            color: dark ? '#f1f5f9' : '#1e293b'
+          }}>
+            <h3 style={{ marginBottom: '16px', fontWeight: '900', color: '#ff7a00', fontSize: '1.4rem' }}>
+              🔑 Security OTP Verification
+            </h3>
+            <p style={{ fontSize: '0.88rem', opacity: 0.85, marginBottom: '20px', lineHeight: '1.5' }}>
+              Please ask the customer for their verification OTP. Enter it below to start work.
+            </p>
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '8px', opacity: 0.8 }}>
+                Verification OTP
+              </label>
+              <input
+                type="text"
+                placeholder="Enter 4-digit code"
+                maxLength={6}
+                value={enteredOtp}
+                onChange={(e) => setEnteredOtp(e.target.value)}
+                style={{
+                  width: '100%', padding: '12px 14px', borderRadius: '12px',
+                  border: dark ? '1.5px solid #334155' : '1.5px solid #cbd5e1',
+                  background: dark ? '#0f172a' : '#f8fafc',
+                  color: dark ? '#f1f5f9' : '#1e293b',
+                  fontSize: '1.1rem', outline: 'none', letterSpacing: '4px', textAlign: 'center', fontWeight: 'bold'
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => { setVerifyingBookingId(null); setEnteredOtp(""); }}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '12px',
+                  background: dark ? '#334155' : '#f1f5f9',
+                  color: dark ? '#f1f5f9' : '#475569',
+                  border: 'none', cursor: 'pointer', fontWeight: '700'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleStartWork}
+                disabled={actionLoading === verifyingBookingId + "_start"}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '12px',
+                  background: '#ff7a00', color: '#fff',
+                  border: 'none', cursor: 'pointer', fontWeight: '700',
+                  boxShadow: '0 8px 20px rgba(255,122,0,0.2)'
+                }}
+              >
+                {actionLoading === verifyingBookingId + "_start" ? "Verify & Start..." : "Verify & Start"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Detail Modal */}
       {selectedComplaint && (
         <div onClick={() => setSelectedComplaint(null)} style={{
@@ -321,7 +427,7 @@ function ComplaintsList() {
                 </div>
               </div>
               
-              {selectedComplaint.visitTime && (
+              {selectedComplaint.status !== "Pending" && selectedComplaint.visitTime && (
                 <div style={{ borderBottom: dark ? '1px solid #334155' : '1px solid #f1f5f9', paddingBottom: '10px' }}>
                   <span style={{ opacity: 0.6, display: 'block', fontSize: '0.78rem' }}>Scheduled Arrival</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', color: '#10b981' }}>
@@ -497,7 +603,7 @@ function ComplaintsList() {
                   <strong className="text-orange-500 font-extrabold">PKR {c.price || "Calculated at accept"}</strong>
                 </div>
 
-                {c.visitTime && (
+                {c.status !== "Pending" && c.visitTime && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981', borderTop: dark ? '1px solid #334155' : '1px solid #f1f5f9', paddingTop: '10px' }}>
                     <span>Scheduled Visit</span>
                     <strong>{new Date(c.visitTime).toLocaleDateString()} {new Date(c.visitTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</strong>
@@ -522,18 +628,35 @@ function ComplaintsList() {
                   </button>
                 )}
                 {type === "pending" && (
-                  <button
-                    onClick={() => handleComplete(c.id)}
-                    disabled={actionLoading === c.id + "_complete"}
-                    style={{
-                      background: '#10b981', color: '#fff', border: 'none',
-                      padding: '10px 22px', borderRadius: '12px', fontWeight: '700',
-                      cursor: 'pointer', opacity: actionLoading === c.id + "_complete" ? 0.7 : 1,
-                      boxShadow: '0 4px 12px rgba(16,185,129,0.15)', flex: 1
-                    }}
-                  >
-                    {actionLoading === c.id + "_complete" ? t("viewComplaint.updating") : "🏁 Mark Completed"}
-                  </button>
+                  <>
+                    {c.status === "Accepted" ? (
+                      <button
+                        onClick={() => setVerifyingBookingId(c.id)}
+                        disabled={actionLoading === c.id + "_start"}
+                        style={{
+                          background: '#ff7a00', color: '#fff', border: 'none',
+                          padding: '10px 22px', borderRadius: '12px', fontWeight: '700',
+                          cursor: 'pointer', opacity: actionLoading === c.id + "_start" ? 0.7 : 1,
+                          boxShadow: '0 4px 12px rgba(255,122,0,0.15)', flex: 1
+                        }}
+                      >
+                        🚀 Start Work (Verify OTP)
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleComplete(c.id)}
+                        disabled={actionLoading === c.id + "_complete"}
+                        style={{
+                          background: '#10b981', color: '#fff', border: 'none',
+                          padding: '10px 22px', borderRadius: '12px', fontWeight: '700',
+                          cursor: 'pointer', opacity: actionLoading === c.id + "_complete" ? 0.7 : 1,
+                          boxShadow: '0 4px 12px rgba(16,185,129,0.15)', flex: 1
+                        }}
+                      >
+                        {actionLoading === c.id + "_complete" ? t("viewComplaint.updating") : "🏁 Mark Completed"}
+                      </button>
+                    )}
+                  </>
                 )}
                 
                 <button

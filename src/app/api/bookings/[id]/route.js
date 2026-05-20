@@ -8,11 +8,25 @@ export async function PATCH(request, { params }) {
   await connectDB();
   try {
     const { id } = await params;
-    const { status, providerId, providerName, visitTime } = await request.json();
-    console.log(`PATCH booking id=${id} status=${status} providerId=${providerId}`);
+    const { status, providerId, providerName, visitTime, otp } = await request.json();
+    console.log(`PATCH booking id=${id} status=${status} providerId=${providerId} otp=${otp}`);
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, message: "Invalid booking ID" }, { status: 400 });
+    }
+
+    // If trying to set status to In-Progress, verify OTP first!
+    if (status === "In-Progress") {
+      const booking = await Booking.findById(id);
+      if (!booking) {
+        return NextResponse.json({ success: false, message: "Booking not found" }, { status: 404 });
+      }
+      if (!booking.otp) {
+        return NextResponse.json({ success: false, message: "No verification OTP is set for this booking" }, { status: 400 });
+      }
+      if (booking.otp !== otp) {
+        return NextResponse.json({ success: false, message: "Invalid verification OTP. Please ask the customer for the correct code." }, { status: 400 });
+      }
     }
 
     // Build update object dynamically
@@ -76,6 +90,12 @@ export async function GET(request, { params }) {
       return NextResponse.json({ message: "Booking not found" }, { status: 404 });
     }
 
+    if (!booking.otp) {
+      const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+      booking.otp = generatedOtp;
+      await Booking.updateOne({ _id: booking._id }, { $set: { otp: generatedOtp } });
+    }
+
     let providerUser = null;
     if (booking.provider) {
       providerUser = await User.findById(booking.provider);
@@ -105,7 +125,8 @@ export async function GET(request, { params }) {
       visitTime: booking.visitTime,
       paymentMethod: booking.payment?.method || 'Cash',
       paymentStatus: booking.payment?.status || 'Unpaid',
-      createdAt: booking.createdAt
+      createdAt: booking.createdAt,
+      otp: booking.otp
     });
   } catch (error) {
     console.error("GET Booking error:", error);

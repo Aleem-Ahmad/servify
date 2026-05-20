@@ -102,7 +102,7 @@ function AllProvidersContent() {
             <AnimatePresence>
               {filteredProviders.map((p, i) => (
                 <motion.div
-                  key={p.id}
+                  key={p.id || p._id || i}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
@@ -151,7 +151,7 @@ function AllProvidersContent() {
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        router.push(`/customerDashboard/viewProvider?id=${p.id}`);
+                        router.push(`/customerDashboard/viewProvider?id=${p.id || p._id}`);
                       }}
                       className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
                         dark ? "bg-slate-800 group-hover:bg-orange-500 text-white" : "bg-slate-100 group-hover:bg-orange-500 group-hover:text-white text-slate-700"
@@ -227,7 +227,7 @@ function AllProvidersContent() {
                   
                   <div className="flex gap-2 w-full sm:w-auto">
                     <button 
-                      onClick={() => router.push(`/customerDashboard/viewProvider?id=${selectedProvider.id}`)}
+                      onClick={() => router.push(`/customerDashboard/viewProvider?id=${selectedProvider.id || selectedProvider._id}`)}
                       className={`px-6 py-3 rounded-xl font-bold transition-colors w-full sm:w-auto text-center ${
                         dark ? "bg-slate-800 hover:bg-slate-700 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-700"
                       }`}
@@ -235,7 +235,7 @@ function AllProvidersContent() {
                       Profile
                     </button>
                     <button 
-                      onClick={() => router.push(`/customerDashboard/complaintForm?provider=${selectedProvider.id}`)}
+                      onClick={() => router.push(`/customerDashboard/complaintForm?provider=${selectedProvider.id || selectedProvider._id}`)}
                       className="px-6 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold transition-all shadow-lg shadow-orange-500/25 w-full sm:w-auto text-center"
                     >
                       {t("Book Now")}

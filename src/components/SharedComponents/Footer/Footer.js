@@ -36,10 +36,6 @@ export default function Footer({
         const pass = prompt("Servify Access Key:");
         if (pass === "admin_servify") {
           window.location.href = "/adminDashboard";
-        } else if (pass === "customer_dummy") {
-          window.location.href = "/customerDashboard";
-        } else if (pass === "provider_dummy") {
-          window.location.href = "/providerDashboard";
         }
         setTaps(0);
       }

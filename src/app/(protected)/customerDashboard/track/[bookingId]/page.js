@@ -228,6 +228,19 @@ export default function TrackBooking({ params }) {
               </div>
             )}
 
+            {/* Security Verification OTP */}
+            {booking.otp && (
+              <div className={`p-4 rounded-xl flex flex-col items-center justify-center gap-1 border ${
+                dark ? "bg-orange-500/10 border-orange-500/20 text-orange-400" : "bg-orange-50 border-orange-200 text-orange-600"
+              }`}>
+                <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Security Verification OTP</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-2xl font-black tracking-widest">{booking.otp}</span>
+                </div>
+                <p className="text-[10px] text-center opacity-75 mt-1">Share this OTP with the provider when they arrive to verify and start work.</p>
+              </div>
+            )}
+
             {/* Receipt Summary (Transparent Pricing) */}
             <div className={`p-4 rounded-xl border text-xs space-y-2 ${dark ? "bg-slate-900/50 border-slate-800" : "bg-slate-50 border-slate-100"}`}>
               <h4 className="font-extrabold uppercase text-[10px] tracking-wider text-orange-500 border-b pb-1.5 border-slate-250 dark:border-slate-800">

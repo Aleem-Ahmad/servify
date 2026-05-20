@@ -41,9 +41,10 @@ export default function ComplaintsSection() {
               providerPhone: b.providerPhone || null,
               customerPhone: b.customerPhone,
               customerId: b.customer,
-              time: b.date ? new Date(b.date).toLocaleString() : "Recently",
+              time: b.status !== "Pending" && b.visitTime ? new Date(b.visitTime).toLocaleString() : null,
               category: b.category,
               description: b.description,
+              otp: b.otp,
             }));
             setComplaints(formatted);
           }

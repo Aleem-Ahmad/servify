@@ -59,7 +59,7 @@ export default function Providers({ exploreHref = "/login-first" }) {
             <p style={{ padding: '20px', opacity: 0.7 }}>{t("Loading providers...")}</p>
           ) : (
             providers.map((p, i) => (
-              <Link href={`/customerDashboard/viewProvider?id=${p.id}`} className={`provider-card ${p.badge?.toLowerCase() || 'basic'}`} key={i} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Link href={`/customerDashboard/viewProvider?id=${p.id || p._id}`} className={`provider-card ${p.badge?.toLowerCase() || 'basic'}`} key={i} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className="badge-overlay">
                   {p.badge === 'Elite' && <Medal size={16} className="badge-icon elite" />}
                   {p.badge === 'Pro' && <Award size={16} className="badge-icon pro" />}

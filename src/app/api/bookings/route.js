@@ -36,7 +36,8 @@ export async function POST(request) {
       payment: {
         method: bookingData.paymentMethod || 'Cash',
         status: 'Unpaid'
-      }
+      },
+      otp: bookingData.otp || Math.floor(1000 + Math.random() * 9000).toString()
     });
 
     await newBooking.save();
@@ -96,6 +97,15 @@ export async function GET(request) {
       .populate('provider', 'name phone')
       .sort({ createdAt: -1 });
 
+    // Robust Auto-OTP Generation and DB Persistence
+    for (let b of bookings) {
+      if (!b.otp) {
+        const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+        b.otp = generatedOtp;
+        await Booking.updateOne({ _id: b._id }, { $set: { otp: generatedOtp } });
+      }
+    }
+
     const mappedBookings = bookings.map(b => ({
       id: b._id.toString(),
       customer: b.customer?.toString(),
@@ -119,7 +129,8 @@ export async function GET(request) {
       visitTime: b.visitTime,
       paymentMethod: b.payment?.method || 'Cash',
       paymentStatus: b.payment?.status || 'Unpaid',
-      createdAt: b.createdAt
+      createdAt: b.createdAt,
+      otp: providerId ? undefined : b.otp
     }));
 
     return NextResponse.json(mappedBookings);

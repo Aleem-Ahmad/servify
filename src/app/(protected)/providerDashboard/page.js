@@ -8,7 +8,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import { 
   BellRing, Briefcase, CheckCircle, Clock, Star, 
-  TrendingUp, Activity, ArrowRight, Wrench 
+  TrendingUp, Activity, ArrowRight, Wrench, ShieldAlert, Calendar, MapPin, AlertCircle
 } from "lucide-react";
 
 export default function ProviderDashboard() {
@@ -20,9 +20,58 @@ export default function ProviderDashboard() {
   const dark = theme === "dark";
   const isUrdu = locale === "ur";
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      return isUrdu ? "صبح بخیر،" : "Good morning,";
+    } else if (hour >= 12 && hour < 17) {
+      return isUrdu ? "دوپہر بخیر،" : "Good afternoon,";
+    } else if (hour >= 17 && hour < 21) {
+      return isUrdu ? "شام بخیر،" : "Good evening,";
+    } else {
+      return isUrdu ? "شب بخیر،" : "Good night,";
+    }
+  };
+
   const [counts, setCounts] = useState({ new: 0, pending: 0, done: 0 });
   const [recentComplaints, setRecentComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [profile, setProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch("/api/user/profile");
+      if (res.ok) {
+        const data = await res.json();
+        setProfile(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch provider profile:", error);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const handleDismissWarning = async () => {
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ warning: "" })
+      });
+      if (res.ok) {
+        setProfile(prev => ({ ...prev, warning: "" }));
+      }
+    } catch (error) {
+      console.error("Failed to clear warning:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchComplaints = async () => {
@@ -109,7 +158,15 @@ export default function ProviderDashboard() {
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
               className="text-3xl md:text-5xl font-extrabold tracking-tight mb-2"
             >
-              {isUrdu ? "خوش آمدید،" : "Welcome back,"} <span className="text-gradient-purple">{user?.name || "Professional"}</span>
+              {isUrdu ? (
+                (() => {
+                  const h = new Date().getHours();
+                  if (h >= 5 && h < 12) return "صبح بخیر،";
+                  if (h >= 12 && h < 17) return "دوپہر بخیر،";
+                  if (h >= 17 && h < 21) return "شام بخیر،";
+                  return "شب بخیر،";
+                })()
+              ) : getGreeting()} <span className="text-gradient-purple">{user?.name || "Professional"}</span>
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
@@ -141,6 +198,86 @@ export default function ProviderDashboard() {
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-12 space-y-12">
+        
+        {/* Active Notifications & Warning Banners */}
+        {profile?.warning && (
+          <motion.div
+            initial={{ opacity: 0, y: -15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-6 rounded-3xl bg-rose-500/10 border border-rose-500/25 backdrop-blur-md text-rose-200 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl shadow-rose-500/5"
+          >
+            <div className="flex items-start gap-3">
+              <ShieldAlert className="w-6 h-6 text-rose-400 mt-0.5 flex-shrink-0 animate-pulse" />
+              <div>
+                <h3 className="text-lg font-black tracking-tight text-white mb-1 uppercase">Official Administrative Warning</h3>
+                <p className="text-sm font-semibold text-rose-200/90 leading-relaxed">
+                  {profile.warning}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleDismissWarning}
+              className="px-5 py-2.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/35 border border-rose-500/30 text-white font-bold text-xs uppercase tracking-wider transition-all hover:scale-[1.02] flex-shrink-0"
+            >
+              Acknowledge & Dismiss
+            </button>
+          </motion.div>
+        )}
+
+        {profile?.status === 'Pending' && profile?.surveyDate && (
+          <motion.div
+            initial={{ opacity: 0, y: -15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-6 rounded-3xl bg-amber-500/10 border border-amber-500/25 backdrop-blur-md text-amber-200 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl shadow-amber-500/5"
+          >
+            <div className="flex items-start gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+                <Calendar className="w-6 h-6 text-amber-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black tracking-tight text-white mb-1 uppercase">Verification Survey Scheduled</h3>
+                <p className="text-sm font-semibold text-slate-300 leading-relaxed">
+                  Our verification team has scheduled an on-site survey for your business virtual shop on:
+                </p>
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-bold text-amber-400">
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5" />
+                    {new Date(profile.surveyDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" />
+                    {new Date(profile.surveyDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5" />
+                    {profile.address || profile.district || "Your registered address"}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="px-4 py-2 rounded-xl bg-amber-500/5 border border-amber-500/25 text-amber-400 text-xs font-black uppercase tracking-wider text-center flex-shrink-0">
+              Awaiting On-Site Survey
+            </div>
+          </motion.div>
+        )}
+
+        {profile?.status === 'Pending' && !profile?.surveyDate && (
+          <motion.div
+            initial={{ opacity: 0, y: -15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-6 rounded-3xl bg-orange-500/5 border border-orange-500/20 backdrop-blur-md text-orange-200 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl"
+          >
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-6 h-6 text-orange-400 mt-0.5 flex-shrink-0 animate-pulse" />
+              <div>
+                <h3 className="text-lg font-black tracking-tight text-white mb-1 uppercase">Awaiting Survey Assignment</h3>
+                <p className="text-sm font-semibold text-slate-300 leading-relaxed">
+                  Your verification application has been submitted successfully and is currently under review by our administration. We will assign your on-site verification survey date and time shortly.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
         
         {/* ── Stats Overview ── */}
         <section>

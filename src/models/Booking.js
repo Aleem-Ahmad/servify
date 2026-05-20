@@ -88,6 +88,12 @@ const BookingSchema = new mongoose.Schema({
     convenienceFee: { type: Number, default: 0 },
   },
 
+  // OTP Verification
+  otp: {
+    type: String,
+    required: false,
+  },
+
 }, {
   timestamps: true,
 });

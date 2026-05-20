@@ -15,7 +15,9 @@ import {
   Mail,
   Phone,
   MapPin,
-  Calendar
+  Calendar,
+  Star,
+  X
 } from "lucide-react";
 import { getAllUsers } from "@/lib/actions/adminActions";
 import { motion, AnimatePresence } from "framer-motion";
@@ -33,6 +35,79 @@ export default function UserManagement() {
   // Modal states
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [alertMessage, setAlertMessage] = useState(null);
+
+  const [monitoredProvider, setMonitoredProvider] = useState(null);
+  const [providerFeedbacks, setProviderFeedbacks] = useState([]);
+  const [feedbacksLoading, setFeedbacksLoading] = useState(false);
+  const [warningText, setWarningText] = useState("");
+  const [sendingWarning, setSendingWarning] = useState(false);
+
+  async function handleOpenProviderModal(provider) {
+    setMonitoredProvider(provider);
+    setWarningText(provider.warning || "");
+    setFeedbacksLoading(true);
+    try {
+      const res = await fetch(`/api/feedback?providerId=${provider._id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setProviderFeedbacks(data);
+      } else {
+        setProviderFeedbacks([]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch feedbacks", error);
+      setProviderFeedbacks([]);
+    }
+    setFeedbacksLoading(false);
+  }
+
+  async function handleSendWarning() {
+    if (!monitoredProvider) return;
+    setSendingWarning(true);
+    try {
+      const res = await fetch(`/api/admin/users/${monitoredProvider._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ warning: warningText })
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Update user locally
+        setUsers(prev => prev.map(u => u._id === monitoredProvider._id ? { ...u, warning: warningText } : u));
+        setMonitoredProvider(prev => ({ ...prev, warning: warningText }));
+        showAlert("Warning sent to provider successfully!", "success");
+      } else {
+        showAlert(data.message || "Failed to send warning", "error");
+      }
+    } catch (error) {
+      showAlert("Network error sending warning", "error");
+    }
+    setSendingWarning(false);
+  }
+
+  async function handleModalToggleStatus() {
+    if (!monitoredProvider) return;
+    const nextStatus = monitoredProvider.status === "Blocked" ? "Active" : "Blocked";
+    setUpdatingId(monitoredProvider._id);
+    try {
+      const res = await fetch(`/api/admin/users/${monitoredProvider._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setUsers(prev => prev.map(u => u._id === monitoredProvider._id ? { ...u, status: nextStatus } : u));
+        setMonitoredProvider(prev => ({ ...prev, status: nextStatus }));
+        showAlert(`Provider ${nextStatus === "Blocked" ? "blocked" : "unblocked"} successfully!`, "success");
+      } else {
+        showAlert(data.message || "Failed to update status", "error");
+      }
+    } catch (error) {
+      showAlert("Network error updating status", "error");
+    }
+    setUpdatingId(null);
+  }
 
   useEffect(() => {
     fetchUsers();
@@ -210,6 +285,255 @@ export default function UserManagement() {
         )}
       </AnimatePresence>
 
+      {/* Provider Monitor Modal */}
+      <AnimatePresence>
+        {monitoredProvider && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-5xl bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col my-8 max-h-[90vh]"
+            >
+              {/* Header */}
+              <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-950/50 backdrop-blur-md">
+                <div className="flex items-center gap-3">
+                  <Shield className="w-8 h-8 text-indigo-400" />
+                  <div>
+                    <h3 className="text-xl font-black text-white">Provider Monitor & Security</h3>
+                    <p className="text-xs text-slate-400 font-bold">Review ratings, feedbacks, details, send warnings, or block accounts.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setMonitoredProvider(null)}
+                  className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Scrollable Container split into Grid */}
+              <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0 bg-slate-900/50">
+                {/* Left Column: Full Provider Profile Data & Docs */}
+                <div className="space-y-6">
+                  <div className="bg-slate-950/40 border border-slate-800 p-5 rounded-2xl space-y-4">
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={monitoredProvider.image || `https://i.pravatar.cc/150?u=${monitoredProvider.email}`}
+                        alt={monitoredProvider.name}
+                        onError={(e) => { e.target.src = "https://i.pravatar.cc/150?img=33"; }}
+                        className="w-16 h-16 rounded-full object-cover border-2 border-indigo-500/30"
+                      />
+                      <div>
+                        <h4 className="text-lg font-bold text-white">{monitoredProvider.name}</h4>
+                        <p className="text-xs text-indigo-400 font-bold">@{monitoredProvider.username || "no_username"}</p>
+                        <div className="mt-1 flex items-center gap-2">
+                          <span className={cn(
+                            "inline-flex items-center px-2 py-0.5 rounded text-xs font-black uppercase tracking-wider border",
+                            monitoredProvider.status === "Active" 
+                              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" 
+                              : monitoredProvider.status === "Pending"
+                              ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                              : "bg-rose-500/10 border-rose-500/20 text-rose-400"
+                          )}>
+                            {monitoredProvider.status}
+                          </span>
+                          <span className="bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-2.5 py-0.5 rounded text-xs font-bold">
+                            {monitoredProvider.badge || "Basic"} Badge
+                          </span>
+                          <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 px-2.5 py-0.5 rounded text-xs font-bold">
+                            Trust Score: {monitoredProvider.trustScore || 0}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-800/60 text-xs font-semibold text-slate-300">
+                      <div>
+                        <span className="text-slate-500 block uppercase font-black tracking-wider mb-0.5">Email</span>
+                        <a href={`mailto:${monitoredProvider.email}`} className="text-indigo-300 hover:underline">{monitoredProvider.email}</a>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block uppercase font-black tracking-wider mb-0.5">Phone</span>
+                        <span>{monitoredProvider.phone || "Not Provided"}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block uppercase font-black tracking-wider mb-0.5">Category</span>
+                        <span className="text-white">{monitoredProvider.category || "Not Specified"}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block uppercase font-black tracking-wider mb-0.5">Location</span>
+                        <span>{monitoredProvider.tehseel ? `${monitoredProvider.tehseel}, ` : ""}{monitoredProvider.district || "Not Specified"}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block uppercase font-black tracking-wider mb-0.5">Experience</span>
+                        <span className="text-white">{monitoredProvider.experience || "Not Provided"}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block uppercase font-black tracking-wider mb-0.5">CNIC Number</span>
+                        <span>{monitoredProvider.cnic || "Not Provided"}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Documents & Credentials */}
+                  <div className="bg-slate-950/40 border border-slate-800 p-5 rounded-2xl space-y-3">
+                    <h5 className="text-sm font-bold text-white uppercase tracking-wider">Provider Documents & Verification</h5>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        onClick={() => monitoredProvider.documents?.cnicFront && window.open(monitoredProvider.documents.cnicFront)}
+                        disabled={!monitoredProvider.documents?.cnicFront}
+                        className="px-3 py-2 text-xs font-bold rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        CNIC Front
+                      </button>
+                      <button
+                        onClick={() => monitoredProvider.documents?.cnicBack && window.open(monitoredProvider.documents.cnicBack)}
+                        disabled={!monitoredProvider.documents?.cnicBack}
+                        className="px-3 py-2 text-xs font-bold rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        CNIC Back
+                      </button>
+                      <button
+                        onClick={() => monitoredProvider.documents?.skillDemo && window.open(monitoredProvider.documents.skillDemo)}
+                        disabled={!monitoredProvider.documents?.skillDemo}
+                        className="px-3 py-2 text-xs font-bold rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        Skill Demo
+                      </button>
+                    </div>
+                    {monitoredProvider.surveyDate && (
+                      <div className="mt-3 p-3 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-xl text-xs font-bold flex items-center justify-between">
+                        <span>Survey Assigned: {new Date(monitoredProvider.surveyDate).toLocaleDateString()}</span>
+                        <span>{new Date(monitoredProvider.surveyDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions Quick-Control */}
+                  <div className="bg-slate-950/40 border border-slate-800 p-5 rounded-2xl space-y-4">
+                    <h5 className="text-sm font-bold text-white uppercase tracking-wider">Account Action Panel</h5>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleModalToggleStatus}
+                        className={cn(
+                          "flex-1 px-4 py-2.5 rounded-xl font-bold transition-all text-xs flex items-center justify-center gap-2",
+                          monitoredProvider.status === "Blocked"
+                            ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/20"
+                            : "bg-rose-600 text-white hover:bg-rose-700 shadow-lg shadow-rose-600/20"
+                        )}
+                      >
+                        {monitoredProvider.status === "Blocked" ? (
+                          <>
+                            <UserCheck className="w-4 h-4" />
+                            Unblock Account
+                          </>
+                        ) : (
+                          <>
+                            <UserX className="w-4 h-4" />
+                            Block Account
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: Customer Feedback Monitoring & Warning Submission */}
+                <div className="flex flex-col gap-6">
+                  {/* Feedback History */}
+                  <div className="bg-slate-950/40 border border-slate-800 p-5 rounded-2xl flex-1 flex flex-col min-h-0 space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-800/60 pb-2">
+                      <h5 className="text-sm font-bold text-white uppercase tracking-wider">Customer Feedback & Reviews</h5>
+                      <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-black">
+                        Rating: {monitoredProvider.performance?.rating || 5.0} ⭐
+                      </span>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto space-y-3 min-h-0 max-h-[300px] pr-2">
+                      {feedbacksLoading ? (
+                        <div className="flex justify-center items-center h-24">
+                          <Loader2 className="w-6 h-6 animate-spin text-indigo-400" />
+                        </div>
+                      ) : providerFeedbacks.length === 0 ? (
+                        <div className="text-center py-10 text-slate-500 font-bold text-xs">
+                          No feedbacks submitted for this provider.
+                        </div>
+                      ) : (
+                        providerFeedbacks.map((f) => (
+                          <div key={f._id} className="bg-slate-900 border border-slate-800/50 p-3.5 rounded-xl space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-white text-xs">{f.customerName}</span>
+                              <div className="flex items-center gap-0.5">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={cn(
+                                      "w-3 h-3",
+                                      i < f.rating ? "text-amber-400 fill-amber-400" : "text-slate-600"
+                                    )}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                            <p className="text-slate-300 text-xs font-semibold leading-relaxed">
+                              {f.comment || <em className="opacity-40">No comment provided</em>}
+                            </p>
+                            <span className="block text-[10px] text-slate-500 font-bold">
+                              {new Date(f.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Warning System */}
+                  <div className="bg-slate-950/40 border border-slate-800 p-5 rounded-2xl space-y-4">
+                    <h5 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-rose-500" />
+                      Administrative Warning System
+                    </h5>
+                    <p className="text-xs text-slate-400 font-bold">
+                      Issue an official warning to the provider. It will display prominently as a persistent red notification banner on their homepage.
+                    </p>
+                    
+                    {monitoredProvider.warning && (
+                      <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-semibold">
+                        <span className="font-bold text-rose-400 block mb-1">Active Warning:</span>
+                        "{monitoredProvider.warning}"
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <textarea
+                        value={warningText}
+                        onChange={(e) => setWarningText(e.target.value)}
+                        placeholder="Type detailed warnings regarding customer reviews, negative behavior or violation of terms..."
+                        className="w-full h-24 p-3 rounded-xl bg-slate-900 border border-slate-800 outline-none text-xs text-white placeholder-slate-500 font-bold transition-all focus:border-rose-500 focus:bg-slate-900/80"
+                      />
+                      <button
+                        onClick={handleSendWarning}
+                        disabled={sendingWarning}
+                        className="w-full px-4 py-2.5 rounded-xl bg-rose-600 text-white font-bold hover:bg-rose-700 transition-all text-xs flex items-center justify-center gap-2 shadow-lg shadow-rose-600/20 disabled:opacity-50"
+                      >
+                        {sendingWarning ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : monitoredProvider.warning ? (
+                          "Update Active Warning"
+                        ) : (
+                          "Send Official Warning"
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Toolbar filters */}
       <div className="premium-card flex flex-col md:flex-row gap-4 justify-between items-center">
         <div className="relative w-full md:w-80 flex items-center">
@@ -364,6 +688,15 @@ export default function UserManagement() {
                     </td>
                     <td className="py-4 px-6 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        {u.role === "provider" && (
+                          <button
+                            onClick={() => handleOpenProviderModal(u)}
+                            className="p-2 rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-500 hover:scale-105 hover:bg-indigo-500/20 transition-all font-bold"
+                            title="Monitor Feedbacks & Details"
+                          >
+                            <Shield className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleToggleStatus(u._id, u.status)}
                           disabled={updatingId === u._id}

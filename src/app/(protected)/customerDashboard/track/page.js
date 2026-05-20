@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
@@ -143,6 +143,14 @@ export default function TrackingOverview() {
                       <p className={`text-sm truncate mt-0.5 flex items-center gap-1 ${dark ? "text-slate-400" : "text-slate-500"}`}>
                         <MapPin className="w-3.5 h-3.5" /> {booking.location || "Location not provided"}
                       </p>
+                      {booking.otp && (
+                        <div className={`mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black border ${
+                          dark ? "bg-orange-500/10 border-orange-500/20 text-orange-400" : "bg-orange-50 border-orange-200 text-orange-600"
+                        }`}>
+                          <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
+                          🔑 {isUrdu ? `او ٹی پی: ${booking.otp}` : `Verification OTP: ${booking.otp}`}
+                        </div>
+                      )}
                     </div>
                   </div>
 

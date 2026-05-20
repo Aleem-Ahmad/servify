@@ -112,6 +112,14 @@ export default function ComplaintCard({ complaint }) {
                 {t("complaints.arrival", { defaultValue: "Arrival" })}: {complaint.time}
               </p>
             )}
+            {complaint.otp && (
+              <div className={`mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black border ${
+                dark ? "bg-orange-500/10 border-orange-500/20 text-orange-400" : "bg-orange-50 border-orange-200 text-orange-600"
+              }`}>
+                <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
+                🔑 Verification OTP: {complaint.otp}
+              </div>
+            )}
           </div>
         </div>
 

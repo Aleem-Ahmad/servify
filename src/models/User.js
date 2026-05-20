@@ -50,6 +50,7 @@ const UserSchema = new mongoose.Schema({
     default: 'Active',
   },
   surveyDate: { type: Date },
+  warning: { type: String, default: "" },
 
   // Trust Score & Performance (For Providers)
   trustScore: { type: Number, default: 0 }, // 0 to 100

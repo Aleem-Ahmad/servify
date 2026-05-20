@@ -251,7 +251,8 @@ function BookingFormContent() {
             providerName: (!isOpenBooking && providerChosen) ? providerChosen.name : undefined,
             hourlyRate: (!isOpenBooking && providerChosen) ? providerChosen.rate : 0,
             price: (!isOpenBooking && providerChosen) ? (providerChosen.rate * formData.hours) : 0,
-            date: new Date().toISOString()
+            date: new Date().toISOString(),
+            otp: otp
         };
 
         const res = await fetch('/api/bookings', {
@@ -659,9 +660,9 @@ function BookingFormContent() {
                         {allProviders
                           .filter(p => !formData.category || p.category === formData.category)
                           .slice(0, 2)
-                          .map(p => (
+                          .map((p, i) => (
                             <div 
-                              key={p.id} 
+                              key={p.id || p._id || i} 
                               onClick={() => {
                                 setProviderChosen(p);
                                 setIsOpenBooking(false);
