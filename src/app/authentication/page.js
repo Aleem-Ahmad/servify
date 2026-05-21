@@ -46,7 +46,7 @@ export default function Authentication() {
   });
 
   const patterns = {
-    username: /^[a-zA-Z0-9_]{3,20}$/,
+    username: /^.{1,}$/,
     name: /^[a-zA-Z\s]{3,30}$/,
     email: /^[a-zA-Z0-9._%+-]+@gmail\.com$/,
     password: /^(?=.*[a-zA-Z])(?=.*\d).{6,}$/,
@@ -61,7 +61,7 @@ export default function Authentication() {
   const validateField = (name, value) => {
     let error = "";
     if (patterns[name] && !patterns[name].test(value)) {
-      if (name === "username") error = "3-20 characters (letters, numbers, _)";
+      if (name === "username") error = "Username is required";
       else if (name === "email") error = "Only @gmail.com addresses are allowed";
       else if (name === "password") error = "6+ chars, incl. letters and numbers";
       else if (name === "phone") error = "Format: 3xxxxxxxxx (10 digits, no leading 0)";

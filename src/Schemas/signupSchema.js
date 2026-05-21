@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const signupSchema = z.object({
-  username: z.string().regex(/^[a-zA-Z0-9_]{3,20}$/, "Username must be 3-20 characters and can only contain letters, numbers, and underscores"),
+  username: z.string().min(1, "Username is required"),
   name: z.string().regex(/^[a-zA-Z\s]{3,30}$/, "Name must be 3-30 alphabetic characters"),
   email: z.string().regex(/^[a-zA-Z0-9._%+-]+@gmail\.com$/, "Only @gmail.com addresses are allowed"),
   password: z.string().regex(/^(?=.*[a-zA-Z])(?=.*\d).{6,}$/, "Password must be at least 6 characters and contain both letters and numbers"),

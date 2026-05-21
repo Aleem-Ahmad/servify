@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { z } from "zod";
 
 const UsernameQuerySchema = z.object({
-  username: z.string().regex(/^[a-zA-Z0-9_]{3,20}$/, "Username must be 3-20 characters and can only contain letters, numbers, and underscores"),
+  username: z.string().min(1, "Username is required"),
 });
 
 export async function GET(request) {
