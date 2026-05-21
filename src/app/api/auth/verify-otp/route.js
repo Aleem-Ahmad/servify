@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { verifySchema } from "@/Schemas/verifySchema";
+import { findUserByEmail } from "@/lib/findUserByEmail";
+import { normalizeEmail } from "@/lib/normalizeEmail";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(request) {
   try {
-    const { email, code } = await request.json();
+    const { email: rawEmail, code } = await request.json();
+    const email = normalizeEmail(rawEmail);
 
     // 1. Validate code format
     const validation = verifySchema.safeParse({ code });
@@ -13,7 +19,7 @@ export async function POST(request) {
     }
 
     // 2. Find the user in database
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await findUserByEmail(prisma, email);
 
     if (!user) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
@@ -25,7 +31,7 @@ export async function POST(request) {
 
     if (isCodeValid && isCodeNotExpired) {
       await prisma.user.update({
-        where: { email },
+        where: { id: user.id },
         data: {
           isVerified: true
         }

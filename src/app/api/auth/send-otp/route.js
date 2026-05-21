@@ -2,18 +2,24 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
 import { emailSchema } from "@/Schemas/verifySchema";
+import { findUserByEmail } from "@/lib/findUserByEmail";
+import { normalizeEmail } from "@/lib/normalizeEmail";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(request) {
   try {
-    const { email } = await request.json();
+    const { email: rawEmail } = await request.json();
+    const email = normalizeEmail(rawEmail);
 
     // 1. Validate email
-    const validation = emailSchema.safeParse({ email });
+    const validation = emailSchema.safeParse({ email: rawEmail });
     if (!validation.success) {
       return NextResponse.json({ success: false, message: validation.error.errors[0].message }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await findUserByEmail(prisma, email);
     if (!user) {
       // If user not found, we might want to check if they are in the middle of signup
       return NextResponse.json({ success: false, message: "User not found with this email. Please sign up first." }, { status: 404 });
@@ -24,7 +30,7 @@ export async function POST(request) {
     const verifyCodeExpiry = new Date(Date.now() + 3600000); // 1 hour
     
     await prisma.user.update({
-      where: { email },
+      where: { id: user.id },
       data: {
         verifyCode: otp,
         verifyCodeExpiry

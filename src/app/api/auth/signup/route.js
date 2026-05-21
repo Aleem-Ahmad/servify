@@ -4,6 +4,11 @@ import { signupSchema } from '@/Schemas/signupSchema';
 import bcrypt from 'bcryptjs';
 import { sendVerificationEmail } from '@/helpers/sendVerificationEmail';
 import { uploadImage } from '@/helpers/uploadImage';
+import { normalizeEmail } from '@/lib/normalizeEmail';
+import { findUserByEmail } from '@/lib/findUserByEmail';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
   try {
@@ -31,7 +36,11 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    const { username, email, password, role } = validation.data;
+    const signupData = {
+      ...validation.data,
+      email: normalizeEmail(validation.data.email),
+    };
+    const { username, email, password, role } = signupData;
 
     // 2. Check if username is already taken by a verified user
     const existingUserVerifiedByUsername = await prisma.user.findFirst({
@@ -46,9 +55,7 @@ export async function POST(request) {
     }
 
     // 3. Check if email is already taken
-    const existingUserByEmail = await prisma.user.findUnique({
-      where: { email }
-    });
+    const existingUserByEmail = await findUserByEmail(prisma, email);
     const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiryDate = new Date(Date.now() + 3600000); // 1 hour
 
@@ -91,9 +98,9 @@ export async function POST(request) {
         };
         
         await prisma.user.update({
-          where: { email },
+          where: { id: existingUserByEmail.id },
           data: {
-            ...validation.data,
+            ...signupData,
             password: hashedPassword,
             verifyCode,
             verifyCodeExpiry: expiryDate,
@@ -106,7 +113,7 @@ export async function POST(request) {
       // Create new user
       await prisma.user.create({
         data: {
-          ...validation.data,
+          ...signupData,
           password: hashedPassword,
           verifyCode,
           verifyCodeExpiry: expiryDate,

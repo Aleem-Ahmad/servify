@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 
 export async function seedAdmin() {
   const ownerEmail = "www.aleemahmadghias@gmail.com";
-  const ownerPassword = "admin_servify";
+  const ownerPassword = process.env.ADMIN_PASSWORD || "Aa@123";
   
   const existingAdmin = await prisma.user.findUnique({ where: { email: ownerEmail } });
   const hashedPassword = await bcrypt.hash(ownerPassword, 10);
@@ -33,6 +33,8 @@ export async function seedAdmin() {
       where: { email: ownerEmail },
       data: {
         password: hashedPassword,
+        role: "admin",
+        status: "Active",
         phone: "03214703384",
         isVerified: true
       }

@@ -1,60 +1,70 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { cookies } from 'next/headers';
+import { findUserByEmail } from '@/lib/findUserByEmail';
+import { normalizeEmail } from '@/lib/normalizeEmail';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
-  console.log("LOGIN API CALLED!");
   try {
-    const { email, password } = await request.json();
-    console.log("Login attempt for:", email);
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json(
+        { success: false, message: 'Database is not configured. Set DATABASE_URL in .env' },
+        { status: 503 }
+      );
+    }
 
-    // 1. Find user by email
-    const user = await prisma.user.findUnique({ where: { email } });
-    console.log("User found:", user ? "Yes" : "No");
+    const body = await request.json();
+    const email = normalizeEmail(body.email);
+    const password = body.password;
+
+    if (!email || !password) {
+      return NextResponse.json(
+        { success: false, message: 'Email and password are required' },
+        { status: 400 }
+      );
+    }
+
+    const user = await findUserByEmail(prisma, email);
 
     if (!user) {
-      return NextResponse.json({ 
-        success: false, 
-        message: "Invalid email or password" 
-      }, { status: 401 });
+      return NextResponse.json(
+        { success: false, message: 'Invalid email or password' },
+        { status: 401 }
+      );
     }
 
-    // 2. Check if user is verified
     if (!user.isVerified) {
-      console.log("User not verified");
-      return NextResponse.json({ 
-        success: false, 
-        message: "Please verify your email before logging in." 
-      }, { status: 403 });
+      return NextResponse.json(
+        { success: false, message: 'Please verify your email before logging in.' },
+        { status: 403 }
+      );
     }
 
-    // 3. Compare passwords
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    console.log("Password correct:", isPasswordCorrect);
-    
+    if (!user.password) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'This account has no password set. Sign up again or contact support.',
+        },
+        { status: 401 }
+      );
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(String(password), user.password);
+
     if (!isPasswordCorrect) {
-      return NextResponse.json({ 
-        success: false, 
-        message: "Invalid email or password" 
-      }, { status: 401 });
+      return NextResponse.json(
+        { success: false, message: 'Invalid email or password' },
+        { status: 401 }
+      );
     }
 
-    // 4. Set session cookie
-    console.log("Setting cookie...");
-    const cookieStore = await cookies();
-    cookieStore.set('userId', user.id, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 1 week
-      path: '/',
-    });
-    console.log("Cookie set.");
-
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
-      message: "Login successful",
+      message: 'Login successful',
       user: {
         id: user.id,
         name: user.name,
@@ -75,15 +85,28 @@ export async function POST(request) {
         trustScore: user.trustScore,
         isOnline: user.isOnline,
         documents: user.documents,
-        performance: user.performance
-      }
+        performance: user.performance,
+      },
     });
 
+    response.cookies.set('userId', user.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
-    console.error("Login error:", error);
-    return NextResponse.json({ 
-      success: false, 
-      message: "Server error during login" 
-    }, { status: 500 });
+    console.error('Login error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Server error during login',
+        ...(process.env.NODE_ENV === 'development' && { detail: error.message }),
+      },
+      { status: 500 }
+    );
   }
 }
