@@ -48,6 +48,8 @@ model User {
   cnic             String?
   address          String?
   gender           String?
+  religion         String?
+  maritalStatus    String?
   dob              String?
   category         String?
   experience       String?
