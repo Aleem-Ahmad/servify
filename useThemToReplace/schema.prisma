@@ -1,0 +1,137 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id               String    @id @default(uuid())
+  username         String    @unique
+  name             String
+  email            String    @unique
+  password         String?
+  googleId         String?   @unique
+  
+  verifyCode       String
+  verifyCodeExpiry DateTime
+  isVerified       Boolean   @default(false)
+  
+  // Documents (Stored as JSON or structured)
+  documents        Json?     // { cnicFront, cnicBack, skillDemo, addressProof }
+  
+  role             String    @default("customer") // 'customer', 'provider', 'admin'
+  status           String    @default("Active") // 'Active', 'Pending', 'Blocked'
+  surveyDate       DateTime?
+  warning          String    @default("")
+  
+  // Provider fields
+  trustScore       Int       @default(0)
+  badge            String    @default("Basic") // 'Basic', 'Pro', 'Elite'
+  performance      Json?     // { rating, completedJobs, avgResponseTime, complaintHistory, leaderboardPoints }
+  
+  isOnline         Boolean   @default(false)
+  
+  // Location as JSON or separate lat/long fields
+  location         Json?     // { type: 'Point', coordinates: [lng, lat] }
+  
+  subscription     Json?     // { plan, expiryDate }
+  
+  phone            String?
+  district         String?
+  tehseel          String?
+  cnic             String?
+  address          String?
+  gender           String?
+  religion         String?
+  maritalStatus    String?
+  dob              String?
+  category         String?
+  experience       String?
+  providerType     String?
+  image            String?
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  // Relations
+  customerBookings Booking[] @relation("CustomerBookings")
+  providerBookings Booking[] @relation("ProviderBookings")
+  reviewsGiven     Review[]  @relation("ReviewsGiven")
+  reviewsReceived  Review[]  @relation("ReviewsReceived")
+}
+
+model Booking {
+  id               String    @id @default(uuid())
+  customerId       String
+  providerId       String?
+  
+  service          String
+  details          String?
+  voiceUrl         String?
+  mediaUrls        String[]  // Array of strings
+  budget           Float     @default(0)
+  hours            Float     @default(1)
+  hourlyRate       Float     @default(0)
+  
+  customerName     String?
+  customerPhone    String?
+  customerAddress  String?
+  locationStr      String?
+  
+  providerName     String?
+  providerPhone    String?
+  
+  date             DateTime?
+  visitTime        DateTime?
+  
+  status           String    @default("Pending") // 'Pending', 'Accepted', 'In-Progress', 'Completed', 'Cancelled'
+  urgency          String    @default("Normal") // 'Normal', 'Urgent', 'Emergency'
+  
+  guarantee        Json?     // { isActive, expiryTime, reworked, refunded }
+  tracking         Json?     // { providerLocation, eta }
+  payment          Json?     // { method, status, transactionId, convenienceFee }
+  
+  otp              String?
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  // Relations
+  customer         User      @relation("CustomerBookings", fields: [customerId], references: [id])
+  provider         User?     @relation("ProviderBookings", fields: [providerId], references: [id])
+  reviews          Review[]
+}
+
+model Review {
+  id               String    @id @default(uuid())
+  bookingId        String
+  customerId       String
+  providerId       String
+  
+  rating           Int
+  comment          String?
+  mediaUrls        String[]
+  isFlagged        Boolean   @default(false)
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  // Relations
+  booking          Booking   @relation(fields: [bookingId], references: [id])
+  customer         User      @relation("ReviewsGiven", fields: [customerId], references: [id])
+  provider         User      @relation("ReviewsReceived", fields: [providerId], references: [id])
+}
+
+model VerifyCode {
+  id               String    @id @default(uuid())
+  email            String
+  code             String
+  expiresAt        DateTime
+}
