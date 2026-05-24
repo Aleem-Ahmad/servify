@@ -165,7 +165,7 @@ export default function ProviderOnboarding() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="relative border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-3xl p-4 flex flex-col items-center justify-center text-slate-400 hover:border-primary-500 hover:text-primary-500 transition-colors cursor-pointer group h-64 overflow-hidden">
                       <img 
-                        src="/CNIC_FRONT.jpeg" 
+                        src="https://res.cloudinary.com/dlgozougt/image/upload/v1779370247/public/CNIC_FRONT.jpg" 
                         alt="CNIC Front Template" 
                         className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-40 transition-opacity"
                       />
@@ -179,7 +179,7 @@ export default function ProviderOnboarding() {
 
                     <div className="relative border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-3xl p-4 flex flex-col items-center justify-center text-slate-400 hover:border-primary-500 hover:text-primary-500 transition-colors cursor-pointer group h-64 overflow-hidden">
                       <img 
-                        src="/CNIC_BACK.jpeg" 
+                        src="https://res.cloudinary.com/dlgozougt/image/upload/v1779370245/public/CNIC_BACK.jpg" 
                         alt="CNIC Back Template" 
                         className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-40 transition-opacity"
                       />

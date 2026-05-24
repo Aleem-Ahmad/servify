@@ -779,7 +779,7 @@ export default function Authentication() {
                           <img src={previews.cnicFront} alt="CNIC Front" className="w-full h-full object-cover" />
                         ) : (
                           <>
-                            <img src="/CNIC_FRONT.jpeg" alt="CNIC Front Placeholder" className="absolute inset-0 w-full h-full object-cover opacity-25" />
+                            <img src="https://res.cloudinary.com/dlgozougt/image/upload/v1779370247/public/CNIC_FRONT.jpg" alt="CNIC Front Placeholder" className="absolute inset-0 w-full h-full object-cover opacity-25" />
                             <div className="relative z-10 flex flex-col items-center justify-center p-4 text-center">
                               <UploadCloud className="w-7 h-7 text-orange-500 drop-shadow" />
                               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1 drop-shadow-sm">{t("auth.frontSide") || "CNIC Front Side"}</span>
@@ -795,7 +795,7 @@ export default function Authentication() {
                           <img src={previews.cnicBack} alt="CNIC Back" className="w-full h-full object-cover" />
                         ) : (
                           <>
-                            <img src="/CNIC_BACK.jpeg" alt="CNIC Back Placeholder" className="absolute inset-0 w-full h-full object-cover opacity-25" />
+                            <img src="https://res.cloudinary.com/dlgozougt/image/upload/v1779370245/public/CNIC_BACK.jpg" alt="CNIC Back Placeholder" className="absolute inset-0 w-full h-full object-cover opacity-25" />
                             <div className="relative z-10 flex flex-col items-center justify-center p-4 text-center">
                               <UploadCloud className="w-7 h-7 text-orange-500 drop-shadow" />
                               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1 drop-shadow-sm">{t("auth.backSide") || "CNIC Back Side"}</span>

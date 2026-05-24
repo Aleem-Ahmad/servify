@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import './loadEnv.js';
 
 const globalForPrisma = globalThis;
 

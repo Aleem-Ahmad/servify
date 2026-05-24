@@ -3,15 +3,20 @@ import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { findUserByEmail } from '@/lib/findUserByEmail';
 import { normalizeEmail } from '@/lib/normalizeEmail';
+import { getDatabaseUrl } from '@/lib/loadEnv.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
   try {
-    if (!process.env.DATABASE_URL) {
+    if (!getDatabaseUrl()) {
       return NextResponse.json(
-        { success: false, message: 'Database is not configured. Set DATABASE_URL in .env' },
+        {
+          success: false,
+          message:
+            'Database is not configured. Add DATABASE_URL to .env (and .env.local for Next.js), then restart the dev server.',
+        },
         { status: 503 }
       );
     }
