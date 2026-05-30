@@ -343,3 +343,199 @@ body {
     padding-bottom: 80px;
   }
 }
+
+/* ═══════════════════════════════════════
+   PROVIDER CARD (PREMIUM GLASS & CSS3 ONLY)
+   ═══════════════════════════════════════ */
+.provider-card-premium {
+  background: var(--card-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 30px;
+  border-radius: 24px;
+  transition: all 0.4s ease;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+
+.provider-card-premium:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border-color: rgba(255, 122, 0, 0.3);
+}
+
+.provider-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 15px;
+}
+
+.provider-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.badge-basic { background: rgba(100, 116, 139, 0.15); color: #64748b; border: 1px solid rgba(100, 116, 139, 0.3); }
+.badge-pro { background: rgba(56, 189, 248, 0.15); color: #0284c7; border: 1px solid rgba(56, 189, 248, 0.3); }
+.badge-elite { background: rgba(255, 122, 0, 0.15); color: var(--primary); border: 1px solid rgba(255, 122, 0, 0.3); }
+
+.provider-name {
+  margin-left: 15px;
+  font-size: 24px;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.provider-survey {
+  font-size: 15px;
+  margin-bottom: 25px;
+  color: var(--text-muted);
+}
+
+.provider-survey strong {
+  color: var(--text);
+}
+
+.provider-section {
+  margin-bottom: 25px;
+}
+
+.provider-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.provider-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 15px;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.dark .provider-input {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.provider-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.2);
+}
+
+.provider-flex-row {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.provider-input-small {
+  width: 100px;
+}
+
+.provider-divider {
+  font-weight: bold;
+  color: var(--text-muted);
+}
+
+.provider-offers-container {
+  background: rgba(0, 0, 0, 0.03);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px dashed var(--border);
+}
+
+.dark .provider-offers-container {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.provider-offer-tag {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+  transition: transform 0.3s ease;
+}
+
+.provider-offer-tag:hover {
+  transform: scale(1.02);
+  border-color: var(--primary-light);
+}
+
+.provider-offer-title {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 16px;
+}
+
+.provider-offer-date {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.provider-add-offer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border);
+}
+
+.provider-btn-outline {
+  background: transparent;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.provider-btn-outline:hover {
+  background: rgba(255, 122, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.provider-btn-primary {
+  background: linear-gradient(135deg, var(--primary), #ffb84d);
+  border: none;
+  color: white;
+  padding: 14px 30px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 20px;
+  box-shadow: 0 10px 20px rgba(255, 122, 0, 0.3);
+}
+
+.provider-btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 25px rgba(255, 122, 0, 0.4);
+}
