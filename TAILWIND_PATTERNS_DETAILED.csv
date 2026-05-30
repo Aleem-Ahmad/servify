@@ -1,0 +1,133 @@
+file_path,line_number,pattern_type,tailwind_pattern,description,complexity,css_equivalent,priority,file_group
+src/components/publicComponents/Hero.jsx,54,Color + Opacity,bg-[#050a14],Background color,HIGH,"background-color: #050a14;",P1,Hero
+src/components/publicComponents/Hero.jsx,73,Arbitrary Dimensions,w-[600px] h-[600px],Gradient circle size,HIGH,"width: 600px; height: 600px;",P1,Hero
+src/components/publicComponents/Hero.jsx,92,Arbitrary Dimensions,w-[500px] h-[500px],Gradient circle size,HIGH,"width: 500px; height: 500px;",P1,Hero
+src/components/publicComponents/Hero.jsx,100,Opacity + Gradient,opacity-[0.02],Grid pattern opacity,MEDIUM,"opacity: 0.02;",P2,Hero
+src/components/publicComponents/Hero.jsx,100,Arbitrary Gradient,bg-[radial-gradient(#ff7a00_1px)],Radial grid pattern,HIGH,"background-image: radial-gradient(#ff7a00 1px, transparent 1px);",P1,Hero
+src/components/publicComponents/Hero.jsx,113,Color + Opacity,bg-orange-500/10 border-orange-500/20,Badge styling,HIGH,"background-color: rgba(249, 115, 22, 0.1); border-color: rgba(249, 115, 22, 0.2);",P1,Hero
+src/components/SharedComponents/NavBar/NavBar.jsx,89,Color + Opacity,bg-orange-500/10 text-orange-600,Active nav item,HIGH,"background-color: rgba(249, 115, 22, 0.1);",P1,Navigation
+src/components/SharedComponents/NavBar/NavBar.jsx,139,Color + Opacity,bg-white/95 dark:bg-slate-950/95,Header backdrop,MEDIUM,"background-color: rgba(255, 255, 255, 0.95);",P2,Navigation
+src/components/SharedComponents/NavBar/NavBar.jsx,183,Color + Opacity,bg-white/95 dark:bg-slate-950/95,Footer backdrop,MEDIUM,"background-color: rgba(255, 255, 255, 0.95);",P2,Navigation
+src/components/SharedComponents/NavBar/NavBar.jsx,196,Color + Opacity,bg-orange-500/10 text-orange-500,Active indicator,HIGH,"background-color: rgba(249, 115, 22, 0.1);",P1,Navigation
+src/components/SharedComponents/Maps/DiscoveryMap.jsx,21,Arbitrary Dimensions + Radius,w-full h-[500px] rounded-[2.5rem],Map container,HIGH,"height: 500px; border-radius: 2.5rem;",P1,Components
+src/components/SharedComponents/Onboarding/ProviderOnboarding.jsx,44,Transform + Opacity,top-1/2 left-0 right-0 -translate-y-1/2,Progress bar,MEDIUM,"transform: translateY(-50%);",P2,Onboarding
+src/components/SharedComponents/Onboarding/ProviderOnboarding.jsx,46,Transform + Animation,top-1/2 -translate-y-1/2 transition-all,Animated progress,MEDIUM,"transform: translateY(-50%);",P2,Onboarding
+src/components/SharedComponents/Onboarding/ProviderOnboarding.jsx,55,Transform + Shadow,scale-110 shadow-primary-500/30,Hover state,MEDIUM,"transform: scale(1.1);",P2,Onboarding
+src/components/SharedComponents/Onboarding/ProviderOnboarding.jsx,72,Arbitrary Dimensions,min-h-[500px],Card minimum height,HIGH,"min-height: 500px;",P1,Onboarding
+src/components/SharedComponents/Onboarding/ProviderOnboarding.jsx,116,Transform,top-1/2 -translate-y-1/2,Vertical centering,MEDIUM,"transform: translateY(-50%);",P2,Onboarding
+src/components/SharedComponents/Onboarding/ProviderOnboarding.jsx,158,Color + Opacity,border-primary-500/50,Glass effect border,HIGH,"border-color: rgba(255, 123, 0, 0.5);",P1,Onboarding
+src/components/SharedComponents/Onboarding/ProviderOnboarding.jsx,170,Opacity + Hover,opacity-20 group-hover:opacity-40,Image overlay,MEDIUM,"opacity: 0.2; transition: opacity;",P2,Onboarding
+src/components/SharedComponents/Onboarding/ProviderOnboarding.jsx,175,Text Size,text-[10px],Tiny label text,MEDIUM,"font-size: 0.625rem;",P2,Onboarding
+src/components/SharedComponents/Onboarding/ProviderOnboarding.jsx,215,Border Radius + Opacity,rounded-b-[2.5rem] bg-slate-50/50,Card footer,HIGH,"border-radius: 2.5rem; background-color: rgba(248, 250, 252, 0.5);",P1,Onboarding
+src/components/SharedComponents/Onboarding/ProviderOnboarding.jsx,220,Transform,hover:scale-[1.02],Hover scale,MEDIUM,"transform: scale(1.02);",P2,Onboarding
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,33,Color + Opacity,bg-amber-500/10 text-amber-500 border-amber-500/20,Status badge,HIGH,"background-color: rgba(217, 119, 6, 0.1); border-color: rgba(217, 119, 6, 0.2);",P1,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,35,Color + Opacity,bg-blue-500/10 text-blue-500 border-blue-500/20,Status badge,HIGH,"background-color: rgba(59, 130, 246, 0.1);",P1,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,37,Color + Opacity,bg-purple-500/10 text-purple-500 border-purple-500/20,Status badge,HIGH,"background-color: rgba(168, 85, 247, 0.1);",P1,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,40,Color + Opacity,bg-emerald-500/10 text-emerald-500 border-emerald-500/20,Status badge,HIGH,"background-color: rgba(16, 185, 129, 0.1);",P1,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,43,Color + Opacity,bg-red-500/10 text-red-500 border-red-500/20,Status badge,HIGH,"background-color: rgba(239, 68, 68, 0.1);",P1,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,45,Color + Opacity,bg-slate-500/10 text-slate-500 border-slate-500/20,Status badge,HIGH,"background-color: rgba(100, 116, 139, 0.1);",P1,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,93,Color + Opacity,shadow-xl shadow-black/20 shadow-lg shadow-slate-200/50,Shadow opacity,MEDIUM,"box-shadow variations",P2,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,117,Color + Opacity,bg-orange-500/10 border-orange-500/20,Modal header,HIGH,"background-color: rgba(249, 115, 22, 0.1);",P1,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,151,Z-Index,z-[100],Modal backdrop,LOW,"z-index: 100;",P3,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,157,Color + Opacity,bg-black/60 backdrop-blur-sm,Modal overlay,HIGH,"background-color: rgba(0, 0, 0, 0.6);",P1,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,170,Color + Opacity,bg-emerald-500/10,Success icon background,HIGH,"background-color: rgba(16, 185, 129, 0.1);",P1,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,177,Color + Opacity,shadow-lg shadow-orange-500/20,Button shadow,MEDIUM,"box-shadow: 0 0 X rgba(249, 115, 22, 0.2);",P2,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,224,Color + Opacity,bg-slate-800/50 border-slate-700,Input dark,HIGH,"background-color: rgba(30, 41, 59, 0.5);",P1,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,233,Color + Opacity,bg-orange-500/10,Upload button active,HIGH,"background-color: rgba(249, 115, 22, 0.1);",P1,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,236,Text Size,text-[10px],Label text,MEDIUM,"font-size: 0.625rem;",P2,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,244,Text Size,text-[10px],Label text,MEDIUM,"font-size: 0.625rem;",P2,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,252,Text Size,text-[10px],Label text,MEDIUM,"font-size: 0.625rem;",P2,Dashboard
+src/components/customerDashboard/ComplaintCard/ComplaintCard.js,262,Color + Opacity,shadow-lg shadow-orange-500/20,Button shadow,MEDIUM,"box-shadow variations",P2,Dashboard
+src/components/providerDashboard/NavBar/NavBar.js,56,Color + Opacity,bg-white/90 dark:bg-slate-900/90,Mobile nav,MEDIUM,"background-color: rgba(255, 255, 255, 0.9);",P2,Navigation
+src/components/providerDashboard/NavBar/NavBar.js,67,Text Size,text-[10px],Nav item label,MEDIUM,"font-size: 0.625rem;",P2,Navigation
+src/components/providerDashboard/NavBar/NavBar.js,79,Text Size,text-[10px],Nav item label,MEDIUM,"font-size: 0.625rem;",P2,Navigation
+src/components/providerDashboard/NavBar/NavBar.js,91,Text Size,text-[10px],Nav item label,MEDIUM,"font-size: 0.625rem;",P2,Navigation
+src/app/authentication/page.js,284,Color + Opacity,bg-[#0a1128],Background color,HIGH,"background-color: #0a1128;",P1,Auth
+src/app/authentication/page.js,288,Arbitrary Dimensions + Opacity,w-[500px] h-[500px] bg-orange-500/10,Gradient blob,HIGH,"width: 500px; height: 500px; background-color: rgba(249, 115, 22, 0.1);",P1,Auth
+src/app/authentication/page.js,289,Arbitrary Dimensions + Opacity,w-[500px] h-[500px] bg-purple-500/10,Gradient blob,HIGH,"width: 500px; height: 500px; background-color: rgba(168, 85, 247, 0.1);",P1,Auth
+src/app/authentication/page.js,332,Color + Opacity,bg-orange-500/10 border-orange-500/20,Badge,HIGH,"background-color: rgba(249, 115, 22, 0.1);",P1,Auth
+src/app/authentication/page.js,367,Border Radius + Opacity,rounded-[2.5rem] bg-slate-900/60,Form container,HIGH,"border-radius: 2.5rem; background-color: rgba(15, 23, 42, 0.6);",P1,Auth
+src/app/authentication/page.js,372,Color + Opacity,bg-orange-500/10,Accent blur,HIGH,"background-color: rgba(249, 115, 22, 0.1);",P1,Auth
+src/app/authentication/page.js,392,Transform,top-1/2 -translate-y-1/2,Icon centering,MEDIUM,"transform: translateY(-50%);",P2,Auth
+src/app/authentication/page.js,406,Transform,top-1/2 -translate-y-1/2,Icon centering,MEDIUM,"transform: translateY(-50%);",P2,Auth
+src/app/authentication/page.js,420,Transform,top-1/2 -translate-y-1/2,Button centering,MEDIUM,"transform: translateY(-50%);",P2,Auth
+src/app/authentication/page.js,436,Color Gradient,bg-gradient-to-r from-orange-500 to-orange-400 shadow-orange-500/25,Button gradient,HIGH,"background: linear-gradient(to right, #f97316, #fb923c);",P1,Auth
+src/app/authentication/page.js,490,Color + Opacity,bg-slate-800/30 border-slate-800,Input dark,HIGH,"background-color: rgba(30, 41, 59, 0.3);",P1,Auth
+src/app/authentication/page.js,493,Color + Opacity,bg-orange-500/10,Icon background,HIGH,"background-color: rgba(249, 115, 22, 0.1);",P1,Auth
+src/app/authentication/page.js,507,Color + Opacity,bg-purple-500/10,Icon background,HIGH,"background-color: rgba(168, 85, 247, 0.1);",P1,Auth
+src/app/authentication/page.js,533,Color + Opacity,bg-slate-800/30 border-slate-800,Input field,HIGH,"background-color: rgba(30, 41, 59, 0.3);",P1,Auth
+src/app/authentication/page.js,535,Text Size + Animation,text-[10px] animate-pulse,Loading indicator,MEDIUM,"font-size: 0.625rem;",P2,Auth
+src/app/authentication/page.js,537,Text Size + Color,text-[10px],Status label,MEDIUM,"font-size: 0.625rem;",P2,Auth
+src/app/authentication/page.js,541,Text Size,text-[10px],Error text,MEDIUM,"font-size: 0.625rem;",P2,Auth
+src/app/authentication/page.js,614,Transform,top-1/2 -translate-y-1/2,Text centering,MEDIUM,"transform: translateY(-50%);",P2,Auth
+src/app/authentication/page.js,677,Transform,top-1/2 -translate-y-1/2,Icon positioning,MEDIUM,"transform: translateY(-50%);",P2,Auth
+src/app/authentication/page.js,688,Transform,top-1/2 -translate-y-1/2,Icon positioning,MEDIUM,"transform: translateY(-50%);",P2,Auth
+src/app/authentication/page.js,713,Color + Opacity,border-orange-500/30,Border color,HIGH,"border-color: rgba(249, 115, 22, 0.3);",P1,Auth
+src/app/authentication/page.js,782,Opacity,opacity-25,Image overlay,MEDIUM,"opacity: 0.25;",P2,Auth
+src/app/authentication/page.js,798,Opacity,opacity-25,Image overlay,MEDIUM,"opacity: 0.25;",P2,Auth
+src/app/authentication/page.js,834,Text Spacing,tracking-[0.2em],Letter spacing,MEDIUM,"letter-spacing: 0.2em;",P2,Auth
+src/app/authentication/page.js,843,Color Gradient + Shadow,bg-gradient-to-r from-orange-500 to-orange-400 shadow-orange-500/20,Button gradient,HIGH,"background: linear-gradient; box-shadow variations",P1,Auth
+src/app/(protected)/customerDashboard/page.js,78,Color + Opacity,bg-[#050a14],Background,HIGH,"background-color: #050a14;",P1,Dashboard
+src/app/(protected)/customerDashboard/page.js,81,Color + Opacity,rounded-b-[3rem],Border radius,HIGH,"border-radius: 3rem;",P1,Dashboard
+src/app/(protected)/customerDashboard/page.js,115,Arbitrary Dimensions,w-[400px],Search container width,HIGH,"width: 400px;",P1,Dashboard
+src/app/(protected)/customerDashboard/track/[bookingId]/page.js,83,Color + Opacity,bg-[#050a14],Background,HIGH,"background-color: #050a14;",P1,Dashboard
+src/app/(protected)/customerDashboard/track/[bookingId]/page.js,117,Calc Expression,h-[calc(100vh-140px)],Dynamic height,HIGH,"height: calc(100vh - 140px);",P1,Dashboard
+src/app/(protected)/customerDashboard/track/[bookingId]/page.js,120,Arbitrary Dimensions,min-h-[300px],Minimum height,HIGH,"min-height: 300px;",P1,Dashboard
+src/app/(protected)/customerDashboard/track/[bookingId]/page.js,124,Border Radius + Opacity,rounded-[2.5rem],Border radius,HIGH,"border-radius: 2.5rem;",P1,Dashboard
+src/app/(protected)/customerDashboard/track/[bookingId]/page.js,149,Border Radius + Opacity,rounded-[2.5rem],Border radius,HIGH,"border-radius: 2.5rem;",P1,Dashboard
+src/app/(protected)/customerDashboard/track/[bookingId]/page.js,164,Border Radius,rounded-[2rem],Border radius,HIGH,"border-radius: 2rem;",P1,Dashboard
+src/app/(protected)/customerDashboard/track/[bookingId]/page.js,188,Arbitrary Dimensions + Radius,w-96 lg:w-96 rounded-[2rem],Panel sizing,HIGH,"border-radius: 2rem;",P1,Dashboard
+src/app/(protected)/customerDashboard/track/[bookingId]/page.js,223,Text Size,text-[10px],Label text,MEDIUM,"font-size: 0.625rem;",P2,Dashboard
+src/app/(protected)/customerDashboard/track/[bookingId]/page.js,236,Text Size + Spacing,text-[10px] tracking-wider,Label text,MEDIUM,"font-size: 0.625rem; letter-spacing: 0.05em;",P2,Dashboard
+src/app/(protected)/customerDashboard/track/[bookingId]/page.js,246,Text Size + Spacing,text-[10px] tracking-wider,Label text,MEDIUM,"font-size: 0.625rem;",P2,Dashboard
+src/app/(protected)/customerDashboard/track/[bookingId]/page.js,282,Color Gradient,bg-gradient-to-r from-orange-500 to-orange-400 shadow-orange-500/20,Button gradient,HIGH,"background: linear-gradient;",P1,Dashboard
+src/app/(protected)/customerDashboard/viewProvider/page.js,69,Color + Opacity,bg-[#050a14],Background,HIGH,"background-color: #050a14;",P1,Dashboard
+src/app/(protected)/customerDashboard/viewProvider/page.js,100,Arbitrary Dimensions + Radius,w-full lg:w-[400px] rounded-[2rem],Card sizing,HIGH,"width: 400px; border-radius: 2rem;",P1,Dashboard
+src/app/(protected)/customerDashboard/viewProvider/page.js,148,Color Gradient,bg-gradient-to-r from-orange-500 to-orange-400 shadow-orange-500/20,Button gradient,HIGH,"background: linear-gradient;",P1,Dashboard
+src/app/(protected)/customerDashboard/viewProvider/page.js,179,Border Radius,rounded-[2rem],Info box,HIGH,"border-radius: 2rem;",P1,Dashboard
+src/app/(protected)/customerDashboard/viewProvider/page.js,213,Border Radius,rounded-[2rem],Info box,HIGH,"border-radius: 2rem;",P1,Dashboard
+src/app/(protected)/customerDashboard/complaintForm/page.js,287,Arbitrary Dimensions + Radius,max-w-5xl rounded-[2.5rem],Form container,HIGH,"border-radius: 2.5rem;",P1,Dashboard
+src/app/(protected)/customerDashboard/complaintForm/page.js,330,Arbitrary Dimensions,min-h-[550px],Form body height,HIGH,"min-height: 550px;",P1,Dashboard
+src/app/(protected)/customerDashboard/complaintForm/page.js,315,Text Size,text-[10px],Description text,MEDIUM,"font-size: 0.625rem;",P2,Dashboard
+src/app/(protected)/customerDashboard/complaintForm/page.js,472,Text Size,text-[10px],Help text,MEDIUM,"font-size: 0.625rem;",P2,Dashboard
+src/app/(protected)/customerDashboard/complaintForm/page.js,498,Text Size,text-[10px],Help text,MEDIUM,"font-size: 0.625rem;",P2,Dashboard
+src/app/(protected)/customerDashboard/complaintForm/page.js,515,Z-Index,z-10 (possibly [10]),Remove button z,LOW,"z-index: 10;",P3,Dashboard
+src/app/(protected)/customerDashboard/complaintForm/page.js,603,Text Size,text-[10px],Help text,MEDIUM,"font-size: 0.625rem;",P2,Dashboard
+src/app/(protected)/customerDashboard/complaintForm/page.js,677,Text Size,text-[10px],Price text,MEDIUM,"font-size: 0.625rem;",P2,Dashboard
+src/app/(protected)/customerDashboard/complaintForm/page.js,807,Animation,animate-bounce,Bouncing animation,LOW,"animation: bounce",P3,Dashboard
+src/app/(protected)/providerDashboard/page.js,113,Color + Opacity,bg-blue-500/10,Stat background,HIGH,"background-color: rgba(59, 130, 246, 0.1);",P1,Dashboard
+src/app/(protected)/providerDashboard/page.js,122,Color + Opacity,bg-amber-500/10,Stat background,HIGH,"background-color: rgba(217, 119, 6, 0.1);",P1,Dashboard
+src/app/(protected)/providerDashboard/page.js,131,Color + Opacity,bg-emerald-500/10,Stat background,HIGH,"background-color: rgba(16, 185, 129, 0.1);",P1,Dashboard
+src/app/(protected)/providerDashboard/page.js,138,Color + Opacity,bg-[#050a14],Background,HIGH,"background-color: #050a14;",P1,Dashboard
+src/app/(protected)/providerDashboard/page.js,144,Arbitrary Dimensions + Opacity,w-96 h-96 bg-purple-500/10,Gradient blob,HIGH,"width: 24rem; background-color: rgba(168, 85, 247, 0.1);",P1,Dashboard
+src/app/(protected)/providerDashboard/page.js,145,Arbitrary Dimensions + Opacity,w-64 h-64 bg-orange-500/10,Gradient blob,HIGH,"width: 16rem; background-color: rgba(249, 115, 22, 0.1);",P1,Dashboard
+src/app/(protected)/providerDashboard/page.js,152,Color + Opacity,bg-purple-500/10 border-purple-500/20,Status badge,HIGH,"background-color: rgba(168, 85, 247, 0.1);",P1,Dashboard
+src/app/(protected)/providerDashboard/page.js,182,Color + Opacity + Backdrop,bg-slate-800/80 backdrop-blur-md,Card background,HIGH,"background-color: rgba(30, 41, 59, 0.8);",P1,Dashboard
+src/app/(protected)/providerDashboard/page.js,207,Color + Opacity + Backdrop,bg-rose-500/10 border-rose-500/25 shadow-rose-500/5,Alert box,HIGH,"background-color: rgba(244, 63, 94, 0.1);",P1,Dashboard
+src/app/(protected)/providerDashboard/page.js,220,Color + Opacity + Transform,bg-rose-600/20 border-rose-500/30 hover:scale-[1.02],Button,HIGH,"background-color: rgba(225, 29, 72, 0.2); transform: scale(1.02);",P1,Dashboard
+src/app/(protected)/providerDashboard/viewComplaint/page.js,206,Inline Style,style={{ ... }},Card styling object,LOW,"Convert to CSS class",P3,Dashboard
+src/app/(protected)/providerDashboard/viewComplaint/page.js,250,Color + Opacity,bg-[#050a14],Background,HIGH,"background-color: #050a14;",P1,Dashboard
+src/app/(protected)/adminDashboard/UserManagement.jsx,296,Arbitrary Dimensions,max-w-5xl max-h-[90vh],Modal sizing,HIGH,"max-height: 90vh;",P1,Admin
+src/app/(protected)/adminDashboard/UserManagement.jsx,453,Arbitrary Dimensions,max-h-[300px],Scrollable container,HIGH,"max-height: 300px;",P1,Admin
+src/app/(protected)/adminDashboard/UserManagement.jsx,482,Text Size,text-[10px],Label text,MEDIUM,"font-size: 0.625rem;",P2,Admin
+src/app/(protected)/adminDashboard/DashboardOverview.jsx,99,Arbitrary Dimensions,w-[24%],Bar chart segment,HIGH,"width: 24%;",P1,Admin
+src/app/(protected)/adminDashboard/DashboardOverview.jsx,108,Arbitrary Dimensions,w-[65%],Bar chart segment,HIGH,"width: 65%;",P1,Admin
+src/app/(protected)/adminDashboard/DashboardOverview.jsx,117,Arbitrary Dimensions,w-[92%],Bar chart segment,HIGH,"width: 92%;",P1,Admin
+src/app/(protected)/adminDashboard/page.js,141,Text Size,text-[9px],Tab label,MEDIUM,"font-size: 0.5625rem;",P2,Admin
+src/styles/globals.css,314,Keyframe,@keyframes shimmer,Custom animation,LOW,"Keep in CSS",P3,Styles
+src/styles/globals.css,323,Keyframe,@keyframes float,Custom animation,LOW,"Keep in CSS",P3,Styles
+src/styles/globals.css,332,Keyframe,@keyframes glow,Custom animation,LOW,"Keep in CSS",P3,Styles
+src/styles/globals.css,341,Keyframe,@keyframes pulse,Custom animation,LOW,"Keep in CSS",P3,Styles
+src/styles/globals.css,350,Keyframe,@keyframes bounce,Custom animation,LOW,"Keep in CSS",P3,Styles
+src/styles/globals.css,360,Keyframe,@keyframes fadeInUp,Custom animation,LOW,"Keep in CSS",P3,Styles
+src/styles/authentication.css,82,Keyframe,@keyframes float,Custom animation,LOW,"Keep in CSS",P3,Styles
+src/styles/authentication.css,671,Calc Expression,width: calc(100% - 30px),Dynamic width,LOW,"Keep in CSS",P3,Styles
+src/styles/authentication.css,737,Keyframe,@keyframes fadeIn,Custom animation,LOW,"Keep in CSS",P3,Styles
+src/styles/publicStyles/hero.css,6,Calc Expression,height: calc(100dvh - 72px),Dynamic height,LOW,"Keep in CSS",P3,Styles
+src/styles/publicStyles/hero.css,70,Keyframe,@keyframes float,Custom animation,LOW,"Keep in CSS",P3,Styles
+src/styles/publicStyles/hero.css,99,Keyframe,@keyframes fadeUp,Custom animation,LOW,"Keep in CSS",P3,Styles
+src/styles/publicStyles/login-first.css,109,Keyframe,@keyframes fadeUpScale,Custom animation,LOW,"Keep in CSS",P3,Styles
+src/styles/publicStyles/login-first.css,114,Keyframe,@keyframes pulseIcon,Custom animation,LOW,"Keep in CSS",P3,Styles
+src/styles/publicStyles/coming-soon.css,68,Keyframe,@keyframes spin,Custom animation,LOW,"Keep in CSS",P3,Styles
+src/styles/not-found.css,63,Keyframe,@keyframes floatCard,Custom animation,LOW,"Keep in CSS",P3,Styles
+src/styles/providerDashboard.css,9,Calc Expression,width: calc(100% - 240px),Layout accounting,LOW,"Keep in CSS",P3,Styles

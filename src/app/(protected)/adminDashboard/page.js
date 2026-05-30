@@ -5,98 +5,101 @@ import DashboardOverview from "./DashboardOverview";
 import VerificationRequests from "./verification-requests/page";
 import UserManagement from "./UserManagement";
 import RegisterAdmin from "./RegisterAdmin";
-import { LayoutDashboard, Users, UserCheck, Settings, LogOut, Search, Bell, UserPlus } from "lucide-react";
+import Earnings from "./Earnings";
+import "./adminPanel.css";
+import { LayoutDashboard, Users, UserCheck, Settings, LogOut, Search, Bell, UserPlus, Coins } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const { user, logout } = useAuth();
 
+  const isOwnerAdmin = user?.email === "www.aleemahmadghias@gmail.com";
+
   const tabs = [
-    { id: "overview", label: "Overview", icon: <LayoutDashboard className="w-5 h-5" /> },
-    { id: "providers", label: "Provider Requests", icon: <UserCheck className="w-5 h-5" /> },
-    { id: "users", label: "User Management", icon: <Users className="w-5 h-5" /> },
-    { id: "register-admin", label: "Register Admin", icon: <UserPlus className="w-5 h-5" /> },
-    { id: "settings", label: "System Settings", icon: <Settings className="w-5 h-5" /> },
+    { id: "overview", label: "Overview", icon: <LayoutDashboard className="nav-icon" /> },
+    { id: "providers", label: "Provider Requests", icon: <UserCheck className="nav-icon" /> },
+    { id: "users", label: "User Management", icon: <Users className="nav-icon" /> },
+    ...(isOwnerAdmin ? [
+      { id: "earnings", label: "Earnings", icon: <Coins className="nav-icon" /> },
+      { id: "register-admin", label: "Register Admin", icon: <UserPlus className="nav-icon" /> }
+    ] : []),
+    { id: "settings", label: "System Settings", icon: <Settings className="nav-icon" /> },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--admin-surface)', color: 'var(--admin-text-primary)', fontFamily: "'Outfit', system-ui, sans-serif" }}>
       
-      {/* ─── MOBILE TOP HEADER (Visible on lg:hidden) ─── */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center text-white">
-            <ShieldCheck className="w-5 h-5" />
+      {/* ─── MOBILE TOP HEADER ─── */}
+      <header className="admin-mobile-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #6366f1, #a78bfa)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+            <ShieldCheck style={{ width: 18, height: 18 }} />
           </div>
-          <span className="font-extrabold text-base tracking-tight">Admin Console</span>
+          <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#f1f5f9' }}>Admin</span>
         </div>
-        
         <button 
           onClick={() => logout()}
-          className="p-2 rounded-xl text-rose-500 hover:bg-rose-500/10 transition-colors"
+          style={{ padding: 8, borderRadius: 10, color: '#f87171', background: 'transparent', border: 'none', cursor: 'pointer' }}
           aria-label="Logout"
         >
-          <LogOut className="w-5 h-5" />
+          <LogOut style={{ width: 20, height: 20 }} />
         </button>
       </header>
 
-      {/* ─── DESKTOP SIDEBAR (Visible on lg and up) ─── */}
-      <aside className="w-64 glass border-r hidden lg:flex flex-col p-6 fixed inset-y-0 z-50">
-        <div className="flex items-center gap-3 mb-12">
-          <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center text-white shadow-lg">
-            <ShieldCheck className="w-6 h-6" />
+      {/* ─── DESKTOP SIDEBAR ─── */}
+      <aside className="admin-sidebar">
+        <div className="admin-sidebar-brand">
+          <div className="brand-icon">
+            <ShieldCheck style={{ width: 22, height: 22 }} />
           </div>
-          <span className="text-xl font-bold tracking-tight">Admin Console</span>
+          <div>
+            <div className="brand-text">Servify</div>
+            <div className="brand-sub">Admin Console</div>
+          </div>
         </div>
 
-        <nav className="flex-1 space-y-2">
+        <nav className="admin-nav">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold transition-all",
-                activeTab === tab.id 
-                  ? "bg-primary-500 text-white shadow-lg shadow-primary-500/20" 
-                  : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900"
-              )}
+              className={`admin-nav-item ${activeTab === tab.id ? 'active' : ''}`}
             >
               {tab.icon}
-              {tab.label}
+              <span className="nav-label">{tab.label}</span>
             </button>
           ))}
         </nav>
 
         <button 
           onClick={() => logout()}
-          className="mt-auto flex items-center gap-3 px-4 py-3 rounded-2xl font-semibold text-rose-500 hover:bg-rose-500/10 transition-all"
+          className="admin-sidebar-logout"
         >
-          <LogOut className="w-5 h-5" />
-          Logout
+          <LogOut style={{ width: 18, height: 18 }} />
+          <span>Logout</span>
         </button>
       </aside>
 
       {/* ─── MAIN CONTENT ─── */}
-      <main className="flex-1 lg:ml-64 p-4 md:p-8 pt-24 lg:pt-8 pb-24 lg:pb-8">
-        <header className="flex items-center justify-between mb-12">
+      <main className="admin-main">
+        <header className="admin-main-header">
           <div>
-            <h1 className="text-3xl font-black text-gradient">
+            <h1 className="header-title">
               {tabs.find(t => t.id === activeTab)?.label}
             </h1>
-            <p className="text-slate-500 font-medium">Welcome back, {user?.name || "Admin"}</p>
+            <p className="header-subtitle">Welcome back, {user?.name || "Admin"}</p>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-2xl glass border">
-              <Search className="w-5 h-5 text-slate-400" />
-              <input type="text" placeholder="Search..." className="bg-transparent border-none outline-none text-sm font-medium w-48" />
+          <div className="admin-toolbar">
+            <div className="admin-search-box" style={{ display: 'none' }}> {/* Hidden on mobile via CSS */}
+              <Search className="search-icon" />
+              <input type="text" placeholder="Search anything..." />
             </div>
-            <button className="relative p-2.5 rounded-xl glass border text-slate-500 hover:scale-110 transition-all">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full" />
+            <button className="admin-notif-btn">
+              <Bell style={{ width: 18, height: 18 }} />
+              <span className="notif-dot" />
             </button>
           </div>
         </header>
@@ -104,41 +107,38 @@ export default function AdminDashboardPage() {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
           >
             {activeTab === "overview" && <DashboardOverview />}
             {activeTab === "providers" && <VerificationRequests />}
             {activeTab === "users" && <UserManagement />}
+            {activeTab === "earnings" && <Earnings />}
             {activeTab === "register-admin" && <RegisterAdmin />}
             {activeTab === "settings" && (
-              <div className="premium-card">
-                <h2 className="text-xl font-bold mb-6">System Settings</h2>
-                <p className="text-slate-500">Configuration panel coming soon.</p>
+              <div className="admin-panel-card" style={{ textAlign: 'center', padding: '60px 24px' }}>
+                <Settings style={{ width: 48, height: 48, color: 'var(--admin-text-muted)', marginBottom: 16, margin: '0 auto 16px' }} />
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--admin-text-primary)', marginBottom: 8 }}>System Settings</h2>
+                <p style={{ color: 'var(--admin-text-muted)', fontSize: '0.85rem', fontWeight: 500 }}>Configuration panel coming soon.</p>
               </div>
             )}
           </motion.div>
         </AnimatePresence>
       </main>
 
-      {/* ─── MOBILE BOTTOM TAB BAR (Visible on screens below lg) ─── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-2 py-2.5 shadow-2xl">
-        <div className="flex items-center justify-around">
+      {/* ─── MOBILE BOTTOM TAB BAR ─── */}
+      <div className="admin-mobile-nav">
+        <div className="nav-items">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex flex-col items-center justify-center gap-1 py-1 px-2.5 rounded-2xl transition-all",
-                activeTab === tab.id 
-                  ? "text-primary-500 font-bold scale-105" 
-                  : "text-slate-400 dark:text-slate-500 hover:text-slate-650"
-              )}
+              className={`mobile-tab ${activeTab === tab.id ? 'active' : ''}`}
             >
               {tab.icon}
-              <span className="text-[9px] tracking-tight">{tab.label}</span>
+              <span>{tab.label.split(' ')[0]}</span>
             </button>
           ))}
         </div>
@@ -148,10 +148,11 @@ export default function AdminDashboardPage() {
   );
 }
 
-function ShieldCheck({ className }) {
+function ShieldCheck({ className, style }) {
   return (
     <svg 
-      className={className} 
+      className={className}
+      style={style}
       viewBox="0 0 24 24" 
       fill="none" 
       stroke="currentColor" 

@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono, Sacramento, Outfit, Great_Vibes } from "next/font/google";
 import "@/styles/globals.css";
+import "@/styles/utilities.css";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";

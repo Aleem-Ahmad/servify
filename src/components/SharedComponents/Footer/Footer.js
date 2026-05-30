@@ -33,10 +33,7 @@ export default function Footer({
       setTaps(count);
       if (count >= 5) {
         e.preventDefault();
-        const pass = prompt("Servify Access Key:");
-        if (pass === "admin_servify") {
-          window.location.href = "/adminDashboard";
-        }
+        window.location.href = "/admin/login";
         setTaps(0);
       }
     } else {

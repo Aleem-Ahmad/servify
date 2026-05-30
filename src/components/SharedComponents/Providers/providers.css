@@ -15,7 +15,7 @@
 @media (max-width: 768px) {
   .providers-section {
     padding: 24px 1.5rem;
-    height: auto;
+    height: 100%;
   }
 }
 
@@ -99,35 +99,60 @@
 
 /* ================= CARD ================= */
 .provider-card {
-  flex: 0 0 220px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 2px dotted #ff7a00;
-  border-radius: 20% 50% 30% 40%;
-  padding: 1.5rem 1rem;
+  flex: 0 0 240px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 122, 0, 0.15);
+  border-radius: 24px;
+  padding: 1.75rem 1.25rem;
   text-align: center;
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
   cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+}
+
+.providers-section.dark .provider-card {
+  background: rgba(30, 41, 59, 0.4);
+  border-color: rgba(255, 122, 0, 0.2);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
 }
 
 .provider-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 0 25px rgba(255, 122, 0, 0.6), 0 10px 30px rgba(0, 0, 0, 0.2);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(255, 122, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.05);
+  border-color: rgba(255, 122, 0, 0.45);
 }
 
 /* ================= CARD CONTENT ================= */
 .provider-card img {
-  width: 70px;
-  height: 70px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 10px;
-  border: 2px solid #ff7a00;
+  margin-bottom: 12px;
+  border: 3px solid rgba(255, 122, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
+}
+
+.provider-card:hover img {
+  transform: scale(1.05);
+  border-color: rgba(255, 122, 0, 0.6);
 }
 
 .provider-card h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 6px 0 4px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 8px 0 6px;
+  color: #1e293b;
+  transition: color 0.3s ease;
+}
+
+.providers-section.dark .provider-card h3 {
+  color: #f1f5f9;
 }
 
 .rating {
@@ -136,13 +161,25 @@
   align-items: center;
   gap: 4px;
   color: #ff7a00;
-  font-size: 0.85rem;
-  margin-bottom: 4px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin-bottom: 6px;
 }
 
 .price-tag {
-  font-size: 0.8rem;
-  color: #6b7280;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 4px 10px;
+  border-radius: 8px;
+  width: fit-content;
+  margin: 8px auto 0;
+}
+
+.providers-section.dark .price-tag {
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* ================= BADGES & STATS ================= */
@@ -150,26 +187,43 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  background: rgba(0, 0, 0, 0.05);
-  padding: 4px 8px;
-  border-radius: 12px;
+  gap: 6px;
+  background: rgba(255, 122, 0, 0.06);
+  border: 1px solid rgba(255, 122, 0, 0.15);
+  padding: 6px 12px;
+  border-radius: 20px;
   width: fit-content;
-  margin: 0 auto 10px;
+  margin: 0 auto 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.providers-section.dark .badge-overlay {
+  background: rgba(255, 122, 0, 0.12);
+  border-color: rgba(255, 122, 0, 0.25);
 }
 
 .badge-text {
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 0.68rem;
+  font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #ff7a00;
 }
 
-.badge-icon.elite { color: #ffd700; }
-.badge-icon.pro { color: #c0c0c0; }
-.badge-icon.basic { color: #cd7f32; }
+.providers-section.dark .badge-text {
+  color: #ff9838;
+}
 
-.provider-card.elite { border-style: solid; box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); }
-.provider-card.pro { border-style: dashed; }
+.badge-icon.elite { color: #f59e0b; filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.2)); }
+.badge-icon.pro { color: #8b5cf6; filter: drop-shadow(0 2px 4px rgba(139, 92, 246, 0.2)); }
+.badge-icon.basic { color: #64748b; }
+
+.provider-card.elite { 
+  border-color: rgba(245, 158, 11, 0.35); 
+}
+.provider-card.pro { 
+  border-color: rgba(139, 92, 246, 0.3); 
+}
 
 .card-stats {
   display: flex;

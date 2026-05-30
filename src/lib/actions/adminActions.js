@@ -60,3 +60,36 @@ export async function getAllUsers() {
     return { success: false, message: error.message };
   }
 }
+
+export async function getAdminEarnings() {
+  try {
+    const completedBookings = await prisma.booking.findMany({
+      where: { status: "Completed" },
+      orderBy: { createdAt: "desc" }
+    });
+
+    const totalProcessed = completedBookings.reduce((sum, b) => sum + (b.budget || 0), 0);
+    // Platform cut is 10% of budget + any convenience fees in payment json
+    const platformCut = completedBookings.reduce((sum, b) => {
+      let cut = (b.budget || 0) * 0.10;
+      if (b.payment && typeof b.payment === 'object') {
+        const fee = parseFloat(b.payment.convenienceFee);
+        if (!isNaN(fee)) cut += fee;
+      }
+      return sum + cut;
+    }, 0);
+
+    return {
+      success: true,
+      earnings: {
+        totalProcessed,
+        platformCut,
+        bookingsCount: completedBookings.length,
+        bookings: JSON.parse(JSON.stringify(completedBookings)),
+      }
+    };
+  } catch (error) {
+    console.error("Get Admin Earnings Error:", error);
+    return { success: false, message: error.message };
+  }
+}

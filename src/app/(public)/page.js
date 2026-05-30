@@ -8,7 +8,6 @@ import HowItWorks from "@/components/SharedComponents/HowItWorks/HowItWorks";
 import Providers from "@/components/SharedComponents/Providers/Providers";
 import Footer from "@/components/SharedComponents/Footer/Footer";
 import { useTheme } from "@/context/ThemeContext";
-import { motion } from "framer-motion";
 import "@/styles/landingPage.css";
 
 export default function LandingPage() {
@@ -26,37 +25,28 @@ export default function LandingPage() {
         </section>
 
         {/* Services Section */}
-        <motion.section 
+        <section 
           id="services"
-          className="lp-section lp-services"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
+          className="lp-section lp-services svx-animate-fade-in"
         >
           <Services />
-        </motion.section>
+        </section>
 
         {/* How It Works Section */}
-        <motion.section 
+        <section 
           id="how-it-works"
-          className="lp-section lp-hiw"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          className="lp-section lp-hiw svx-animate-slide-up"
         >
           <HowItWorks />
-        </motion.section>
+        </section>
 
         {/* Top Rated Providers */}
-        <motion.section 
+        <section 
           id="providers"
-          className="lp-section lp-providers"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
+          className="lp-section lp-providers svx-animate-fade-in"
         >
           <Providers />
-        </motion.section>
+        </section>
 
         {/* Snapping Footer */}
         <footer className="lp-footer">

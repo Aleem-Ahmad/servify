@@ -232,24 +232,77 @@
 /* ================= RESPONSIVE ================= */
 @media (max-width: 900px) {
   .footer {
-    padding: 1.5rem 1.25rem 1rem;
+    padding: 1.5rem 1rem 1rem;
+    height: 100%;
+    justify-content: space-between;
   }
   .footer-grid {
     grid-template-columns: 1fr;
     text-align: center;
-    gap: 1.5rem;
+    gap: 0.8rem;
   }
-  .footer-info,
-  .footer-contact-wrapper {
-    text-align: center;
-    justify-content: center;
+  .footer-logo {
+    margin-bottom: 0.2rem;
+  }
+  .footer-desc {
+    display: none; /* Hide verbose text to save space */
+  }
+  .footer-social-group h4 {
+    display: none; /* Hide header to save space */
   }
   .social-links {
     justify-content: center;
+    margin-bottom: 0.5rem;
+    gap: 0.4rem;
+  }
+  .social-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+  .footer-download {
+    margin-top: 0.2rem;
+  }
+  .download-outline-btn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+  .footer-contact-wrapper {
+    text-align: center;
+    justify-content: center;
+    width: 100%;
+  }
+  .contact-card {
+    padding: 12px 16px;
+    border-radius: 16px;
+  }
+  .contact-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.1rem;
+  }
+  .contact-card p {
+    display: none; /* Hide subtitle to save space */
+  }
+  .contact-premium-form {
+    gap: 0.4rem;
   }
   .input-row {
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.4rem;
+  }
+  .contact-premium-form input,
+  .contact-premium-form textarea {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    border-radius: 8px;
+  }
+  .contact-premium-form textarea {
+    min-height: 48px;
+  }
+  .contact-send-btn {
+    padding: 8px;
+    font-size: 0.8rem;
+    border-radius: 8px;
   }
 }
 
