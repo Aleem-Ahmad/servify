@@ -37,6 +37,8 @@ model User {
   performance      Json?     // { rating, completedJobs, avgResponseTime, complaintHistory, leaderboardPoints }
   
   isOnline         Boolean   @default(false)
+  hourlyRate       Float     @default(0)
+
   
   // Location as JSON or separate lat/long fields
   location         Json?     // { type: 'Point', coordinates: [lng, lat] }

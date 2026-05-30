@@ -1,3 +1,4 @@
+"use client";
 // src/components/ProviderCard.jsx
 import React, { useState } from 'react';
 import '@/../src/app/(protected)/adminDashboard/adminPanel.css';
@@ -24,10 +25,19 @@ export default function ProviderCard({ provider, editable }) {
     setNewOffer({ title: '', discountPct: '', validFrom: '', validTo: '' });
   };
 
-  const handleSave = () => {
-    // Placeholder: In a real app you would call an API to persist changes.
-    console.log('Saving provider data', { hourlyRate, schedule, offers });
-    alert('Changes saved (mock)');
+  const handleSave = async () => {
+    try {
+      const res = await fetch('/api/provider/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hourlyRate, schedule, offers }),
+      });
+      if (!res.ok) throw new Error('Failed to save settings');
+      alert('Settings saved successfully!');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save settings');
+    }
   };
 
   return (

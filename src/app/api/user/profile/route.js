@@ -15,7 +15,13 @@ export async function GET() {
       return NextResponse.json({ message: "Not authenticated" }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        schedule: true,
+        offers: true,
+      }
+    });
 
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });

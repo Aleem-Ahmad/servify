@@ -10,7 +10,7 @@ import {
   BellRing, Briefcase, CheckCircle, Clock, Star, 
   TrendingUp, Activity, ArrowRight, Wrench, ShieldAlert, Calendar, MapPin, AlertCircle
 } from "lucide-react";
-
+import ProviderCard from '@/components/ProviderCard';
 export default function ProviderDashboard() {
   const router = useRouter();
   const { t, locale } = useLanguage();
@@ -278,6 +278,11 @@ export default function ProviderDashboard() {
             </div>
           </motion.div>
         )}
+        
+        {/* ── Provider Settings ── */}
+        <section className="mb-12">
+          {profile && <ProviderCard provider={profile} editable={true} />}
+        </section>
         
         {/* ── Stats Overview ── */}
         <section>
