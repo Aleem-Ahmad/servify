@@ -60,6 +60,8 @@ model User {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   
+  schedule          Schedule?   @relation("UserSchedule")
+  offers           Offer[]      @relation("UserOffers")
   // Relations
   customerBookings Booking[] @relation("CustomerBookings")
   providerBookings Booking[] @relation("ProviderBookings")
@@ -134,4 +136,26 @@ model VerifyCode {
   email            String
   code             String
   expiresAt        DateTime
+}
+
+model Schedule {
+  id          String   @id @default(uuid())
+  providerId  String   @unique
+  startHour   Int      // 0-24
+  endHour     Int
+  daysOfWeek  Int[]    // 0=Sun .. 6=Sat
+  provider    User @relation("UserSchedule", fields: [providerId], references: [id])
+}
+
+model Offer {
+  id          String   @id @default(uuid())
+  providerId  String
+  title       String
+  description String?
+  discountPct Float?
+  discountAmt Float?
+  validFrom   DateTime
+  validTo     DateTime
+  serviceIds  String[]
+  provider    User @relation("UserOffers", fields: [providerId], references: [id])
 }
