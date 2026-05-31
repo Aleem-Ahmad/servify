@@ -1,18 +1,13 @@
-# supabase-setup.ps1
-# -------------------------------------------------
-# *** WARNING: This script contains your DB password in an env var ***
-# -------------------------------------------------
-$env:SUPABASE_DB_PASSWORD = '$7c#WFuf6MFi*$S'   # your Postgres password
+# supabase-setup.ps1 — Option A project (stvjosvtexdiuqgmikhl)
+# Get connection strings from: Supabase Dashboard → Project Settings → Database
 
-# 1️⃣ Login (public key)
-supabase login --apikey sb_publishable_wIPnx0-d_ICEMnQJiMEd2A_BJgmfKLb
-
-# 2️⃣ Initialise Supabase locally
-supabase init
-
-# 3️⃣ Link to remote project
-supabase link --project-ref knmbejlcqytcktdqpvrb
-
-# 4️⃣ Show the full connection string (for copy‑paste)
-Write-Host "Postgres connection string:"
-Write-Host "postgresql://postgres:$env:SUPABASE_DB_PASSWORD@db.knmbejlcqytcktdqpvrb.supabase.co:5432/postgres"
+Write-Host "Supabase project: stvjosvtexdiuqgmikhl"
+Write-Host ""
+Write-Host "Copy these into Vercel / .env.local:"
+Write-Host "  DATABASE_URL  → Transaction pooler (port 6543, ?pgbouncer=true)"
+Write-Host "  DIRECT_URL    → Direct / session pooler (port 5432)"
+Write-Host "  NEXT_PUBLIC_SUPABASE_URL → https://stvjosvtexdiuqgmikhl.supabase.co"
+Write-Host "  NEXT_PUBLIC_SUPABASE_ANON_KEY → API → anon public"
+Write-Host "  SUPABASE_SERVICE_ROLE_KEY     → API → service_role"
+Write-Host ""
+Write-Host "Do NOT commit real passwords to git."
