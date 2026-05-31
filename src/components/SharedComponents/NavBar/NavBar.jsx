@@ -27,7 +27,7 @@ export default function Navbar({ type = "public" }) {
 
   const navLinks = useMemo(() => {
     const links = [
-      { name: t("navbar.home"), href: type === "dashboard" ? "/customerDashboard" : "#home", icon: <Home className="w-5 h-5" /> },
+      { name: t("navbar.home"), href: type === "dashboard" ? "/customerDashboard#home" : "#home", icon: <Home className="w-5 h-5" /> },
       { name: t("navbar.services"), href: type === "dashboard" ? "/customerDashboard#services" : "#services", icon: <Wrench className="w-5 h-5" /> },
     ];
 
@@ -41,7 +41,7 @@ export default function Navbar({ type = "public" }) {
       links.push(
         { name: t("navbar.providers"), href: "#providers", icon: <Users className="w-5 h-5" /> },
         { name: t("navbar.howItWorks"), href: "#how-it-works", icon: <HelpCircle className="w-5 h-5" /> },
-        { name: t("auth.login"), href: "/authentication", icon: <User className="w-5 h-5" /> }
+        { name: t("About"), href: "#about", icon: <HelpCircle className="w-5 h-5" /> }
       );
     }
     return links;
@@ -99,11 +99,8 @@ export default function Navbar({ type = "public" }) {
 
           {type === "public" ? (
             <>
-              <Link href="/authentication" className="svx-link" style={{ fontWeight: 600 }}>
-                {t("auth.login")}
-              </Link>
               <Link href="/authentication" className="svx-cta">
-                {t("auth.signup")}
+                {t("Get Started")}
               </Link>
             </>
           ) : (
@@ -141,7 +138,7 @@ export default function Navbar({ type = "public" }) {
 
           {type === "public" ? (
             <Link href="/authentication" className="svx-cta" style={{ padding: "6px 12px", fontSize: "0.7rem", borderRadius: "8px" }}>
-              {t("auth.login")}
+              {t("Get Started")}
             </Link>
           ) : (
             <Link 

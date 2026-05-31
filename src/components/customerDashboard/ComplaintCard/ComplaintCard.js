@@ -46,6 +46,17 @@ export default function ComplaintCard({ complaint }) {
     }
   };
 
+  const getUrgencyBadge = (urgency) => {
+    switch (urgency) {
+      case "Emergency":
+        return "bg-red-500/10 text-red-500 border border-red-500/20 font-black";
+      case "Urgent":
+        return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-extrabold";
+      default:
+        return "bg-slate-500/10 text-slate-500 border border-slate-500/20";
+    }
+  };
+
   const handleCall = () => {
     const phone = complaint.providerPhone;
     if (phone) {
@@ -96,7 +107,14 @@ export default function ComplaintCard({ complaint }) {
         <div>
           {/* HEADER */}
           <div className="flex items-start justify-between gap-4 mb-4">
-            <h2 className="text-lg font-black line-clamp-1">{complaint.title}</h2>
+            <div>
+              <h2 className="text-lg font-black line-clamp-1">{complaint.title}</h2>
+              {complaint.urgency && complaint.urgency !== "Normal" && (
+                <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-md text-[10px] uppercase tracking-wider ${getUrgencyBadge(complaint.urgency)}`}>
+                  {complaint.urgency === "Emergency" ? "🚨 Emergency" : "⚡ Urgent"}
+                </span>
+              )}
+            </div>
             <span className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider ${getStatusClass(complaint.status)}`}>
               {complaint.status}
             </span>
@@ -113,11 +131,18 @@ export default function ComplaintCard({ complaint }) {
               </p>
             )}
             {complaint.otp && (
-              <div className={`mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black border ${
-                dark ? "bg-orange-500/10 border-orange-500/20 text-orange-400" : "bg-orange-50 border-orange-200 text-orange-600"
+              <div className={`mt-4 p-3 rounded-2xl border text-center transition-all ${
+                dark ? "bg-orange-500/5 border-orange-500/20" : "bg-orange-500/5 border-orange-200"
               }`}>
-                <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
-                🔑 Verification OTP: {complaint.otp}
+                <span className={`block text-[10px] font-black uppercase tracking-widest mb-1 ${dark ? "text-orange-400/60" : "text-orange-655"}`}>
+                  🔒 Security Check Key
+                </span>
+                <span className={`text-xl font-black tracking-widest ${dark ? "text-orange-400" : "text-orange-600"}`}>
+                  🔑 {complaint.otp}
+                </span>
+                <span className={`block text-[9px] mt-1 ${dark ? "text-slate-500" : "text-slate-400"}`}>
+                  Share only with provider on arrival
+                </span>
               </div>
             )}
           </div>

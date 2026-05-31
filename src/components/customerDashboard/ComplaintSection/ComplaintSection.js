@@ -1,128 +1,170 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { ClipboardList } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { ClipboardList, ArrowRight, PlusCircle } from "lucide-react";
 import ComplaintCard from "@/components/customerDashboard/ComplaintCard/ComplaintCard";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ComplaintsSection() {
-  const { t } = useLanguage();
+  const router = useRouter();
+  const { t, locale } = useLanguage();
   const { theme } = useTheme();
   const dark = theme === "dark";
+  const isUrdu = locale === "ur";
+  const { user } = useAuth();
+
   const [complaints, setComplaints] = useState([]);
-  const [expanded, setExpanded] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const { user } = require("@/context/AuthContext").useAuth();
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [loading, setLoading] = useState(true);
 
-  const sectionRef = useRef(null);
-
-  /* Detect screen size & fetch data */
   useEffect(() => {
-    const checkScreen = () => setIsMobile(window.innerWidth <= 768);
-    checkScreen();
-    window.addEventListener("resize", checkScreen);
-
-    // Fetch real bookings/complaints from the database
     const fetchComplaints = async () => {
-      if (user?.id) {
-        try {
-          const res = await fetch(`/api/bookings?userId=${user.id}`);
-          if (res.ok) {
-            const data = await res.json();
-            // Map backend fields to frontend expected structure
-            const formatted = data.map(b => ({
-              id: b.id || b._id,
-              title: b.description || b.category,
-              status: b.status || "Pending",
-              provider: b.providerName || "Unassigned",
-              providerId: b.provider,
-              providerPhone: b.providerPhone || null,
-              customerPhone: b.customerPhone,
-              customerId: b.customer,
-              time: b.status !== "Pending" && b.visitTime ? new Date(b.visitTime).toLocaleString() : null,
-              category: b.category,
-              description: b.description,
-              otp: b.otp,
-            }));
-            setComplaints(formatted);
-          }
-        } catch (err) {
-          console.error("Failed to load complaints");
+      if (!user?.id) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/bookings?userId=${user.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          const formatted = data.map((b) => ({
+            id: b.id || b._id,
+            title: b.description || b.category,
+            status: b.status || "Pending",
+            provider: b.providerName || "Unassigned",
+            providerId: b.provider,
+            providerPhone: b.providerPhone || null,
+            customerPhone: b.customerPhone,
+            customerId: b.customer,
+            time:
+              b.status !== "Pending" && b.visitTime
+                ? new Date(b.visitTime).toLocaleString()
+                : null,
+            category: b.category,
+            description: b.description,
+            otp: b.otp,
+            urgency: b.urgency || "Normal",
+          }));
+          setComplaints(formatted);
         }
+      } catch (err) {
+        console.error("Failed to load complaints");
+      } finally {
+        setLoading(false);
       }
     };
     fetchComplaints();
-
-    return () => window.removeEventListener("resize", checkScreen);
   }, [user]);
 
-  /* Show all on mobile */
-  const visibleComplaints = isMobile
-    ? complaints
-    : expanded
-    ? complaints
-    : complaints.slice(0, 4);
+  const filteredComplaints = complaints.filter((c) => {
+    if (statusFilter === "All") return true;
+    if (statusFilter === "Pending") return c.status === "Pending";
+    if (statusFilter === "In-Progress")
+      return c.status === "In-Progress" || c.status === "Accepted";
+    if (statusFilter === "Completed") return c.status === "Completed" || c.status === "Done";
+    if (statusFilter === "Cancelled") return c.status === "Cancelled" || c.status === "Rejected";
+    return true;
+  });
 
-  const handleToggle = () => {
-    if (expanded) {
-      sectionRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-    setExpanded(!expanded);
+  const statusLabels = {
+    All: t("status.all") || "All",
+    Pending: t("status.pending") || "Pending",
+    "In-Progress": t("status.inProgress") || "In Progress",
+    Completed: t("status.completed") || "Completed",
+    Cancelled: t("status.cancelled") || "Cancelled",
   };
 
   return (
-    <section className={`py-12 ${dark ? "bg-[#050a14] text-slate-100" : "bg-slate-50 text-slate-900"}`} ref={sectionRef}>
-      <div className="max-w-6xl mx-auto px-6 space-y-8">
+    <section className="cd-section cd-section-light-tint">
+      <div className="hero-bg-glow">
+        <div className="hero-orb hero-orb-1" style={{ opacity: 0.3 }} />
+        <div className="hero-orb hero-orb-2" style={{ opacity: 0.2 }} />
+      </div>
 
-        {/* HEADER */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl md:text-3xl font-black flex items-center gap-3">
-            <ClipboardList className="w-8 h-8 text-orange-500" />
-            {t("Your Complaints")}
-          </h1>
-
-          {/* Button ONLY on desktop */}
-          {!isMobile && complaints.length > 4 && (
-            <button 
-              onClick={handleToggle}
-              className={`px-5 py-2.5 rounded-xl font-bold transition-all border ${
-                dark 
-                  ? "bg-slate-900 border-slate-800 hover:border-slate-700 text-slate-300" 
-                  : "bg-white border-slate-200 hover:border-slate-300 text-slate-700"
-              }`}
-            >
-              {expanded ? t("See Less") : t("See All")}
-            </button>
-          )}
+      <div className="cd-content-box cd-content-box-top">
+        <div className="cd-section-header">
+          <div>
+            <h1 className="cd-section-title">
+              <ClipboardList className="w-7 h-7 text-orange-500 shrink-0" />
+              {t("Your Complaints")}
+            </h1>
+            <p className="cd-section-subtitle">
+              {isUrdu ? "اپنی تمام بکنگز اور شکایات" : "All your bookings and service requests"}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => router.push("/customerDashboard/complaintForm")}
+            className="cd-nav-btn cd-nav-btn-orange"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>{t("navbar.bookService") || (isUrdu ? "نئی بکنگ" : "New Booking")}</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* GRID */}
-        {complaints.length === 0 ? (
-          <div className={`p-12 text-center rounded-3xl border ${dark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"}`}>
-            <ClipboardList className="w-12 h-12 text-slate-400 mx-auto mb-3 opacity-50" />
-            <p className="font-bold text-lg mb-1">No bookings or complaints found</p>
-            <p className={`text-sm ${dark ? "text-slate-500" : "text-slate-400"}`}>All your future requests will be listed here.</p>
+        <div className="flex flex-wrap gap-2">
+          {["All", "Pending", "In-Progress", "Completed", "Cancelled"].map((status) => (
+            <button
+              key={status}
+              type="button"
+              onClick={() => setStatusFilter(status)}
+              className={`cd-filter-chip ${statusFilter === status ? "active" : ""}`}
+            >
+              {statusLabels[status] || status}
+            </button>
+          ))}
+        </div>
+
+        {loading ? (
+          <div className="cd-empty-panel">
+            <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : filteredComplaints.length === 0 ? (
+          <div className="cd-empty-panel">
+            <ClipboardList className={`w-12 h-12 mx-auto opacity-40 ${dark ? "text-slate-600" : "text-slate-400"}`} />
+            <div>
+              <p className="font-bold text-lg mb-1">
+                {isUrdu ? "کوئی بکنگ نہیں" : "No bookings or complaints found"}
+              </p>
+              <p className={`text-sm ${dark ? "text-slate-500" : "text-slate-500"}`}>
+                {isUrdu
+                  ? "فلٹر بدلیں یا نئی سروس بک کریں۔"
+                  : "Try another filter or book a new service."}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push("/customerDashboard/complaintForm")}
+              className="cd-action-btn"
+            >
+              {t("navbar.bookService") || "Book a Service"}
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <AnimatePresence>
-              {visibleComplaints.map((c) => (
-                <motion.div 
-                  key={c.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <ComplaintCard complaint={c} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
+          <div className="cd-list-wrapper" style={{ maxHeight: "min(62dvh, 520px)" }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <AnimatePresence>
+                {filteredComplaints.map((c) => (
+                  <motion.div
+                    key={c.id}
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <ComplaintCard complaint={c} />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
           </div>
         )}
-
       </div>
     </section>
   );

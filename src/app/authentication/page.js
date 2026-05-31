@@ -7,6 +7,7 @@ import { Sun, Moon, Globe, UploadCloud, Eye, EyeOff, User, Lock, Mail, ChevronRi
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import "./auth.css";
 
 export default function Authentication() {
   const [isSignup, setIsSignup] = useState(false);
@@ -280,56 +281,42 @@ export default function Authentication() {
   const isUrdu = locale === "ur";
 
   return (
-    <div className={`min-h-screen flex items-center justify-center relative overflow-hidden transition-colors duration-500 p-4 ${
-      dark ? "bg-[#0a1128] text-slate-100" : "bg-white text-slate-900"
-    }`} dir={isUrdu ? "rtl" : "ltr"}>
+    <div className={`auth-page ${dark ? "dark" : ""}`} dir={isUrdu ? "rtl" : "ltr"}>
       
-      {/* Decorative Glow Ambient Elements */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-500/10 rounded-full blur-3xl pointer-events-none -translate-y-1/3 translate-x-1/3" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-3xl pointer-events-none translate-y-1/3 -translate-x-1/3" />
+      {/* Animated Background Orbs */}
+      <div className="auth-orb auth-orb--orange" />
+      <div className="auth-orb auth-orb--purple" />
 
-      {/* ================= TOP UTILITIES ================= */}
-      <div className="absolute top-6 right-6 left-6 flex justify-between items-center z-50">
-        <Link href="/" className="flex items-center group">
-          <span 
-            style={{ fontFamily: 'var(--font-great-vibes)', fontStyle: 'normal' }}
-            className="text-4xl font-normal tracking-wide bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent transform hover:scale-105 transition-transform"
-          >
-            Servify
-          </span>
+      {/* ── Top Bar ── */}
+      <div className="auth-topbar">
+        <Link href="/" className="auth-logo">
+          Servify
         </Link>
         
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={toggleTheme}
-            className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all ${
-              dark ? "bg-slate-900 border-slate-800 text-yellow-500 hover:bg-slate-800" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"
-            }`}
-          >
+        <div className="auth-controls">
+          <button onClick={toggleTheme} className="auth-icon-btn">
             {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
           
           <button 
             onClick={() => changeLanguage(locale === "en" ? "ur" : "en")}
-            className={`px-4 h-10 rounded-full flex items-center gap-2 border font-bold text-xs transition-all ${
-              dark ? "bg-slate-900 border-slate-800 hover:bg-slate-800" : "bg-white border-slate-200 hover:bg-slate-100"
-            }`}
+            className="auth-lang-btn"
           >
-            <Globe className="w-4 h-4 text-orange-500" />
+            <Globe className="w-4 h-4" />
             <span>{locale.toUpperCase()}</span>
           </button>
         </div>
       </div>
 
-      {/* ================= MAIN CONTAINER ================= */}
-      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10 pt-20 pb-10">
+      {/* ── Main Container ── */}
+      <div className="auth-container">
         
-        {/* Left Grid: Copywriting & Theme Intro */}
-        <div className="lg:col-span-5 flex flex-col justify-center text-center lg:text-left space-y-6">
+        {/* Left: Hero Copy */}
+        <div className="auth-hero">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex self-center lg:self-start items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 text-orange-500 font-bold text-sm border border-orange-500/20"
+            className="auth-hero-badge"
           >
             <Shield className="w-4 h-4" /> Real-time OTP Verified Network
           </motion.div>
@@ -338,7 +325,7 @@ export default function Authentication() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl md:text-5xl font-black leading-tight tracking-tight"
+            className="auth-hero-title"
           >
             {isSignup 
               ? (isUrdu ? "نئے سفر کا آغاز کریں" : "Join Servify Community") 
@@ -350,7 +337,7 @@ export default function Authentication() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className={`text-lg leading-relaxed max-w-md mx-auto lg:mx-0 ${dark ? "text-slate-400" : "text-slate-500"}`}
+            className="auth-hero-desc"
           >
             {isSignup 
               ? (isUrdu ? "ہمارے ساتھ شامل ہوں اور بہترین ماہرین کی خدمات حاصل کریں یا اپنی مہارت پیش کریں۔" : "Discover top local experts or monetize your technical expertise on the safest, OTP-secured platform.")
@@ -359,73 +346,60 @@ export default function Authentication() {
           </motion.p>
         </div>
 
-        {/* Right Grid: Glassmorphic Auth Card */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: "spring", stiffness: 100, damping: 15 }}
-          className={`lg:col-span-7 rounded-[2.5rem] p-8 md:p-12 border shadow-2xl relative overflow-hidden backdrop-blur-md ${
-            dark ? "bg-slate-900/60 border-slate-800/80 shadow-black/20" : "bg-white/80 border-slate-200/80 shadow-slate-200/50"
-          }`}
-        >
-          {/* Subtle inside ambient accent */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
+        {/* Right: Auth Card */}
+        <div className="auth-card">
+          <div className="auth-card-glow" />
 
           <AnimatePresence mode="wait">
             {!isSignup ? (
-              // ─── LOGIN FORM ───
+              /* ─── LOGIN FORM ─── */
               <motion.form 
                 key="login-form"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 onSubmit={handleLogin}
-                className="space-y-6"
               >
-                <div className="space-y-2 text-center lg:text-left">
-                  <h2 className="text-3xl font-black">{t("auth.login")}</h2>
-                  <p className={`text-sm ${dark ? "text-slate-400" : "text-slate-500"}`}>Enter your registered credentials below</p>
+                <div className="auth-form-header">
+                  <h2 className="auth-form-title">{t("auth.login")}</h2>
+                  <p className="auth-form-subtitle">Enter your registered credentials below</p>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <div className="auth-field-group">
+                  <div className="auth-input-wrap">
+                    <Mail className="auth-input-icon w-5 h-5" />
                     <input 
                       type="email" 
                       name="email" 
                       placeholder="Gmail Address (e.g. name@gmail.com)"
                       onChange={handleInputChange} 
                       required
-                      className={`w-full pl-12 pr-4 py-4 rounded-2xl outline-none border transition-all ${
-                        dark ? "bg-slate-800/30 border-slate-800 text-white focus:border-orange-500" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-orange-500"
-                      }`}
+                      className="auth-input auth-input--icon"
                     />
                   </div>
 
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <div className="auth-input-wrap">
+                    <Lock className="auth-input-icon w-5 h-5" />
                     <input 
                       type={showPassword ? "text" : "password"} 
                       name="password" 
                       placeholder="Password"
                       onChange={handleInputChange} 
                       required
-                      className={`w-full pl-12 pr-12 py-4 rounded-2xl outline-none border transition-all ${
-                        dark ? "bg-slate-800/30 border-slate-800 text-white focus:border-orange-500" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-orange-500"
-                      }`}
+                      className="auth-input auth-input--icon auth-input--icon-right"
                     />
                     <button 
                       type="button" 
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-orange-500 transition-colors"
+                      className="auth-eye-btn"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
                 </div>
 
-                <div className="flex justify-end">
-                  <Link href="/forgot-password" className="text-sm font-bold text-orange-500 hover:underline">
+                <div className="auth-forgot">
+                  <Link href="/forgot-password">
                     {t("auth.forgot")}
                   </Link>
                 </div>
@@ -433,45 +407,42 @@ export default function Authentication() {
                 <button 
                   type="submit" 
                   disabled={loadingAuth}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-bold transition-all shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 hover:scale-[1.01]"
+                  className="auth-btn auth-btn--primary"
                 >
                   {loadingAuth ? "Signing in..." : t("auth.login")}
                 </button>
 
-                <p className={`text-center text-sm ${dark ? "text-slate-400" : "text-slate-500"}`}>
+                <p className="auth-toggle">
                   {t("auth.noAccount")}{" "}
                   <button 
                     type="button" 
                     onClick={() => { setIsSignup(true); setStep(1); }}
-                    className="font-bold text-orange-500 hover:underline"
+                    className="auth-toggle-btn"
                   >
                     {t("auth.signup")}
                   </button>
                 </p>
               </motion.form>
             ) : (
-              // ─── SIGNUP STEPPER ───
+              /* ─── SIGNUP STEPPER ─── */
               <motion.div 
                 key="signup-form"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-6"
               >
                 
-                {/* Step Indicators */}
-                <div className="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800">
-                  <div>
-                    <h3 className="text-2xl font-black">{t("auth.signup")}</h3>
-                    <p className={`text-xs mt-1 ${dark ? "text-slate-500" : "text-slate-400"}`}>Step {step} of {role === "provider" ? 7 : 5}</p>
+                {/* Step Header */}
+                <div className="auth-step-header">
+                  <div className="auth-step-info">
+                    <h3>{t("auth.signup")}</h3>
+                    <p className="auth-step-counter">Step {step} of {role === "provider" ? 7 : 5}</p>
                   </div>
                   
                   {step > 1 && (
                     <button 
                       onClick={() => setStep(prev => prev - 1)}
-                      className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1 transition-all ${
-                        dark ? "border-slate-800 hover:bg-slate-800" : "border-slate-200 hover:bg-slate-100"
-                      }`}
+                      className="auth-back-btn"
                     >
                       <ArrowLeft className="w-3.5 h-3.5" /> Back
                     </button>
@@ -480,41 +451,37 @@ export default function Authentication() {
 
                 {/* ── STEP 1: ROLE SELECT ── */}
                 {step === 1 && (
-                  <div className="space-y-6">
-                    <p className="text-center font-bold text-lg">Choose Your Account Role</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p style={{ textAlign: 'center', fontWeight: 700, fontSize: '1.1rem', marginBottom: '20px' }}>Choose Your Account Role</p>
+                    <div className="auth-role-grid">
                       <button 
                         type="button" 
                         onClick={() => { setRole("customer"); setStep(2); }}
-                        className={`p-6 rounded-3xl border flex flex-col items-center gap-3 transition-all ${
-                          dark ? "bg-slate-800/30 border-slate-800 hover:border-orange-500/50" : "bg-slate-50 border-slate-200 hover:border-orange-300"
-                        }`}
+                        className="auth-role-card"
                       >
-                        <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                        <div className="auth-role-icon auth-role-icon--customer">
                           <User className="w-6 h-6" />
                         </div>
-                        <span className="font-extrabold text-lg">{t("auth.customer")}</span>
-                        <span className="text-xs text-slate-400 text-center">I want to hire local service pros</span>
+                        <span className="auth-role-name">{t("auth.customer")}</span>
+                        <span className="auth-role-desc">I want to hire local service pros</span>
                       </button>
 
                       <button 
                         type="button" 
                         onClick={() => { setRole("provider"); setStep(2); }}
-                        className={`p-6 rounded-3xl border flex flex-col items-center gap-3 transition-all ${
-                          dark ? "bg-slate-800/30 border-slate-800 hover:border-orange-500/50" : "bg-slate-50 border-slate-200 hover:border-orange-300"
-                        }`}
+                        className="auth-role-card"
                       >
-                        <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                        <div className="auth-role-icon auth-role-icon--provider">
                           <Wrench className="w-6 h-6" />
                         </div>
-                        <span className="font-extrabold text-lg">{t("auth.provider")}</span>
-                        <span className="text-xs text-slate-400 text-center">I want to sell my skill services</span>
+                        <span className="auth-role-name">{t("auth.provider")}</span>
+                        <span className="auth-role-desc">I want to sell my skill services</span>
                       </button>
                     </div>
 
-                    <p className="text-center text-sm">
+                    <p className="auth-toggle">
                       {t("auth.haveAccount")}{" "}
-                      <button type="button" onClick={() => setIsSignup(false)} className="font-bold text-orange-500 hover:underline">
+                      <button type="button" onClick={() => setIsSignup(false)} className="auth-toggle-btn">
                         {t("auth.login")}
                       </button>
                     </p>
@@ -523,81 +490,66 @@ export default function Authentication() {
 
                 {/* ── STEP 2: PERSONAL IDENTITY ── */}
                 {step === 2 && (
-                  <div className="space-y-4">
-                    <h4 className="font-bold text-base">{t("auth.personalInfo")}</h4>
+                  <div>
+                    <h4 style={{ fontWeight: 700, marginBottom: '16px' }}>{t("auth.personalInfo")}</h4>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="flex flex-col gap-1.5">
-                        <input 
-                          name="username" placeholder="Username" value={formData.username} onChange={handleInputChange} required 
-                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
-                        />
-                        {isCheckingUsername && <span className="text-[10px] text-slate-400 animate-pulse">Checking uniqueness...</span>}
-                        {usernameMessage && (
-                          <span className={`text-[10px] font-bold ${usernameMessage === "Username is available" ? "text-emerald-500" : "text-red-500"}`}>
-                            {usernameMessage}
-                          </span>
-                        )}
-                        {errors.username && <span className="text-[10px] text-red-500">{errors.username}</span>}
+                    <div className="auth-field-group">
+                      <div className="auth-field-row">
+                        <div className="auth-input-wrap">
+                          <input name="username" placeholder="Username" value={formData.username} onChange={handleInputChange} required className="auth-input" />
+                          {isCheckingUsername && <span className="auth-field-checking">Checking uniqueness...</span>}
+                          {usernameMessage && (
+                            <span className={usernameMessage === "Username is available" ? "auth-field-success" : "auth-field-error"}>
+                              {usernameMessage}
+                            </span>
+                          )}
+                          {errors.username && <span className="auth-field-error">{errors.username}</span>}
+                        </div>
+
+                        <div className="auth-input-wrap">
+                          <input name="name" placeholder={t("auth.fullName")} value={formData.name} onChange={handleInputChange} required className="auth-input" />
+                          {errors.name && <span className="auth-field-error">{errors.name}</span>}
+                        </div>
                       </div>
 
-                      <div className="flex flex-col gap-1.5">
-                        <input 
-                          name="name" placeholder={t("auth.fullName")} value={formData.name} onChange={handleInputChange} required 
-                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
-                        />
-                        {errors.name && <span className="text-[10px] text-red-500">{errors.name}</span>}
+                      <div className="auth-input-wrap">
+                        <input name="cnic" placeholder={t("auth.cnicPlaceholder")} value={formData.cnic} onChange={handleInputChange} required className="auth-input" />
+                        {errors.cnic && <span className="auth-field-error">{errors.cnic}</span>}
                       </div>
 
-                      <div className="flex flex-col gap-1.5 md:col-span-2">
-                        <input 
-                          name="cnic" placeholder={t("auth.cnicPlaceholder")} value={formData.cnic} onChange={handleInputChange} required 
-                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
-                        />
-                        {errors.cnic && <span className="text-[10px] text-red-500">{errors.cnic}</span>}
+                      <div className="auth-field-row">
+                        <select name="gender" value={formData.gender} onChange={handleInputChange} required className="auth-select">
+                          <option value="">{t("auth.selectGender")}</option>
+                          <option value="Male">{t("auth.male")}</option>
+                          <option value="Female">{t("auth.female")}</option>
+                          <option value="Other">{t("auth.other")}</option>
+                        </select>
+
+                        <input name="dob" type="date" value={formData.dob} onChange={handleInputChange} required className="auth-input" />
                       </div>
 
-                      <select 
-                        name="gender" value={formData.gender} onChange={handleInputChange} required
-                        className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
-                      >
-                        <option value="">{t("auth.selectGender")}</option>
-                        <option value="Male">{t("auth.male")}</option>
-                        <option value="Female">{t("auth.female")}</option>
-                        <option value="Other">{t("auth.other")}</option>
-                      </select>
+                      <div className="auth-field-row">
+                        <select name="maritalStatus" value={formData.maritalStatus} onChange={handleInputChange} required className="auth-select">
+                          <option value="">{t("auth.maritalStatus")}</option>
+                          <option value="Single">{t("auth.single")}</option>
+                          <option value="Married">{t("auth.married")}</option>
+                        </select>
 
-                      <input 
-                        name="dob" type="date" value={formData.dob} onChange={handleInputChange} required 
-                        className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
-                      />
-
-                      <select 
-                        name="maritalStatus" value={formData.maritalStatus} onChange={handleInputChange} required
-                        className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
-                      >
-                        <option value="">{t("auth.maritalStatus")}</option>
-                        <option value="Single">{t("auth.single")}</option>
-                        <option value="Married">{t("auth.married")}</option>
-                      </select>
-
-                      <select 
-                        name="religion" value={formData.religion} onChange={handleInputChange} required
-                        className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
-                      >
-                        <option value="">{t("auth.religion")}</option>
-                        <option value="Islam">{t("auth.islam")}</option>
-                        <option value="Christianity">{t("auth.christianity")}</option>
-                        <option value="Hinduism">{t("auth.hinduism")}</option>
-                        <option value="Other">{t("auth.other")}</option>
-                      </select>
+                        <select name="religion" value={formData.religion} onChange={handleInputChange} required className="auth-select">
+                          <option value="">{t("auth.religion")}</option>
+                          <option value="Islam">{t("auth.islam")}</option>
+                          <option value="Christianity">{t("auth.christianity")}</option>
+                          <option value="Hinduism">{t("auth.hinduism")}</option>
+                          <option value="Other">{t("auth.other")}</option>
+                        </select>
+                      </div>
                     </div>
 
                     <button 
                       type="button" 
                       onClick={() => setStep(3)}
                       disabled={!isStepValid()}
-                      className="w-full py-4 rounded-xl bg-orange-500 text-white font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      className="auth-btn auth-btn--primary"
                     >
                       Continue <ChevronRight className="w-4 h-4" />
                     </button>
@@ -606,39 +558,30 @@ export default function Authentication() {
 
                 {/* ── STEP 3: CONTACT & LOCATION ── */}
                 {step === 3 && (
-                  <div className="space-y-4">
-                    <h4 className="font-bold text-base">{t("auth.contactInfo")}</h4>
+                  <div>
+                    <h4 style={{ fontWeight: 700, marginBottom: '16px' }}>{t("auth.contactInfo")}</h4>
 
-                    <div className="grid grid-cols-1 gap-4">
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">+92</span>
+                    <div className="auth-field-group">
+                      <div className="auth-input-wrap">
+                        <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: '#94a3b8', zIndex: 2 }}>+92</span>
                         <input 
                           name="phone" placeholder={t("auth.phonePlaceholder")} value={formData.phone} onChange={handleInputChange} required 
-                          className={`w-full pl-14 pr-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                          className="auth-input" style={{ paddingLeft: '52px' }}
                         />
-                        {errors.phone && <span className="text-[10px] text-red-500">{errors.phone}</span>}
+                        {errors.phone && <span className="auth-field-error">{errors.phone}</span>}
                       </div>
 
-                      <div className="flex flex-col gap-1.5">
-                        <input 
-                          name="email" type="email" placeholder={t("auth.emailPlaceholder")} value={formData.email} onChange={handleInputChange} required 
-                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
-                        />
-                        {errors.email && <span className="text-[10px] text-red-500">{errors.email}</span>}
+                      <div className="auth-input-wrap">
+                        <input name="email" type="email" placeholder={t("auth.emailPlaceholder")} value={formData.email} onChange={handleInputChange} required className="auth-input" />
+                        {errors.email && <span className="auth-field-error">{errors.email}</span>}
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <select 
-                          name="district" value={formData.district} onChange={handleInputChange} required
-                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
-                        >
+                      <div className="auth-field-row">
+                        <select name="district" value={formData.district} onChange={handleInputChange} required className="auth-select">
                           <option value="">{t("auth.selectDistrict")}</option>
                           <option value="Okara">{t("auth.okara")}</option>
                         </select>
-                        <select 
-                          name="tehseel" value={formData.tehseel} onChange={handleInputChange} required
-                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
-                        >
+                        <select name="tehseel" value={formData.tehseel} onChange={handleInputChange} required className="auth-select">
                           <option value="">{t("auth.selectTehseel")}</option>
                           <option value="Okara">{t("auth.okara")}</option>
                           <option value="Depalpur">{t("auth.depalpur")}</option>
@@ -646,17 +589,14 @@ export default function Authentication() {
                         </select>
                       </div>
 
-                      <input 
-                        name="address" placeholder={t("auth.addressPlaceholder")} value={formData.address} onChange={handleInputChange} required 
-                        className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
-                      />
+                      <input name="address" placeholder={t("auth.addressPlaceholder")} value={formData.address} onChange={handleInputChange} required className="auth-input" />
                     </div>
 
                     <button 
                       type="button" 
                       onClick={() => setStep(4)}
                       disabled={!isStepValid()}
-                      className="w-full py-4 rounded-xl bg-orange-500 text-white font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      className="auth-btn auth-btn--primary"
                     >
                       Continue <ChevronRight className="w-4 h-4" />
                     </button>
@@ -665,38 +605,38 @@ export default function Authentication() {
 
                 {/* ── STEP 4: SECURITY ── */}
                 {step === 4 && (
-                  <div className="space-y-4">
-                    <h4 className="font-bold text-base">{t("auth.security")}</h4>
+                  <div>
+                    <h4 style={{ fontWeight: 700, marginBottom: '16px' }}>{t("auth.security")}</h4>
 
-                    <div className="space-y-4">
-                      <div className="relative">
+                    <div className="auth-field-group">
+                      <div className="auth-input-wrap">
                         <input 
                           name="password" type={showPassword ? "text" : "password"} placeholder={t("auth.setPassword")} value={formData.password} onChange={handleInputChange} required 
-                          className={`w-full pl-4 pr-12 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                          className="auth-input auth-input--icon-right"
                         />
-                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="auth-eye-btn">
                           {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
+                        {errors.password && <span className="auth-field-error">{errors.password}</span>}
                       </div>
-                      {errors.password && <span className="text-[10px] text-red-500">{errors.password}</span>}
 
-                      <div className="relative">
+                      <div className="auth-input-wrap">
                         <input 
                           name="confirmPassword" type={showPassword ? "text" : "password"} placeholder={t("auth.confirmPassword")} value={formData.confirmPassword} onChange={handleInputChange} required 
-                          className={`w-full pl-4 pr-12 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                          className="auth-input auth-input--icon-right"
                         />
-                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="auth-eye-btn">
                           {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
+                        {errors.confirmPassword && <span className="auth-field-error">{errors.confirmPassword}</span>}
                       </div>
-                      {errors.confirmPassword && <span className="text-[10px] text-red-500">{errors.confirmPassword}</span>}
                     </div>
 
                     <button 
                       type="button" 
                       onClick={() => setStep(5)}
                       disabled={!isStepValid()}
-                      className="w-full py-4 rounded-xl bg-orange-500 text-white font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      className="auth-btn auth-btn--primary"
                     >
                       Continue <ChevronRight className="w-4 h-4" />
                     </button>
@@ -705,53 +645,48 @@ export default function Authentication() {
 
                 {/* ── STEP 5: PROFILE PICTURE & SPECS ── */}
                 {step === 5 && (
-                  <div className="space-y-4">
-                    <h4 className="font-bold text-base">{t("auth.profile")}</h4>
+                  <div>
+                    <h4 style={{ fontWeight: 700, marginBottom: '16px' }}>{t("auth.profile")}</h4>
 
-                    <div className="flex items-center gap-4 p-4 border border-dashed rounded-2xl dark:border-slate-800 dark:bg-slate-950/30">
-                      <label className="relative cursor-pointer group flex-shrink-0">
-                        <div className="w-16 h-16 rounded-full border-2 border-orange-500/30 overflow-hidden flex items-center justify-center bg-slate-100 dark:bg-slate-800">
-                          {previews.profile ? <img src={previews.profile} alt="Profile" className="w-full h-full object-cover" /> : <UploadCloud className="w-6 h-6 text-orange-500" />}
+                    <div className="auth-field-group">
+                      <div className="auth-upload-area">
+                        <label style={{ cursor: 'pointer' }}>
+                          <div className="auth-upload-circle">
+                            {previews.profile ? <img src={previews.profile} alt="Profile" /> : <UploadCloud className="w-6 h-6" style={{ color: 'var(--auth-orange)' }} />}
+                          </div>
+                          <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "profile")} style={{ display: 'none' }} />
+                        </label>
+                        <div>
+                          <div className="auth-upload-label">{t("auth.uploadPhoto") || "Profile Picture"}</div>
+                          <div className="auth-upload-hint">Click the circle to upload your photo</div>
                         </div>
-                        <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "profile")} className="hidden" />
-                      </label>
-                      <div className="flex flex-col text-left">
-                        <span className="text-sm font-extrabold">{t("auth.uploadPhoto") || "Profile Picture"}</span>
-                        <span className="text-xs text-slate-400">Click the circle to upload your photo</span>
                       </div>
-                    </div>
 
-                    {role === "provider" && (
-                      <div className="space-y-4">
-                        <select 
-                          name="providerType" value={formData.providerType} onChange={handleInputChange} required
-                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
-                        >
-                          <option value="Individual">{t("auth.individual")}</option>
-                          <option value="Company">{t("auth.company")}</option>
-                          <option value="Agency">{t("auth.agency")}</option>
-                        </select>
-                        
-                        <select 
-                          name="category" value={formData.category} onChange={handleInputChange} required
-                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
-                        >
-                          <option value="">{t("auth.selectCategory")}</option>
-                          <option value="Electrician">{t("services.electrician")}</option>
-                          <option value="Plumber">{t("services.plumber")}</option>
-                          <option value="Cleaning">{t("services.cleaner")}</option>
-                          <option value="Carpenter">{t("services.carpenter")}</option>
-                          <option value="Gardener">{t("services.gardener")}</option>
-                          <option value="Painter">{t("services.painter")}</option>
-                        </select>
-                        
-                        <input 
-                          name="experience" placeholder={t("auth.experiencePlaceholder")} value={formData.experience} onChange={handleInputChange} required 
-                          className={`w-full px-4 py-3.5 rounded-xl border outline-none transition-all ${dark ? "bg-slate-800/30 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
-                        />
-                        {errors.experience && <span className="text-[10px] text-red-500">{errors.experience}</span>}
-                      </div>
-                    )}
+                      {role === "provider" && (
+                        <>
+                          <select name="providerType" value={formData.providerType} onChange={handleInputChange} required className="auth-select">
+                            <option value="Individual">{t("auth.individual")}</option>
+                            <option value="Company">{t("auth.company")}</option>
+                            <option value="Agency">{t("auth.agency")}</option>
+                          </select>
+                          
+                          <select name="category" value={formData.category} onChange={handleInputChange} required className="auth-select">
+                            <option value="">{t("auth.selectCategory")}</option>
+                            <option value="Electrician">{t("services.electrician")}</option>
+                            <option value="Plumber">{t("services.plumber")}</option>
+                            <option value="Cleaning">{t("services.cleaner")}</option>
+                            <option value="Carpenter">{t("services.carpenter")}</option>
+                            <option value="Gardener">{t("services.gardener")}</option>
+                            <option value="Painter">{t("services.painter")}</option>
+                          </select>
+                          
+                          <div className="auth-input-wrap">
+                            <input name="experience" placeholder={t("auth.experiencePlaceholder")} value={formData.experience} onChange={handleInputChange} required className="auth-input" />
+                            {errors.experience && <span className="auth-field-error">{errors.experience}</span>}
+                          </div>
+                        </>
+                      )}
+                    </div>
 
                     <button 
                       type="button" 
@@ -760,7 +695,7 @@ export default function Authentication() {
                         else setStep(6);
                       }}
                       disabled={!isStepValid()}
-                      className="w-full py-4 rounded-xl bg-orange-500 text-white font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      className="auth-btn auth-btn--primary"
                     >
                       {role === "customer" ? (loadingAuth ? "Sending OTP..." : "Get OTP Verification") : "Continue"} <ChevronRight className="w-4 h-4" />
                     </button>
@@ -769,41 +704,37 @@ export default function Authentication() {
 
                 {/* ── STEP 6: CNIC UPLOAD (Providers Only) ── */}
                 {step === 6 && (
-                  <div className="space-y-4">
-                    <h4 className="font-bold text-base">CNIC Card Verification</h4>
-                    <p className={`text-xs ${dark ? "text-slate-400" : "text-slate-500"}`}>{t("auth.uploadCnic")}</p>
+                  <div>
+                    <h4 style={{ fontWeight: 700, marginBottom: '8px' }}>CNIC Card Verification</h4>
+                    <p className="auth-form-subtitle" style={{ marginBottom: '20px' }}>{t("auth.uploadCnic")}</p>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="relative border-2 border-dashed rounded-3xl overflow-hidden h-36 flex flex-col items-center justify-center dark:border-slate-800 bg-slate-950/20">
-                        {previews.cnicFront ? (
-                          <img src={previews.cnicFront} alt="CNIC Front" className="w-full h-full object-cover" />
-                        ) : (
-                          <>
-                            <img src="https://res.cloudinary.com/dlgozougt/image/upload/v1779370247/public/CNIC_FRONT.jpg" alt="CNIC Front Placeholder" className="absolute inset-0 w-full h-full object-cover opacity-25" />
-                            <div className="relative z-10 flex flex-col items-center justify-center p-4 text-center">
-                              <UploadCloud className="w-7 h-7 text-orange-500 drop-shadow" />
-                              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1 drop-shadow-sm">{t("auth.frontSide") || "CNIC Front Side"}</span>
-                              <span className="text-[9px] text-slate-400">Click to Upload</span>
+                    <div className="auth-field-group">
+                      <div className="auth-cnic-grid">
+                        <div className="auth-cnic-box">
+                          {previews.cnicFront ? (
+                            <img src={previews.cnicFront} alt="CNIC Front" />
+                          ) : (
+                            <div className="auth-cnic-placeholder">
+                              <UploadCloud className="w-7 h-7" />
+                              <span>{t("auth.frontSide") || "CNIC Front Side"}</span>
+                              <small>Click to Upload</small>
                             </div>
-                          </>
-                        )}
-                        <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "cnicFront")} className="absolute inset-0 opacity-0 cursor-pointer z-20" />
-                      </div>
+                          )}
+                          <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "cnicFront")} />
+                        </div>
 
-                      <div className="relative border-2 border-dashed rounded-3xl overflow-hidden h-36 flex flex-col items-center justify-center dark:border-slate-800 bg-slate-950/20">
-                        {previews.cnicBack ? (
-                          <img src={previews.cnicBack} alt="CNIC Back" className="w-full h-full object-cover" />
-                        ) : (
-                          <>
-                            <img src="https://res.cloudinary.com/dlgozougt/image/upload/v1779370245/public/CNIC_BACK.jpg" alt="CNIC Back Placeholder" className="absolute inset-0 w-full h-full object-cover opacity-25" />
-                            <div className="relative z-10 flex flex-col items-center justify-center p-4 text-center">
-                              <UploadCloud className="w-7 h-7 text-orange-500 drop-shadow" />
-                              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1 drop-shadow-sm">{t("auth.backSide") || "CNIC Back Side"}</span>
-                              <span className="text-[9px] text-slate-400">Click to Upload</span>
+                        <div className="auth-cnic-box">
+                          {previews.cnicBack ? (
+                            <img src={previews.cnicBack} alt="CNIC Back" />
+                          ) : (
+                            <div className="auth-cnic-placeholder">
+                              <UploadCloud className="w-7 h-7" />
+                              <span>{t("auth.backSide") || "CNIC Back Side"}</span>
+                              <small>Click to Upload</small>
                             </div>
-                          </>
-                        )}
-                        <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "cnicBack")} className="absolute inset-0 opacity-0 cursor-pointer z-20" />
+                          )}
+                          <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "cnicBack")} />
+                        </div>
                       </div>
                     </div>
 
@@ -811,7 +742,7 @@ export default function Authentication() {
                       type="button" 
                       onClick={handleSignup}
                       disabled={loadingAuth || !isStepValid()}
-                      className="w-full py-4 rounded-xl bg-orange-500 text-white font-bold transition-all disabled:opacity-50"
+                      className="auth-btn auth-btn--primary"
                     >
                       {loadingAuth ? "Sending OTP..." : t("auth.create")}
                     </button>
@@ -820,34 +751,34 @@ export default function Authentication() {
 
                 {/* ── STEP 7: OTP VERIFICATION ── */}
                 {step === 7 && (
-                  <div className="space-y-6 text-center">
-                    <h4 className="font-bold text-xl">Verify Email Address</h4>
-                    <p className={`text-sm ${dark ? "text-slate-400" : "text-slate-500"}`}>
+                  <div style={{ textAlign: 'center' }}>
+                    <h4 style={{ fontWeight: 800, fontSize: '1.25rem', marginBottom: '8px' }}>Verify Email Address</h4>
+                    <p className="auth-form-subtitle" style={{ marginBottom: '24px' }}>
                       We've sent a 6-digit security code to <strong>{formData.email}</strong>
                     </p>
 
-                    <input 
-                      type="text" 
-                      placeholder="6-Digit OTP" 
-                      value={otp} 
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                      className={`w-full text-center text-3xl font-bold tracking-[0.2em] py-4 rounded-2xl border outline-none transition-all ${
-                        dark ? "bg-slate-800/30 border-slate-800 text-white focus:border-orange-500" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-orange-500"
-                      }`}
-                    />
+                    <div className="auth-field-group">
+                      <input 
+                        type="text" 
+                        placeholder="000000" 
+                        value={otp} 
+                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                        className="auth-otp-input"
+                      />
+                    </div>
 
                     <button 
                       type="button" 
                       onClick={handleVerifyOTP}
                       disabled={otp.length !== 6 || verifying || loadingAuth}
-                      className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-bold transition-all disabled:opacity-50 shadow-lg shadow-orange-500/20"
+                      className="auth-btn auth-btn--primary"
                     >
                       {verifying || loadingAuth ? "Processing..." : "Verify & Complete Signup"}
                     </button>
 
-                    <p className="text-xs">
+                    <p style={{ fontSize: '0.8rem', marginTop: '16px' }}>
                       Didn't receive it?{" "}
-                      <button type="button" onClick={handleSendOTP} className="text-orange-500 font-bold hover:underline">
+                      <button type="button" onClick={handleSendOTP} className="auth-toggle-btn">
                         Resend OTP
                       </button>
                     </p>
@@ -857,8 +788,7 @@ export default function Authentication() {
               </motion.div>
             )}
           </AnimatePresence>
-
-        </motion.div>
+        </div>
 
       </div>
     </div>

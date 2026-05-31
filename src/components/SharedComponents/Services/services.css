@@ -57,21 +57,25 @@
 .svc-title {
   font-size: clamp(1.8rem, 4vw, 2.4rem);
   font-weight: 800;
-  color: #1a1a1a;
+  color: #0f172a;
   margin-bottom: 12px;
   letter-spacing: -0.02em;
 }
 
-.dark .svc-title { color: #fff; }
+.svc-section.dark .svc-title {
+  color: #ffffff;
+}
 
 .svc-subtitle {
   font-size: 1rem;
-  color: #666;
+  color: #475569;
   max-width: 600px;
   margin: 0 auto;
 }
 
-.dark .svc-subtitle { color: #aaa; }
+.svc-section.dark .svc-subtitle {
+  color: #cbd5e1;
+}
 
 /* ── Carousel Container ── */
 .svc-carousel-container {
@@ -140,19 +144,23 @@
 .svc-card-name {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #0f172a;
   margin-bottom: 12px;
 }
 
-.dark .svc-card-name { color: #eee; }
+.svc-section.dark .svc-card-name {
+  color: #ffffff;
+}
 
 .svc-card-desc {
   font-size: 0.9rem;
-  color: #666;
+  color: #475569;
   line-height: 1.5;
 }
 
-.dark .svc-card-desc { color: #999; }
+.svc-section.dark .svc-card-desc {
+  color: #cbd5e1;
+}
 
 /* ── Navigation ── */
 .svc-nav-btn {

@@ -49,7 +49,7 @@ export default function LandingPage() {
         </section>
 
         {/* Snapping Footer */}
-        <footer className="lp-footer">
+        <footer id="about" className="lp-footer">
           <Footer />
         </footer>
       </main>

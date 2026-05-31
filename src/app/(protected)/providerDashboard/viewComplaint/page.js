@@ -127,21 +127,21 @@ function ComplaintsList() {
     }
   };
 
-  const handleComplete = async (id) => {
-    if (!confirm(t("Are you sure you want to mark this job as completed?"))) return;
-    setActionLoading(id + "_complete");
+  const handleStartWork = async (id) => {
+    if (!confirm(t("Are you sure you want to start work on this booking?"))) return;
+    setActionLoading(id + "_start");
     try {
-       const res = await fetch(`/api/bookings/${id}`, {
+      const res = await fetch(`/api/bookings/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Completed' })
+        body: JSON.stringify({ status: 'In-Progress' })
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setComplaints(prev => prev.map(c => c.id === id ? { ...c, frontendStatus: "done", status: "Completed" } : c));
-        alert(t("Job marked as completed!"));
+        await fetchComplaints(user.id);
+        alert(t("Job started successfully! It is now In-Progress."));
       } else {
-        alert(data.message || "Failed to update status");
+        alert(data.message || "Failed to start job");
       }
     } catch (error) {
       alert("Network error. Please try again.");
@@ -150,7 +150,12 @@ function ComplaintsList() {
     }
   };
 
-  const handleStartWork = async () => {
+  const promptComplete = (id) => {
+    setEnteredOtp("");
+    setVerifyingBookingId(id);
+  };
+
+  const handleCompleteWork = async () => {
     if (!verifyingBookingId) return;
     const id = verifyingBookingId;
     
@@ -159,14 +164,14 @@ function ComplaintsList() {
       return;
     }
 
-    setActionLoading(id + "_start");
+    setActionLoading(id + "_complete");
     
     try {
       const res = await fetch(`/api/bookings/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          status: 'In-Progress',
+          status: 'Completed',
           otp: enteredOtp
         })
       });
@@ -175,9 +180,9 @@ function ComplaintsList() {
         setVerifyingBookingId(null);
         setEnteredOtp("");
         await fetchComplaints(user.id);
-        alert("Verification successful! The job is now In-Progress.");
+        alert("Verification successful! The job has been marked as Completed.");
       } else {
-        alert(data.message || "Failed to verify OTP");
+        alert(data.message || "Failed to verify OTP / complete job");
       }
     } catch (error) {
       alert("Network error. Please try again.");
@@ -331,10 +336,10 @@ function ComplaintsList() {
             color: dark ? '#f1f5f9' : '#1e293b'
           }}>
             <h3 style={{ marginBottom: '16px', fontWeight: '900', color: '#ff7a00', fontSize: '1.4rem' }}>
-              🔑 Security OTP Verification
+              🔑 Security OTP Completion Key
             </h3>
             <p style={{ fontSize: '0.88rem', opacity: 0.85, marginBottom: '20px', lineHeight: '1.5' }}>
-              Please ask the customer for their verification OTP. Enter it below to start work.
+              Please ask the customer for their verification OTP. Enter it below to verify your visit and mark this job as Completed.
             </p>
             <div style={{ marginBottom: '24px' }}>
               <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '8px', opacity: 0.8 }}>
@@ -368,8 +373,8 @@ function ComplaintsList() {
                 Cancel
               </button>
               <button
-                onClick={handleStartWork}
-                disabled={actionLoading === verifyingBookingId + "_start"}
+                onClick={handleCompleteWork}
+                disabled={actionLoading === verifyingBookingId + "_complete"}
                 style={{
                   flex: 1, padding: '12px', borderRadius: '12px',
                   background: '#ff7a00', color: '#fff',
@@ -377,7 +382,7 @@ function ComplaintsList() {
                   boxShadow: '0 8px 20px rgba(255,122,0,0.2)'
                 }}
               >
-                {actionLoading === verifyingBookingId + "_start" ? "Verify & Start..." : "Verify & Start"}
+                {actionLoading === verifyingBookingId + "_complete" ? "Verify & Complete..." : "Verify & Complete"}
               </button>
             </div>
           </div>
@@ -631,7 +636,7 @@ function ComplaintsList() {
                   <>
                     {c.status === "Accepted" ? (
                       <button
-                        onClick={() => setVerifyingBookingId(c.id)}
+                        onClick={() => handleStartWork(c.id)}
                         disabled={actionLoading === c.id + "_start"}
                         style={{
                           background: '#ff7a00', color: '#fff', border: 'none',
@@ -640,11 +645,11 @@ function ComplaintsList() {
                           boxShadow: '0 4px 12px rgba(255,122,0,0.15)', flex: 1
                         }}
                       >
-                        🚀 Start Work (Verify OTP)
+                        🚀 Start Work
                       </button>
                     ) : (
                       <button
-                        onClick={() => handleComplete(c.id)}
+                        onClick={() => promptComplete(c.id)}
                         disabled={actionLoading === c.id + "_complete"}
                         style={{
                           background: '#10b981', color: '#fff', border: 'none',
@@ -653,7 +658,7 @@ function ComplaintsList() {
                           boxShadow: '0 4px 12px rgba(16,185,129,0.15)', flex: 1
                         }}
                       >
-                        {actionLoading === c.id + "_complete" ? t("viewComplaint.updating") : "🏁 Mark Completed"}
+                        🏁 Mark Completed
                       </button>
                     )}
                   </>
