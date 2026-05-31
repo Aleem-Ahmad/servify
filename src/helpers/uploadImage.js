@@ -1,8 +1,12 @@
-import cloudinary from "@/lib/cloudinary";
+import cloudinary, { isCloudinaryConfigured } from "@/lib/cloudinary";
 
 export const uploadImage = async (file, folder = "servify/documents") => {
   try {
     if (!file) return null;
+    if (!isCloudinaryConfigured()) {
+      console.warn("Cloudinary not configured — skipping upload");
+      return null;
+    }
 
     // Convert file to Buffer
     const bytes = await file.arrayBuffer();

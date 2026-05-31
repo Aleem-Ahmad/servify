@@ -1,2 +1,3 @@
-DATABASE_URL="postgresql://postgres.stvjosvtexdiuqgmikhl:ZM.A2kr%255wg7Lqy@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-DIRECT_URL="postgresql://postgres.stvjosvtexdiuqgmikhl:ZM.A2kr%255wg7Lqy@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres"
+# Same as repo root .env.example — Supabase project stvjosvtexdiuqgmikhl (do not use Neon)
+DATABASE_URL=postgresql://postgres.stvjosvtexdiuqgmikhl:ZM.A2kr%255wg7Lqy@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+DIRECT_URL=postgresql://postgres.stvjosvtexdiuqgmikhl:ZM.A2kr%255wg7Lqy@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres

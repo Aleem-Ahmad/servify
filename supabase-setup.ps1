@@ -1,13 +1,18 @@
-# supabase-setup.ps1 — Option A project (stvjosvtexdiuqgmikhl)
-# Get connection strings from: Supabase Dashboard → Project Settings → Database
+# Supabase setup — Servify (project: stvjosvtexdiuqgmikhl)
+# Database is Supabase PostgreSQL via Prisma. This is the final configuration.
 
-Write-Host "Supabase project: stvjosvtexdiuqgmikhl"
+$PROJECT = "stvjosvtexdiuqgmikhl"
+$POOLER  = "aws-1-ap-northeast-1.pooler.supabase.com"
+
+Write-Host "=== Servify Supabase (final) ===" -ForegroundColor Cyan
+Write-Host "Project ref: $PROJECT"
+Write-Host "Dashboard:   https://supabase.com/dashboard/project/$PROJECT"
 Write-Host ""
-Write-Host "Copy these into Vercel / .env.local:"
-Write-Host "  DATABASE_URL  → Transaction pooler (port 6543, ?pgbouncer=true)"
-Write-Host "  DIRECT_URL    → Direct / session pooler (port 5432)"
-Write-Host "  NEXT_PUBLIC_SUPABASE_URL → https://stvjosvtexdiuqgmikhl.supabase.co"
-Write-Host "  NEXT_PUBLIC_SUPABASE_ANON_KEY → API → anon public"
-Write-Host "  SUPABASE_SERVICE_ROLE_KEY     → API → service_role"
+Write-Host "Required on Vercel AND .env.local:" -ForegroundColor Yellow
+Write-Host "  DATABASE_URL  = postgresql://postgres.$PROJECT`:<password>@$POOLER`:6543/postgres?pgbouncer=true"
+Write-Host "  DIRECT_URL    = postgresql://postgres.$PROJECT`:<password>@$POOLER`:5432/postgres"
+Write-Host "  RESEND_API_KEY, RESEND_FROM_EMAIL"
+Write-Host "  NEXT_PUBLIC_SUPABASE_URL = https://$PROJECT.supabase.co"
 Write-Host ""
-Write-Host "Do NOT commit real passwords to git."
+Write-Host "Copy exact values from .env.example (already filled for this project)."
+Write-Host "After deploy: npm run db:push"

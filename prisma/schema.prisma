@@ -5,6 +5,7 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Servify database — Supabase PostgreSQL only (see README.md)
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
