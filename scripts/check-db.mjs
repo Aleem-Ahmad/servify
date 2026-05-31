@@ -21,7 +21,7 @@ loadEnvFile('.env');
 loadEnvFile('.env.local');
 
 if (!process.env.DATABASE_URL || !process.env.DIRECT_URL) {
-  console.error('Supabase not configured. Set DATABASE_URL and DIRECT_URL (see .env.example).');
+  console.error('Supabase not configured. Set DATABASE_URL and DIRECT_URL in .env.local or Vercel.');
   process.exit(1);
 }
 
