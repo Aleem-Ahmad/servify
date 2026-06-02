@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
-import { Sun, Moon, Globe, UploadCloud, Eye, EyeOff, User, Lock, Mail, ChevronRight, ArrowLeft, Shield, Wrench, CheckCircle } from "lucide-react";
+import { Sun, Moon, Globe, UploadCloud, Eye, EyeOff, User, Lock, Mail, ChevronRight, ArrowLeft, Shield, Wrench } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,7 +16,7 @@ export default function Authentication() {
   const [loadingAuth, setLoadingAuth] = useState(false);
   const { t, locale, changeLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
-  const { login, signup } = useAuth();
+  const { login, signup, loginWithGoogle } = useAuth();
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
 
@@ -256,6 +256,15 @@ export default function Authentication() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setLoadingAuth(true);
+    const result = await loginWithGoogle();
+    if (!result.success) {
+      alert(result.message || "Google login failed");
+      setLoadingAuth(false);
+    }
+  };
+
   const handleSignup = async (e) => {
     if (e) e.preventDefault();
     if (!isStepValid()) return;
@@ -410,6 +419,18 @@ export default function Authentication() {
                   className="auth-btn auth-btn--primary"
                 >
                   {loadingAuth ? "Signing in..." : t("auth.login")}
+                </button>
+
+                <div className="auth-divider"><span>or</span></div>
+
+                <button
+                  type="button"
+                  disabled={loadingAuth}
+                  onClick={handleGoogleLogin}
+                  className="auth-btn auth-btn--google"
+                >
+                  <span className="auth-google-mark">G</span>
+                  Continue with Google
                 </button>
 
                 <p className="auth-toggle">

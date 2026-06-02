@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { parseApiResponse } from "@/lib/parseApiResponse";
+import { getSupabaseBrowserClient } from "@/lib/supabaseBrowser";
 
 const AuthContext = createContext({});
 
@@ -122,8 +123,44 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: "offline",
+            prompt: "select_account",
+          },
+        },
+      });
+
+      if (error) {
+        return { success: false, message: error.message || "Google login failed" };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error("Google login error:", error);
+      return {
+        success: false,
+        message:
+          error.message ||
+          "Google login is not configured. Check your Supabase URL and anon key.",
+      };
+    }
+  };
+
   const logout = async () => {
     try {
+      try {
+        await getSupabaseBrowserClient().auth.signOut();
+      } catch (error) {
+        console.warn("Supabase sign out skipped:", error.message);
+      }
+
       await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
       setUser(null);
       localStorage.removeItem("servify_user");
@@ -134,7 +171,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, signup, loginWithGoogle, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

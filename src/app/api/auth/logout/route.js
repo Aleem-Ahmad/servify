@@ -9,5 +9,7 @@ export async function POST() {
     message: 'Logged out successfully',
   });
   response.cookies.delete('userId');
+  response.cookies.delete('sb-access-token');
+  response.cookies.delete('sb-refresh-token');
   return response;
 }
