@@ -6,9 +6,10 @@ import "../providerDashboard.css";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
+import BookingChat from "@/components/SharedComponents/Chat/BookingChat";
 import { 
   Play, Pause, Clock, Phone, MapPin, Calendar, 
-  AlertTriangle, ShieldCheck, User, Zap, Wallet, CheckSquare 
+  AlertTriangle, ShieldCheck, User, MessageSquare, Zap, Wallet, CheckSquare 
 } from "lucide-react";
 
 function ComplaintsList() {
@@ -23,6 +24,7 @@ function ComplaintsList() {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [chatComplaint, setChatComplaint] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
   
   // Scheduling Visit Modal
@@ -274,7 +276,7 @@ function ComplaintsList() {
             </h3>
             
             <p style={{ fontSize: '0.88rem', opacity: 0.85, marginBottom: '20px', lineHeight: '1.5' }}>
-              Specify the date and estimated time you will arrive at the customer's location. This will be updated transparently to their tracking console.
+              Specify the date and estimated time you will arrive at the customer&apos;s location. This will be updated transparently to their tracking console.
             </p>
             
             <div style={{ marginBottom: '24px' }}>
@@ -466,6 +468,38 @@ function ComplaintsList() {
               }}
             >
               Close Details
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Chat Modal */}
+      {chatComplaint && (
+        <div onClick={() => setChatComplaint(null)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
+          zIndex: 1002, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '18px'
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            maxWidth: '620px', width: '100%',
+            color: dark ? '#f1f5f9' : '#1e293b'
+          }}>
+            <BookingChat
+              bookingId={chatComplaint.id}
+              peerName={chatComplaint.customerName || "Customer"}
+              compact
+            />
+            <button
+              onClick={() => setChatComplaint(null)}
+              style={{
+                marginTop: '12px', width: '100%', padding: '12px',
+                borderRadius: '12px', background: dark ? '#1e293b' : '#ffffff',
+                color: dark ? '#f8fafc' : '#0f172a',
+                border: dark ? '1px solid #334155' : '1px solid #e2e8f0',
+                cursor: 'pointer', fontWeight: '800'
+              }}
+            >
+              Close Chat
             </button>
           </div>
         </div>
@@ -663,7 +697,22 @@ function ComplaintsList() {
                     )}
                   </>
                 )}
-                
+
+                {type === "pending" && (
+                  <button
+                    onClick={() => setChatComplaint(c)}
+                    style={{
+                      background: dark ? 'rgba(59,130,246,0.16)' : '#eff6ff',
+                      border: dark ? '1px solid rgba(96,165,250,0.35)' : '1px solid #bfdbfe',
+                      padding: '10px 18px', borderRadius: '12px', cursor: 'pointer',
+                      color: dark ? '#93c5fd' : '#1d4ed8', fontWeight: '800',
+                      display: 'inline-flex', alignItems: 'center', gap: '7px'
+                    }}
+                  >
+                    <MessageSquare className="w-4 h-4" /> Chat
+                  </button>
+                )}
+                 
                 <button
                   onClick={() => setSelectedComplaint(c)}
                   style={{

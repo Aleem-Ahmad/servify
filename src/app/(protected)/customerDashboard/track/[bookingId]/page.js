@@ -9,6 +9,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
 import { motion } from "framer-motion";
+import BookingChat from "@/components/SharedComponents/Chat/BookingChat";
 import "leaflet/dist/leaflet.css";
 
 // Dynamic import for Leaflet components to avoid SSR issues
@@ -282,11 +283,11 @@ export default function TrackBooking({ params }) {
                 <a href={`tel:${booking.providerPhone || "03000000000"}`} className="w-full py-3.5 rounded-xl flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-bold shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.01] text-sm text-center">
                   <Phone className="w-4.5 h-4.5" /> Call Provider
                 </a>
-                <button className={`w-full py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold transition-all border text-sm ${
+                <a href="#booking-chat" className={`w-full py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold transition-all border text-sm ${
                   dark ? "bg-slate-800 hover:bg-slate-700 text-white border-slate-700" : "bg-slate-100 hover:bg-slate-200 text-slate-900 border-slate-200"
                 }`}>
                   <MessageSquare className="w-4.5 h-4.5" /> Send Message
-                </button>
+                </a>
               </div>
             )}
           </div>
@@ -299,6 +300,15 @@ export default function TrackBooking({ params }) {
           </div>
         </motion.div>
       </div>
+
+      {booking.provider && !isPending && (
+        <div id="booking-chat" className="w-full max-w-5xl px-6 mt-6">
+          <BookingChat
+            bookingId={booking.id}
+            peerName={booking.providerName || "Provider"}
+          />
+        </div>
+      )}
     </div>
   );
 }

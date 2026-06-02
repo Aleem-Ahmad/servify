@@ -70,6 +70,7 @@ model User {
   providerBookings Booking[] @relation("ProviderBookings")
   reviewsGiven     Review[]  @relation("ReviewsGiven")
   reviewsReceived  Review[]  @relation("ReviewsReceived")
+  sentMessages      ChatMessage[] @relation("ChatMessageSender")
 }
 
 model Booking {
@@ -112,6 +113,22 @@ model Booking {
   customer         User      @relation("CustomerBookings", fields: [customerId], references: [id])
   provider         User?     @relation("ProviderBookings", fields: [providerId], references: [id])
   reviews          Review[]
+  chatMessages     ChatMessage[]
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  bookingId String
+  senderId  String
+  body      String
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  sender    User     @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId, createdAt])
+  @@index([senderId])
 }
 
 model Review {
