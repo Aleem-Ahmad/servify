@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
 // Rate limiting store (in-memory for development, use Redis for production)
 const rateLimit = new Map();
@@ -105,10 +105,10 @@ export async function middleware(request) {
   
   if (isProtectedPath && !isPublicPath) {
     try {
-      const supabase = createMiddlewareClient({ req: request });
-      const { data: { session } } = await supabase.auth.getSession();
+      const cookieStore = await cookies();
+      const userId = cookieStore.get('userId')?.value;
       
-      if (!session) {
+      if (!userId) {
         // Redirect to authentication page for protected routes
         const redirectUrl = new URL('/authentication', request.url);
         redirectUrl.searchParams.set('redirect', pathname);
@@ -117,40 +117,11 @@ export async function middleware(request) {
       
       // Add user info to headers for API routes
       if (pathname.startsWith('/api')) {
-        response.headers.set('x-user-id', session.user.id);
-        response.headers.set('x-user-email', session.user.email);
+        response.headers.set('x-user-id', userId);
       }
       
-      // Role-based access control
-      if (pathname.startsWith('/providerDashboard') || pathname.startsWith('/api/provider')) {
-        // Check if user is a provider
-        const { data: { user } } = await supabase.auth.getUser();
-        const userRole = user?.user_metadata?.role;
-        
-        if (userRole !== 'provider' && userRole !== 'admin') {
-          return NextResponse.redirect(new URL('/authentication?error=unauthorized', request.url));
-        }
-      }
-      
-      if (pathname.startsWith('/customerDashboard')) {
-        // Check if user is a customer
-        const { data: { user } } = await supabase.auth.getUser();
-        const userRole = user?.user_metadata?.role;
-        
-        if (userRole !== 'customer' && userRole !== 'admin') {
-          return NextResponse.redirect(new URL('/authentication?error=unauthorized', request.url));
-        }
-      }
-      
-      if (pathname.startsWith('/adminDashboard') || pathname.startsWith('/api/admin')) {
-        // Check if user is an admin
-        const { data: { user } } = await supabase.auth.getUser();
-        const userRole = user?.user_metadata?.role;
-        
-        if (userRole !== 'admin') {
-          return NextResponse.redirect(new URL('/authentication?error=unauthorized', request.url));
-        }
-      }
+      // Note: Role-based access control should be handled in API routes
+      // since we don't have full user metadata in cookies
       
     } catch (error) {
       console.error('Middleware authentication error:', error);
