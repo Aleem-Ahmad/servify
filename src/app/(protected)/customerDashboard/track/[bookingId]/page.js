@@ -28,6 +28,12 @@ export default function TrackBooking({ params }) {
   const [providerLoc, setProviderLoc] = useState([30.8138, 73.4534]); 
   const [customerLoc, setCustomerLoc] = useState([30.8080, 73.4450]);
   const [eta, setEta] = useState(12);
+  
+  // Feedback form state
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
 
   // Unwrap params and fetch booking details
   useEffect(() => {
@@ -38,6 +44,11 @@ export default function TrackBooking({ params }) {
         if (res.ok) {
           const data = await res.json();
           setBooking(data);
+          
+          // Show feedback form if booking is just completed
+          if (data.status === "Completed") {
+            setShowFeedback(true);
+          }
           
           // If customer location coordinates exist in the booking, parse them
           if (data.location && data.location.includes(",")) {
@@ -78,6 +89,41 @@ export default function TrackBooking({ params }) {
     }, 6000);
     return () => clearInterval(interval);
   }, [booking, customerLoc]);
+
+  const handleSubmitFeedback = async () => {
+    if (rating === 0) {
+      alert("Please select a star rating");
+      return;
+    }
+    
+    setSubmittingFeedback(true);
+    try {
+      const resolvedParams = await params;
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId: resolvedParams.bookingId,
+          providerId: booking.providerId,
+          rating: rating,
+          comment: comment
+        })
+      });
+      
+      if (res.ok) {
+        alert("Thank you for your feedback!");
+        setShowFeedback(false);
+        setRating(0);
+        setComment("");
+      } else {
+        alert("Failed to submit feedback. Please try again.");
+      }
+    } catch (error) {
+      alert("Network error. Please try again.");
+    } finally {
+      setSubmittingFeedback(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -307,6 +353,101 @@ export default function TrackBooking({ params }) {
             bookingId={booking.id}
             peerName={booking.providerName || "Provider"}
           />
+        </div>
+      )}
+
+      {/* Feedback Modal */}
+      {showFeedback && isCompleted && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+          zIndex: 1001, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }}>
+          <div style={{
+            background: dark ? '#1e293b' : '#ffffff', borderRadius: '24px', padding: '32px',
+            maxWidth: '480px', width: '100%', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+            border: dark ? '1px solid #334155' : '1px solid #e2e8f0',
+            color: dark ? '#f1f5f9' : '#1e293b'
+          }}>
+            <h3 style={{ marginBottom: '16px', fontWeight: '900', color: '#ff7a00', fontSize: '1.4rem' }}>
+              ⭐ Rate Your Experience
+            </h3>
+            <p style={{ fontSize: '0.88rem', opacity: 0.85, marginBottom: '24px', lineHeight: '1.5' }}>
+              How was your experience with {booking.providerName || "the provider"}? Your feedback helps us improve our service.
+            </p>
+            
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '12px', opacity: 0.8 }}>
+                Star Rating
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => setRating(star)}
+                    style={{
+                      fontSize: '2rem',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: star <= rating ? '#f59e0b' : dark ? '#475569' : '#cbd5e1',
+                      transition: 'transform 0.2s',
+                    }}
+                    onMouseEnter={(e) => e.target.style.transform = 'scale(1.2)'}
+                    onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '8px', opacity: 0.8 }}>
+                Your Comment (Optional)
+              </label>
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Tell us about your experience..."
+                rows={4}
+                style={{
+                  width: '100%', padding: '12px 14px', borderRadius: '12px',
+                  border: dark ? '1.5px solid #334155' : '1.5px solid #cbd5e1',
+                  background: dark ? '#0f172a' : '#f8fafc',
+                  color: dark ? '#f1f5f9' : '#1e293b',
+                  fontSize: '0.95rem', outline: 'none', resize: 'vertical',
+                  fontFamily: 'inherit'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setShowFeedback(false)}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '12px',
+                  background: dark ? '#334155' : '#f1f5f9',
+                  color: dark ? '#f1f5f9' : '#475569',
+                  border: 'none', cursor: 'pointer', fontWeight: '700'
+                }}
+              >
+                Skip
+              </button>
+              <button
+                onClick={handleSubmitFeedback}
+                disabled={submittingFeedback}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '12px',
+                  background: '#ff7a00', color: '#fff',
+                  border: 'none', cursor: 'pointer', fontWeight: '700',
+                  boxShadow: '0 8px 20px rgba(255,122,0,0.2)',
+                  opacity: submittingFeedback ? 0.7 : 1
+                }}
+              >
+                {submittingFeedback ? 'Submitting...' : 'Submit Feedback'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

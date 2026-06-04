@@ -129,51 +129,28 @@ function ComplaintsList() {
     }
   };
 
-  const handleStartWork = async (id) => {
-    if (!confirm(t("Are you sure you want to start work on this booking?"))) return;
-    setActionLoading(id + "_start");
-    try {
-      const res = await fetch(`/api/bookings/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'In-Progress' })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        await fetchComplaints(user.id);
-        alert(t("Job started successfully! It is now In-Progress."));
-      } else {
-        alert(data.message || "Failed to start job");
-      }
-    } catch (error) {
-      alert("Network error. Please try again.");
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const promptComplete = (id) => {
+  const promptStartWork = (id) => {
     setEnteredOtp("");
     setVerifyingBookingId(id);
   };
 
-  const handleCompleteWork = async () => {
+  const handleStartWork = async () => {
     if (!verifyingBookingId) return;
     const id = verifyingBookingId;
     
     if (!enteredOtp) {
-      alert("Please enter the customer's verification OTP.");
+      alert("Please enter the customer's verification OTP before starting work.");
       return;
     }
 
-    setActionLoading(id + "_complete");
+    setActionLoading(id + "_start");
     
     try {
       const res = await fetch(`/api/bookings/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          status: 'Completed',
+          status: 'In-Progress',
           otp: enteredOtp
         })
       });
@@ -182,9 +159,32 @@ function ComplaintsList() {
         setVerifyingBookingId(null);
         setEnteredOtp("");
         await fetchComplaints(user.id);
-        alert("Verification successful! The job has been marked as Completed.");
+        alert(t("OTP verified! Work started successfully."));
       } else {
-        alert(data.message || "Failed to verify OTP / complete job");
+        alert(data.message || "Failed to verify OTP / start work");
+      }
+    } catch (error) {
+      alert("Network error. Please try again.");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleCompleteWork = async (id) => {
+    if (!confirm(t("Are you sure you want to mark this job as completed?"))) return;
+    setActionLoading(id + "_complete");
+    try {
+      const res = await fetch(`/api/bookings/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Completed' })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        await fetchComplaints(user.id);
+        alert(t("Job marked as completed successfully!"));
+      } else {
+        alert(data.message || "Failed to complete job");
       }
     } catch (error) {
       alert("Network error. Please try again.");
@@ -338,10 +338,10 @@ function ComplaintsList() {
             color: dark ? '#f1f5f9' : '#1e293b'
           }}>
             <h3 style={{ marginBottom: '16px', fontWeight: '900', color: '#ff7a00', fontSize: '1.4rem' }}>
-              🔑 Security OTP Completion Key
+              🔑 Security OTP Verification
             </h3>
             <p style={{ fontSize: '0.88rem', opacity: 0.85, marginBottom: '20px', lineHeight: '1.5' }}>
-              Please ask the customer for their verification OTP. Enter it below to verify your visit and mark this job as Completed.
+              Please ask the customer for their verification OTP. Enter it below to verify and start work.
             </p>
             <div style={{ marginBottom: '24px' }}>
               <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '8px', opacity: 0.8 }}>
@@ -375,8 +375,8 @@ function ComplaintsList() {
                 Cancel
               </button>
               <button
-                onClick={handleCompleteWork}
-                disabled={actionLoading === verifyingBookingId + "_complete"}
+                onClick={handleStartWork}
+                disabled={actionLoading === verifyingBookingId + "_start"}
                 style={{
                   flex: 1, padding: '12px', borderRadius: '12px',
                   background: '#ff7a00', color: '#fff',
@@ -384,7 +384,7 @@ function ComplaintsList() {
                   boxShadow: '0 8px 20px rgba(255,122,0,0.2)'
                 }}
               >
-                {actionLoading === verifyingBookingId + "_complete" ? "Verify & Complete..." : "Verify & Complete"}
+                {actionLoading === verifyingBookingId + "_start" ? "Verify & Start..." : "Verify & Start Work"}
               </button>
             </div>
           </div>
@@ -670,7 +670,7 @@ function ComplaintsList() {
                   <>
                     {c.status === "Accepted" ? (
                       <button
-                        onClick={() => handleStartWork(c.id)}
+                        onClick={() => promptStartWork(c.id)}
                         disabled={actionLoading === c.id + "_start"}
                         style={{
                           background: '#ff7a00', color: '#fff', border: 'none',
@@ -679,11 +679,11 @@ function ComplaintsList() {
                           boxShadow: '0 4px 12px rgba(255,122,0,0.15)', flex: 1
                         }}
                       >
-                        🚀 Start Work
+                        � Verify & Start Work
                       </button>
                     ) : (
                       <button
-                        onClick={() => promptComplete(c.id)}
+                        onClick={() => handleCompleteWork(c.id)}
                         disabled={actionLoading === c.id + "_complete"}
                         style={{
                           background: '#10b981', color: '#fff', border: 'none',
@@ -698,7 +698,7 @@ function ComplaintsList() {
                   </>
                 )}
 
-                {type === "pending" && (
+                {(type === "pending" || c.status === "Accepted") && (
                   <button
                     onClick={() => setChatComplaint(c)}
                     style={{

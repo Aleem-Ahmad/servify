@@ -32,6 +32,7 @@ export default function ShopPage() {
   const [isOnline, setIsOnline] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [offers, setOffers] = useState([]);
   
   // Re-sync whenever user object loads or updates from server
   useEffect(() => {
@@ -50,6 +51,21 @@ export default function ShopPage() {
     };
     fetchReviews();
   }, [user?.id]);
+
+  // Fetch this provider's offers
+  useEffect(() => {
+    if (!user?.id) return;
+    const fetchOffers = async () => {
+      try {
+        const res = await fetch(`/api/provider/settings`);
+        if (res.ok) {
+          const data = await res.json();
+          setOffers(data.offers || []);
+        }
+      } catch(e) { console.error('Failed to load offers', e); }
+    };
+    fetchOffers();
+  }, [user?.id]);
   
   const isVerified = user?.status === "Active";
   const avgRating = reviews.length
@@ -64,7 +80,7 @@ export default function ShopPage() {
     address: user?.address || "N/A",
     category: user?.category || "General Service",
     services: user?.services || [user?.category || "Service"],
-    pricing: "Negotiable",
+    pricing: user?.hourlyRate ? `PKR ${user.hourlyRate}/hour` : "Negotiable",
     timing: "9:00 AM - 6:00 PM"
   };
 
@@ -254,6 +270,34 @@ export default function ShopPage() {
               ))}
               <button className="add-chip-btn">+</button>
             </div>
+          </div>
+
+          <div className="content-card">
+            <h3>{t("Current Offers")}</h3>
+            {offers.length === 0 ? (
+              <p className={`text-sm ${dark ? "text-slate-400" : "text-slate-500"}`}>No active offers. Create offers to attract more customers!</p>
+            ) : (
+              <div className="space-y-3">
+                {offers.map((offer) => (
+                  <div key={offer.id} className={`p-3 rounded-xl ${dark ? "bg-orange-500/10 border border-orange-500/20" : "bg-orange-50 border border-orange-200"}`}>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-orange-600 dark:text-orange-400">{offer.title}</span>
+                      {offer.discountPct && (
+                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${dark ? "bg-orange-500/20 text-orange-400" : "bg-orange-500 text-white"}`}>
+                          {offer.discountPct}% OFF
+                        </span>
+                      )}
+                    </div>
+                    {offer.description && (
+                      <p className={`text-xs mt-1 ${dark ? "text-slate-400" : "text-slate-600"}`}>{offer.description}</p>
+                    )}
+                    <p className={`text-xs mt-2 ${dark ? "text-slate-500" : "text-slate-500"}`}>
+                      Valid: {new Date(offer.validFrom).toLocaleDateString()} - {new Date(offer.validTo).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

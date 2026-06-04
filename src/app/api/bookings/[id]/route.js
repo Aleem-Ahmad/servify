@@ -7,7 +7,7 @@ export async function PATCH(request, { params }) {
     const { status, providerId, providerName, visitTime, otp } = await request.json();
     console.log(`PATCH booking id=${id} status=${status} providerId=${providerId} otp=${otp}`);
 
-    if (status === "Completed" || status === "Done") {
+    if (status === "In-Progress") {
       const booking = await prisma.booking.findUnique({ where: { id } });
       if (!booking) {
         return NextResponse.json({ success: false, message: "Booking not found" }, { status: 404 });

@@ -205,9 +205,35 @@ function ViewProviderContent() {
 
                 <div>
                   <h4 className={`text-sm font-bold uppercase tracking-wider mb-3 ${dark ? "text-slate-500" : "text-slate-400"}`}>{t("Pricing")}</h4>
-                  <p className="text-sm font-medium flex items-center gap-2"><Zap className="w-4 h-4 text-orange-500" /> Starting at PKR {provider.rate || 500}</p>
+                  <p className="text-sm font-medium flex items-center gap-2"><Zap className="w-4 h-4 text-orange-500" /> Starting at PKR {provider.rate || 0}/hour</p>
                 </div>
               </div>
+
+              {provider.offers && provider.offers.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+                  <h4 className={`text-sm font-bold uppercase tracking-wider mb-3 ${dark ? "text-slate-500" : "text-slate-400"}`}>{t("Special Offers")}</h4>
+                  <div className="space-y-2">
+                    {provider.offers.map((offer) => (
+                      <div key={offer.id} className={`p-3 rounded-xl ${dark ? "bg-orange-500/10 border border-orange-500/20" : "bg-orange-50 border border-orange-200"}`}>
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-orange-600 dark:text-orange-400">{offer.title}</span>
+                          {offer.discountPct && (
+                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${dark ? "bg-orange-500/20 text-orange-400" : "bg-orange-500 text-white"}`}>
+                              {offer.discountPct}% OFF
+                            </span>
+                          )}
+                        </div>
+                        {offer.description && (
+                          <p className={`text-xs mt-1 ${dark ? "text-slate-400" : "text-slate-600"}`}>{offer.description}</p>
+                        )}
+                        <p className={`text-xs mt-2 ${dark ? "text-slate-500" : "text-slate-500"}`}>
+                          Valid: {new Date(offer.validFrom).toLocaleDateString()} - {new Date(offer.validTo).toLocaleDateString()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={`p-8 rounded-[2rem] border ${dark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"}`}>

@@ -40,10 +40,10 @@ export const signupSchema = z.object({
         message: "Professional details/experience are required for providers",
         path: ["experience"],
       });
-    } else if (!/^.{10,500}$/.test(data.experience)) {
+    } else if (!/^\d{1,2}$/.test(data.experience)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Experience details must be between 10-500 characters",
+        message: "Experience must be 1-2 digits (years)",
         path: ["experience"],
       });
     }

@@ -3,14 +3,10 @@ import prisma from '@/lib/prisma';
 
 export async function POST(request) {
   try {
-    const formData = await request.formData();
-    const bookingId = formData.get('bookingId');
-    const customerId = formData.get('customerId');
-    const providerId = formData.get('providerId');
-    const rating = parseInt(formData.get('rating'));
-    const comment = formData.get('comment') || '';
+    const body = await request.json();
+    const { bookingId, customerId, providerId, rating, comment, mediaUrls } = body;
 
-    if (!bookingId || !customerId || !providerId || !rating) {
+    if (!bookingId || !providerId || !rating) {
       return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
     }
 
@@ -22,27 +18,21 @@ export async function POST(request) {
       return NextResponse.json({ success: false, message: 'You have already reviewed this booking.' }, { status: 409 });
     }
 
-    // Handle optional media files (store as base64 data URLs for now)
-    const mediaUrls = [];
-    const mediaFiles = ['photo', 'video', 'audio'];
-    for (const field of mediaFiles) {
-      const file = formData.get(field);
-      if (file && file.size > 0) {
-        const buffer = await file.arrayBuffer();
-        const base64 = Buffer.from(buffer).toString('base64');
-        const mimeType = file.type;
-        mediaUrls.push(`data:${mimeType};base64,${base64}`);
-      }
+    // Get customerId from booking if not provided
+    let finalCustomerId = customerId;
+    if (!finalCustomerId) {
+      const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
+      finalCustomerId = booking?.customerId;
     }
 
     await prisma.review.create({
       data: {
         bookingId,
-        customerId,
+        customerId: finalCustomerId,
         providerId,
         rating,
-        comment,
-        mediaUrls,
+        comment: comment || '',
+        mediaUrls: mediaUrls || [],
       }
     });
 

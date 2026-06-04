@@ -68,7 +68,7 @@ export default function Authentication() {
       else if (name === "phone") error = "Format: 3xxxxxxxxx (10 digits, no leading 0)";
       else if (name === "cnic") error = "Format: xxxxx-xxxxxxx-x";
       else if (name === "name") error = "3-30 alphabetic characters";
-      else if (name === "experience") error = "Minimum 10 characters required";
+      else if (name === "experience") error = "1-2 digits (years) required";
       else error = "Invalid format";
     }
 

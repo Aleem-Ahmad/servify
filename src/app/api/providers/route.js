@@ -10,7 +10,10 @@ export async function GET(request) {
 
     // Single provider by ID
     if (id) {
-      const p = await prisma.user.findUnique({ where: { id } });
+      const p = await prisma.user.findUnique({ 
+        where: { id },
+        include: { offers: true }
+      });
       if (!p || p.role !== 'provider') {
         return NextResponse.json({ error: "Provider not found" }, { status: 404 });
       }
@@ -24,7 +27,7 @@ export async function GET(request) {
         tehseel: p.tehseel || null,
         address: p.address || null,
         rating: p.performance?.rating || 0,
-        rate: p.rate || 500,
+        rate: p.hourlyRate || 0,
         category: p.category || 'Professional',
         trustScore: p.trustScore || 0,
         badge: p.badge || 'Basic',
@@ -32,6 +35,7 @@ export async function GET(request) {
         services: p.services || null,
         status: p.status,
         isOnline: p.isOnline || false,
+        offers: p.offers || [],
       });
     }
 
@@ -43,7 +47,8 @@ export async function GET(request) {
 
     const providers = await prisma.user.findMany({
       where: query,
-      orderBy: { trustScore: 'desc' }
+      orderBy: { trustScore: 'desc' },
+      include: { offers: true }
     });
 
     const formattedProviders = providers.map(p => ({
@@ -52,13 +57,14 @@ export async function GET(request) {
       email: p.email,
       image: p.image || `https://i.pravatar.cc/150?u=${p.email}`,
       rating: p.performance?.rating || 0,
-      rate: p.rate || 500,
+      rate: p.hourlyRate || 0,
       category: p.category || 'Professional',
       trustScore: p.trustScore || 0,
       badge: p.badge || 'Basic',
       experience: p.experience || '',
       phone: p.phone || null,
       district: p.district || null,
+      offers: p.offers || [],
     }));
 
     let filtered = formattedProviders;
