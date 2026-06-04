@@ -41,15 +41,11 @@ function checkRateLimit(ip, limit = 100, window = 60000) {
   return record.count <= limit;
 }
 
-// Paths that require authentication
+// Paths that require authentication (frontend routes only)
 const protectedPaths = [
   '/providerDashboard',
   '/customerDashboard',
-  '/adminDashboard',
-  '/api/user/profile',
-  '/api/provider/settings',
-  '/api/bookings',
-  '/api/feedback'
+  '/adminDashboard'
 ];
 
 // Paths that are always public
@@ -58,6 +54,10 @@ const publicPaths = [
   '/authentication',
   '/auth',
   '/api/auth',
+  '/api/bookings',
+  '/api/feedback',
+  '/api/user/profile',
+  '/api/provider/settings',
   '/forgot-password',
   '/coming-soon',
   '/plans',
