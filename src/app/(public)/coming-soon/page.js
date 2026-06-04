@@ -4,12 +4,30 @@ import "@/styles/publicStyles/coming-soon.css";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useAuth } from "@/context/AuthContext";
 import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ComingSoon() {
   const { t } = useLanguage();
   const { theme } = useTheme();
+  const { user } = useAuth();
+  const router = useRouter();
   const dark = theme === "dark";
+
+  // Redirect logged-in users to their appropriate dashboard
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'provider') {
+        router.push('/providerDashboard');
+      } else if (user.role === 'customer') {
+        router.push('/customerDashboard');
+      } else if (user.role === 'admin') {
+        router.push('/adminDashboard');
+      }
+    }
+  }, [user, router]);
 
   return (
     <div className={`coming-soon-container ${dark ? "dark" : ""}`}>
