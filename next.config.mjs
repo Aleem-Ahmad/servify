@@ -2,6 +2,13 @@
 const nextConfig = {
   reactCompiler: true,
   
+  // Increase body size limit for file uploads
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
+  },
+  
   // Security headers
   async headers() {
     return [

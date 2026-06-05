@@ -7,7 +7,6 @@ import { Sun, Moon, Globe, UploadCloud, Eye, EyeOff, User, Lock, Mail, ChevronRi
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { uploadImageClient } from "@/helpers/uploadImageClient";
 import "./auth.css";
 
 export default function Authentication() {
@@ -39,9 +38,6 @@ export default function Authentication() {
     dob: "",
     address: "",
     providerType: "Individual",
-    profileUrl: "",
-    cnicFrontUrl: "",
-    cnicBackUrl: "",
   });
 
   const [previews, setPreviews] = useState({
@@ -228,7 +224,7 @@ export default function Authentication() {
     return true;
   };
 
-  const handleFileChange = async (e, type) => {
+  const handleFileChange = (e, type) => {
     const file = e.target.files[0];
     if (file) {
       // Check file size (5MB limit)
@@ -239,32 +235,12 @@ export default function Authentication() {
         return;
       }
 
-      // Show preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviews(prev => ({ ...prev, [type]: reader.result }));
+        setFormData(prev => ({ ...prev, [type]: file }));
       };
       reader.readAsDataURL(file);
-
-      // Upload directly to Supabase
-      const folder = type === 'profile' 
-        ? `servify/users/${formData.username || 'temp'}/profile`
-        : `servify/providers/${formData.username || 'temp'}/cnic`;
-      
-      const uploadResult = await uploadImageClient(file, folder);
-      
-      if (uploadResult && uploadResult.error) {
-        alert(uploadResult.error);
-        e.target.value = "";
-        setPreviews(prev => ({ ...prev, [type]: null }));
-        return;
-      }
-
-      if (uploadResult && uploadResult.url) {
-        // Store the URL in formData with appropriate key
-        const urlKey = type === 'profile' ? 'profileUrl' : `${type}Url`;
-        setFormData(prev => ({ ...prev, [urlKey]: uploadResult.url }));
-      }
     }
   };
 
