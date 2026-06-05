@@ -9,7 +9,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-const SUPABASE_STORAGE_BUCKET = 'servify-documents';
+const SUPABASE_STORAGE_BUCKET = 
+  process.env.SUPABASE_STORAGE_BUCKET ||
+  process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET ||
+  'servify_public';
 
 // Maximum file size: 5MB
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
