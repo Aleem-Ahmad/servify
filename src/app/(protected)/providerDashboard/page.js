@@ -329,7 +329,7 @@ export default function ProviderDashboard() {
             </h2>
             <button 
               onClick={() => router.push("/providerDashboard/viewComplaint?type=new")}
-              className={`text-sm font-semibold flex items-center gap-1 hover:underline ${dark ? "text-orange-400" : "text-orange-600"}`}
+              className="btn btn-secondary btn-sm"
             >
               {isUrdu ? "تمام دیکھیں" : "View All"} <ArrowRight className="w-4 h-4" />
             </button>

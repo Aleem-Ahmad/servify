@@ -5,6 +5,7 @@
 :root {
   --primary: #ff7a00;
   --primary-light: #ffba75;
+  --primary-dark: #e56b00;
   --bg-gradient: linear-gradient(180deg, #f8faff, #ffffff);
   --text: #0f172a;
   --text-muted: #64748b;
@@ -12,6 +13,9 @@
   --border: rgba(0, 0, 0, 0.05);
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
   --glass-blur: blur(16px);
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
 }
 
 .dark {
@@ -180,21 +184,44 @@ body {
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   padding: 30px;
-  border-radius: 24px;
+  border-radius: var(--radius-lg);
   text-align: center;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover::before {
+  opacity: 1;
 }
 
 .card h3 {
   margin-bottom: 15px;
   font-size: 18px;
   opacity: 0.9;
+  font-weight: 600;
 }
 
 .card p {
   font-size: 36px;
   font-weight: 800;
   color: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .card.clickable {
@@ -263,17 +290,34 @@ body {
   padding: 12px 28px;
   border: none;
   border-radius: 30px;
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: white;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 8px 20px rgba(255, 122, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.shop-actions button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.shop-actions button:hover::before {
+  left: 100%;
 }
 
 .shop-actions button:hover {
   transform: translateY(-2px);
-  background: #e96b00;
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
   box-shadow: 0 12px 25px rgba(255, 122, 0, 0.4);
 }
 
@@ -525,7 +569,7 @@ body {
   border: none;
   color: white;
   padding: 14px 30px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   font-weight: 800;
   font-size: 16px;
   cursor: pointer;
@@ -533,9 +577,27 @@ body {
   width: 100%;
   margin-top: 20px;
   box-shadow: 0 10px 20px rgba(255, 122, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.provider-btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.provider-btn-primary:hover::before {
+  left: 100%;
 }
 
 .provider-btn-primary:hover {
   transform: translateY(-3px);
   box-shadow: 0 15px 25px rgba(255, 122, 0, 0.4);
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
 }
