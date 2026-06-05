@@ -55,7 +55,7 @@ export default function Authentication() {
     district: /^[a-zA-Z\s]{3,20}$/,
     tehseel: /^[a-zA-Z\s]{3,20}$/,
     cnic: /^\d{5}-\d{7}-\d{1}$/,
-    experience: /^.{10,500}$/,
+    experience: /^\d{1,2}$/,
     category: /^[a-zA-Z\s]{3,30}$/,
   };
 
