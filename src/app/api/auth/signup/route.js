@@ -59,31 +59,15 @@ export async function POST(request) {
     const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiryDate = new Date(Date.now() + 3600000); // 1 hour
 
-    // 4. Handle File Uploads (for providers)
+    // 4. Handle File URLs (uploaded from client)
     let documents = {};
-    if (role === 'provider' && contentType.includes("multipart/form-data")) {
-      const cnicFrontFile = formData.get("cnicFront");
-      const cnicBackFile = formData.get("cnicBack");
-
-      if (cnicFrontFile) {
-        const res = await uploadImage(cnicFrontFile, `servify/providers/${username}/cnic`);
-        if (res) documents.cnicFront = res.url;
-      }
-      if (cnicBackFile) {
-        const res = await uploadImage(cnicBackFile, `servify/providers/${username}/cnic`);
-        if (res) documents.cnicBack = res.url;
-      }
+    if (role === 'provider') {
+      if (body.cnicFrontUrl) documents.cnicFront = body.cnicFrontUrl;
+      if (body.cnicBackUrl) documents.cnicBack = body.cnicBackUrl;
     }
 
-    // 4.1 Handle Profile Image Upload
-    let profileImageUrl = "";
-    if (contentType.includes("multipart/form-data")) {
-      const profileFile = formData.get("profile");
-      if (profileFile) {
-        const res = await uploadImage(profileFile, `servify/users/${username}/profile`);
-        if (res) profileImageUrl = res.url;
-      }
-    }
+    // 4.1 Handle Profile Image URL (uploaded from client)
+    let profileImageUrl = body.profileUrl || "";
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
