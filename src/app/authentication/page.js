@@ -227,6 +227,14 @@ export default function Authentication() {
   const handleFileChange = (e, type) => {
     const file = e.target.files[0];
     if (file) {
+      // Check file size (5MB limit)
+      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+      if (file.size > MAX_FILE_SIZE) {
+        alert("File size exceeds 5MB limit. Please choose a smaller file.");
+        e.target.value = ""; // Clear the input
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviews(prev => ({ ...prev, [type]: reader.result }));

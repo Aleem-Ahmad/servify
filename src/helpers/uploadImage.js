@@ -4,12 +4,21 @@ import {
   SUPABASE_STORAGE_BUCKET,
 } from "@/lib/supabaseServer";
 
+// Maximum file size: 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+
 export const uploadImage = async (file, folder = "servify/documents") => {
   try {
     if (!file) return null;
     if (!isSupabaseStorageConfigured()) {
       console.warn("Supabase storage is not configured - skipping upload");
       return null;
+    }
+
+    // Check file size
+    if (file.size > MAX_FILE_SIZE) {
+      console.error(`File size exceeds limit: ${file.size} bytes (max: ${MAX_FILE_SIZE} bytes)`);
+      return { error: "File size exceeds 5MB limit" };
     }
 
     const bytes = await file.arrayBuffer();
@@ -29,7 +38,7 @@ export const uploadImage = async (file, folder = "servify/documents") => {
 
     if (error) {
       console.error("Supabase storage upload error:", error);
-      return null;
+      return { error: error.message };
     }
 
     const { data } = supabase.storage
@@ -43,7 +52,7 @@ export const uploadImage = async (file, folder = "servify/documents") => {
     };
   } catch (error) {
     console.error("Supabase upload error:", error);
-    return null;
+    return { error: error.message };
   }
 };
 
