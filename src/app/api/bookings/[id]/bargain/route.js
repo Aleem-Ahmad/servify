@@ -1,6 +1,17 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/auth";
+import prisma from "@/lib/prisma";
+import { cookies } from "next/headers";
+
+// Helper function to get current user from cookies
+async function getCurrentUserId() {
+  try {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get('userId')?.value;
+    return userId;
+  } catch (error) {
+    return null;
+  }
+}
 
 // GET - Fetch all bargain offers for a booking
 export async function GET(request, { params }) {
