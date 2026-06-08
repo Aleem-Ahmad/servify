@@ -77,7 +77,7 @@ model Booking {
   id               String    @id @default(uuid())
   customerId       String
   providerId       String?
-  
+
   service          String
   details          String?
   voiceUrl         String?
@@ -85,35 +85,41 @@ model Booking {
   budget           Float     @default(0)
   hours            Float     @default(1)
   hourlyRate       Float     @default(0)
-  
+
   customerName     String?
   customerPhone    String?
   customerAddress  String?
   locationStr      String?
-  
+
   providerName     String?
   providerPhone    String?
-  
+
   date             DateTime?
   visitTime        DateTime?
-  
+
   status           String    @default("Pending") // 'Pending', 'Accepted', 'In-Progress', 'Completed', 'Cancelled'
   urgency          String    @default("Normal") // 'Normal', 'Urgent', 'Emergency'
-  
+
   guarantee        Json?     // { isActive, expiryTime, reworked, refunded }
   tracking         Json?     // { providerLocation, eta }
   payment          Json?     // { method, status, transactionId, convenienceFee }
-  
+
   otp              String?
-  
+
+  // Bargaining system fields
+  bargainingStatus String    @default("None") // 'None', 'Negotiating', 'Agreed', 'Rejected'
+  agreedPrice      Float?
+  finalPrice       Float?
+
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
-  
+
   // Relations
   customer         User      @relation("CustomerBookings", fields: [customerId], references: [id])
   provider         User?     @relation("ProviderBookings", fields: [providerId], references: [id])
   reviews          Review[]
   chatMessages     ChatMessage[]
+  bargainOffers    BargainOffer[]
 }
 
 model ChatMessage {
@@ -178,4 +184,20 @@ model Offer {
   validTo     DateTime
   serviceIds  String[]
   provider    User @relation("UserOffers", fields: [providerId], references: [id])
+}
+
+model BargainOffer {
+  id           String   @id @default(uuid())
+  bookingId    String
+  proposerId   String
+  proposerType String   // 'customer' or 'provider'
+  proposedPrice Float
+  message      String?
+  status       String   @default("Pending") // 'Pending', 'Accepted', 'Rejected', 'Countered'
+  createdAt    DateTime @default(now())
+
+  booking      Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([proposerId])
 }

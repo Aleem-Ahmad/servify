@@ -7,9 +7,9 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import BookingChat from "@/components/SharedComponents/Chat/BookingChat";
-import { 
-  Play, Pause, Clock, Phone, MapPin, Calendar, 
-  AlertTriangle, ShieldCheck, User, MessageSquare, Zap, Wallet, CheckSquare 
+import {
+  Play, Pause, Clock, Phone, MapPin, Calendar,
+  AlertTriangle, ShieldCheck, User, MessageSquare, Zap, Wallet, CheckSquare, DollarSign
 } from "lucide-react";
 
 function ComplaintsList() {
@@ -39,6 +39,13 @@ function ComplaintsList() {
   const [playingAudioId, setPlayingAudioId] = useState(null);
   const audioRef = useRef(null);
 
+  // Bargaining state
+  const [showBargaining, setShowBargaining] = useState({});
+  const [bargainPrice, setBargainPrice] = useState({});
+  const [bargainMessage, setBargainMessage] = useState({});
+  const [bargainOffers, setBargainOffers] = useState({});
+  const [submittingBargain, setSubmittingBargain] = useState({});
+
   const fetchComplaints = async (userId) => {
     setLoading(true);
     try {
@@ -54,11 +61,123 @@ function ComplaintsList() {
             : c.status
         }));
         setComplaints(mappedData);
+
+        // Fetch bargain offers for bookings with active bargaining
+        mappedData.forEach(async (c) => {
+          if (c.bargainingStatus === 'Negotiating' || c.bargainingStatus === 'Agreed') {
+            await fetchBargainOffers(c.id);
+          }
+        });
       }
     } catch (error) {
       console.error("Failed to fetch complaints:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch bargain offers for a specific booking
+  const fetchBargainOffers = async (bookingId) => {
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}/bargain`);
+      if (res.ok) {
+        const data = await res.json();
+        setBargainOffers(prev => ({ ...prev, [bookingId]: data.offers || [] }));
+      }
+    } catch (err) {
+      console.error("Error fetching bargain offers:", err);
+    }
+  };
+
+  // Submit bargain offer
+  const handleSubmitBargain = async (bookingId) => {
+    const price = bargainPrice[bookingId];
+    if (!price || parseFloat(price) <= 0) {
+      alert("Please enter a valid price");
+      return;
+    }
+
+    setSubmittingBargain(prev => ({ ...prev, [bookingId]: true }));
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}/bargain`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          proposedPrice: parseFloat(price),
+          message: bargainMessage[bookingId] || '',
+          proposerType: 'provider'
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        alert("Bargain offer submitted successfully!");
+        setBargainPrice(prev => ({ ...prev, [bookingId]: '' }));
+        setBargainMessage(prev => ({ ...prev, [bookingId]: '' }));
+        setShowBargaining(prev => ({ ...prev, [bookingId]: false }));
+        await fetchBargainOffers(bookingId);
+      } else {
+        alert("Failed to submit bargain offer. Please try again.");
+      }
+    } catch (error) {
+      alert("Network error. Please try again.");
+    } finally {
+      setSubmittingBargain(prev => ({ ...prev, [bookingId]: false }));
+    }
+  };
+
+  // Accept bargain offer
+  const handleAcceptOffer = async (bookingId, offerId) => {
+    if (!confirm("Are you sure you want to accept this offer?")) return;
+
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}/bargain`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          offerId,
+          action: 'accept'
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        alert("Offer accepted! The agreed price is PKR " + data.agreedPrice);
+        await fetchBargainOffers(bookingId);
+        // Refresh complaints
+        if (user?.id) {
+          await fetchComplaints(user.id);
+        }
+      } else {
+        alert("Failed to accept offer. Please try again.");
+      }
+    } catch (error) {
+      alert("Network error. Please try again.");
+    }
+  };
+
+  // Reject bargain offer
+  const handleRejectOffer = async (bookingId, offerId) => {
+    if (!confirm("Are you sure you want to reject this offer?")) return;
+
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}/bargain`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          offerId,
+          action: 'reject'
+        })
+      });
+
+      if (res.ok) {
+        alert("Offer rejected.");
+        await fetchBargainOffers(bookingId);
+      } else {
+        alert("Failed to reject offer. Please try again.");
+      }
+    } catch (error) {
+      alert("Network error. Please try again.");
     }
   };
 
@@ -639,8 +758,195 @@ function ComplaintsList() {
 
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ opacity: 0.6 }}>Total Price Budget</span>
-                  <strong className="text-orange-500 font-extrabold">PKR {c.price || "Calculated at accept"}</strong>
+                  <strong className="text-orange-500 font-extrabold">PKR {c.agreedPrice || c.price || "Calculated at accept"}</strong>
                 </div>
+
+                {/* Bargaining Section */}
+                {type === "new" && (
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '12px',
+                    borderRadius: '12px',
+                    border: dark ? '1px solid rgba(255,122,0,0.2)' : '1px solid rgba(255,122,0,0.2)',
+                    background: dark ? 'rgba(255,122,0,0.05)' : 'rgba(255,122,0,0.05)'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', color: '#ff7a00', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <DollarSign style={{ width: '14px', height: '14px' }} /> Price Negotiation
+                      </span>
+                      {c.bargainingStatus === 'Agreed' && (
+                        <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#10b981' }}>✓ Agreed</span>
+                      )}
+                    </div>
+
+                    {bargainOffers[c.id] && bargainOffers[c.id].length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
+                        {bargainOffers[c.id].map((offer) => (
+                          <div key={offer.id} style={{
+                            padding: '8px',
+                            borderRadius: '8px',
+                            border: dark ? '1px solid #334155' : '1px solid #e2e8f0',
+                            background: dark ? 'rgba(15,23,42,0.5)' : '#ffffff'
+                          }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                              <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#64748b' }}>
+                                {offer.proposerType === 'customer' ? 'Customer Offer' : 'Your Offer'}
+                              </span>
+                              <span style={{
+                                fontSize: '0.65rem',
+                                fontWeight: '700',
+                                padding: '2px 8px',
+                                borderRadius: '4px',
+                                background: offer.status === 'Accepted' ? 'rgba(16,185,129,0.1)' :
+                                          offer.status === 'Rejected' ? 'rgba(239,68,68,0.1)' :
+                                          offer.status === 'Pending' ? 'rgba(245,158,11,0.1)' :
+                                          'rgba(100,116,139,0.1)',
+                                color: offer.status === 'Accepted' ? '#10b981' :
+                                       offer.status === 'Rejected' ? '#ef4444' :
+                                       offer.status === 'Pending' ? '#f59e0b' :
+                                       '#64748b'
+                              }}>
+                                {offer.status}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '1rem', fontWeight: '800', color: '#ff7a00' }}>PKR {offer.proposedPrice}</div>
+                            {offer.message && <p style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '4px' }}>{offer.message}</p>}
+                            {offer.status === 'Pending' && offer.proposerType === 'customer' && (
+                              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                                <button
+                                  onClick={() => handleAcceptOffer(c.id, offer.id)}
+                                  style={{
+                                    flex: 1,
+                                    padding: '6px',
+                                    borderRadius: '6px',
+                                    background: '#10b981',
+                                    color: '#ffffff',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontWeight: '700',
+                                    fontSize: '0.7rem'
+                                  }}
+                                >
+                                  Accept
+                                </button>
+                                <button
+                                  onClick={() => handleRejectOffer(c.id, offer.id)}
+                                  style={{
+                                    flex: 1,
+                                    padding: '6px',
+                                    borderRadius: '6px',
+                                    background: '#ef4444',
+                                    color: '#ffffff',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontWeight: '700',
+                                    fontSize: '0.7rem'
+                                  }}
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: '0.7rem', color: '#64748b', marginBottom: '8px' }}>No offers yet. Start negotiating!</p>
+                    )}
+
+                    {!showBargaining[c.id] ? (
+                      <button
+                        onClick={() => setShowBargaining(prev => ({ ...prev, [c.id]: true }))}
+                        style={{
+                          width: '100%',
+                          padding: '8px',
+                          borderRadius: '8px',
+                          background: 'linear-gradient(135deg, #ff7a00, #ffba75)',
+                          color: '#ffffff',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontWeight: '700',
+                          fontSize: '0.75rem',
+                          boxShadow: '0 4px 12px rgba(255,122,0,0.2)'
+                        }}
+                      >
+                        {c.bargainingStatus === 'Agreed' ? 'Renegotiate Price' : 'Propose Your Price'}
+                      </button>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input
+                          type="number"
+                          placeholder="Enter your price (PKR)"
+                          value={bargainPrice[c.id] || ''}
+                          onChange={(e) => setBargainPrice(prev => ({ ...prev, [c.id]: e.target.value }))}
+                          style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            borderRadius: '8px',
+                            border: dark ? '1.5px solid #334155' : '1.5px solid #cbd5e1',
+                            background: dark ? '#0f172a' : '#f8fafc',
+                            color: dark ? '#f1f5f9' : '#1e293b',
+                            fontSize: '0.85rem',
+                            outline: 'none'
+                          }}
+                        />
+                        <textarea
+                          placeholder="Add a message (optional)"
+                          value={bargainMessage[c.id] || ''}
+                          onChange={(e) => setBargainMessage(prev => ({ ...prev, [c.id]: e.target.value }))}
+                          rows={2}
+                          style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            borderRadius: '8px',
+                            border: dark ? '1.5px solid #334155' : '1.5px solid #cbd5e1',
+                            background: dark ? '#0f172a' : '#f8fafc',
+                            color: dark ? '#f1f5f9' : '#1e293b',
+                            fontSize: '0.85rem',
+                            outline: 'none',
+                            resize: 'none'
+                          }}
+                        />
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            onClick={() => setShowBargaining(prev => ({ ...prev, [c.id]: false }))}
+                            style={{
+                              flex: 1,
+                              padding: '8px',
+                              borderRadius: '8px',
+                              background: dark ? '#334155' : '#e2e8f0',
+                              color: dark ? '#f1f5f9' : '#475569',
+                              border: 'none',
+                              cursor: 'pointer',
+                              fontWeight: '700',
+                              fontSize: '0.75rem'
+                            }}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleSubmitBargain(c.id)}
+                            disabled={submittingBargain[c.id]}
+                            style={{
+                              flex: 1,
+                              padding: '8px',
+                              borderRadius: '8px',
+                              background: '#ff7a00',
+                              color: '#ffffff',
+                              border: 'none',
+                              cursor: 'pointer',
+                              fontWeight: '700',
+                              fontSize: '0.75rem',
+                              opacity: submittingBargain[c.id] ? 0.5 : 1
+                            }}
+                          >
+                            {submittingBargain[c.id] ? 'Submitting...' : 'Submit Offer'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {c.status !== "Pending" && c.visitTime && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', color: '#10b981', borderTop: dark ? '1px solid #334155' : '1px solid #f1f5f9', paddingTop: '10px' }}>

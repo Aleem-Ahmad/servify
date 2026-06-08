@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { 
   MapPin, Navigation, Clock, User, Phone, MessageSquare, 
-  ShieldCheck, ArrowLeft, Zap, Wallet, AlertTriangle 
+  ShieldCheck, ArrowLeft, Zap, Wallet, AlertTriangle, DollarSign 
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
@@ -35,6 +35,13 @@ export default function TrackBooking({ params }) {
   const [comment, setComment] = useState("");
   const [submittingFeedback, setSubmittingFeedback] = useState(false);
 
+  // Bargaining state
+  const [showBargaining, setShowBargaining] = useState(false);
+  const [bargainPrice, setBargainPrice] = useState("");
+  const [bargainMessage, setBargainMessage] = useState("");
+  const [bargainOffers, setBargainOffers] = useState([]);
+  const [submittingBargain, setSubmittingBargain] = useState(false);
+
   // Unwrap params and fetch booking details
   useEffect(() => {
     const fetchBookingDetails = async () => {
@@ -44,12 +51,12 @@ export default function TrackBooking({ params }) {
         if (res.ok) {
           const data = await res.json();
           setBooking(data);
-          
+
           // Show feedback form if booking is just completed
           if (data.status === "Completed") {
             setShowFeedback(true);
           }
-          
+
           // If customer location coordinates exist in the booking, parse them
           if (data.location && data.location.includes(",")) {
             const parts = data.location.split(",");
@@ -61,6 +68,11 @@ export default function TrackBooking({ params }) {
               setProviderLoc([lat + 0.0058, lng + 0.0084]);
             }
           }
+
+          // Fetch bargain offers if bargaining is active
+          if (data.bargainingStatus === 'Negotiating' || data.bargainingStatus === 'Agreed') {
+            fetchBargainOffers(resolvedParams.bookingId);
+          }
         }
       } catch (err) {
         console.error("Error fetching booking details:", err);
@@ -70,6 +82,114 @@ export default function TrackBooking({ params }) {
     };
     fetchBookingDetails();
   }, [params]);
+
+  // Fetch bargain offers
+  const fetchBargainOffers = async (bookingId) => {
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}/bargain`);
+      if (res.ok) {
+        const data = await res.json();
+        setBargainOffers(data.offers || []);
+      }
+    } catch (err) {
+      console.error("Error fetching bargain offers:", err);
+    }
+  };
+
+  // Submit bargain offer
+  const handleSubmitBargain = async () => {
+    if (!bargainPrice || parseFloat(bargainPrice) <= 0) {
+      alert("Please enter a valid price");
+      return;
+    }
+
+    setSubmittingBargain(true);
+    try {
+      const resolvedParams = await params;
+      const res = await fetch(`/api/bookings/${resolvedParams.bookingId}/bargain`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          proposedPrice: parseFloat(bargainPrice),
+          message: bargainMessage,
+          proposerType: 'customer'
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        alert("Bargain offer submitted successfully!");
+        setBargainPrice("");
+        setBargainMessage("");
+        setShowBargaining(false);
+        fetchBargainOffers(resolvedParams.bookingId);
+      } else {
+        alert("Failed to submit bargain offer. Please try again.");
+      }
+    } catch (error) {
+      alert("Network error. Please try again.");
+    } finally {
+      setSubmittingBargain(false);
+    }
+  };
+
+  // Accept bargain offer
+  const handleAcceptOffer = async (offerId) => {
+    if (!confirm("Are you sure you want to accept this offer?")) return;
+
+    try {
+      const resolvedParams = await params;
+      const res = await fetch(`/api/bookings/${resolvedParams.bookingId}/bargain`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          offerId,
+          action: 'accept'
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        alert("Offer accepted! The agreed price is PKR " + data.agreedPrice);
+        fetchBargainOffers(resolvedParams.bookingId);
+        // Refresh booking details
+        const bookingRes = await fetch(`/api/bookings/${resolvedParams.bookingId}`);
+        if (bookingRes.ok) {
+          setBooking(await bookingRes.json());
+        }
+      } else {
+        alert("Failed to accept offer. Please try again.");
+      }
+    } catch (error) {
+      alert("Network error. Please try again.");
+    }
+  };
+
+  // Reject bargain offer
+  const handleRejectOffer = async (offerId) => {
+    if (!confirm("Are you sure you want to reject this offer?")) return;
+
+    try {
+      const resolvedParams = await params;
+      const res = await fetch(`/api/bookings/${resolvedParams.bookingId}/bargain`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          offerId,
+          action: 'reject'
+        })
+      });
+
+      if (res.ok) {
+        alert("Offer rejected.");
+        fetchBargainOffers(resolvedParams.bookingId);
+      } else {
+        alert("Failed to reject offer. Please try again.");
+      }
+    } catch (error) {
+      alert("Network error. Please try again.");
+    }
+  };
 
   // Simulate provider movement on the map if job is active
   useEffect(() => {
@@ -319,9 +439,106 @@ export default function TrackBooking({ params }) {
 
               <div className="flex justify-between text-sm font-black text-orange-500 border-t pt-2 border-slate-250 dark:border-slate-800">
                 <span>{isPending ? "Estimated Budget:" : "Total Budget:"}</span>
-                <span>PKR {booking.price || "Depends on provider rate"}</span>
+                <span>PKR {booking.agreedPrice || booking.price || "Depends on provider rate"}</span>
               </div>
             </div>
+
+            {/* Bargaining Section */}
+            {isPending && (
+              <div className={`p-4 rounded-xl border ${dark ? "bg-orange-500/10 border-orange-500/20" : "bg-orange-50 border-orange-200"}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-extrabold text-xs uppercase tracking-wider text-orange-500 flex items-center gap-1.5">
+                    <DollarSign className="w-4 h-4" /> Price Negotiation
+                  </h4>
+                  {booking.bargainingStatus === 'Agreed' && (
+                    <span className="text-xs font-bold text-emerald-500">✓ Agreed</span>
+                  )}
+                </div>
+
+                {bargainOffers.length > 0 ? (
+                  <div className="space-y-2 mb-3">
+                    {bargainOffers.map((offer) => (
+                      <div key={offer.id} className={`p-3 rounded-lg border ${dark ? "bg-slate-800/50 border-slate-700" : "bg-white border-slate-200"}`}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-bold text-slate-500">
+                            {offer.proposerType === 'customer' ? 'Your Offer' : 'Provider Offer'}
+                          </span>
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                            offer.status === 'Accepted' ? 'bg-emerald-500/10 text-emerald-500' :
+                            offer.status === 'Rejected' ? 'bg-red-500/10 text-red-500' :
+                            offer.status === 'Pending' ? 'bg-amber-500/10 text-amber-500' :
+                            'bg-slate-500/10 text-slate-500'
+                          }`}>
+                            {offer.status}
+                          </span>
+                        </div>
+                        <div className="text-lg font-black text-orange-500">PKR {offer.proposedPrice}</div>
+                        {offer.message && <p className="text-xs text-slate-500 mt-1">{offer.message}</p>}
+                        {offer.status === 'Pending' && offer.proposerType === 'provider' && (
+                          <div className="flex gap-2 mt-2">
+                            <button
+                              onClick={() => handleAcceptOffer(offer.id)}
+                              className="flex-1 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors"
+                            >
+                              Accept
+                            </button>
+                            <button
+                              onClick={() => handleRejectOffer(offer.id)}
+                              className="flex-1 py-1.5 rounded-lg bg-red-500 text-white text-xs font-bold hover:bg-red-600 transition-colors"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500 mb-3">No offers yet. Start negotiating!</p>
+                )}
+
+                {!showBargaining ? (
+                  <button
+                    onClick={() => setShowBargaining(true)}
+                    className="w-full py-2.5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-bold text-xs shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.01]"
+                  >
+                    {booking.bargainingStatus === 'Agreed' ? 'Renegotiate Price' : 'Propose Your Price'}
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <input
+                      type="number"
+                      placeholder="Enter your price (PKR)"
+                      value={bargainPrice}
+                      onChange={(e) => setBargainPrice(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none focus:ring-2 focus:ring-orange-500/50 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                    />
+                    <textarea
+                      placeholder="Add a message (optional)"
+                      value={bargainMessage}
+                      onChange={(e) => setBargainMessage(e.target.value)}
+                      rows={2}
+                      className="w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none focus:ring-2 focus:ring-orange-500/50 dark:bg-slate-800 dark:border-slate-700 dark:text-white resize-none"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setShowBargaining(false)}
+                        className="flex-1 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSubmitBargain}
+                        disabled={submittingBargain}
+                        className="flex-1 py-2 rounded-lg bg-orange-500 text-white font-bold text-xs hover:bg-orange-600 transition-colors disabled:opacity-50"
+                      >
+                        {submittingBargain ? 'Submitting...' : 'Submit Offer'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Quick Actions */}
             {isAccepted && (
