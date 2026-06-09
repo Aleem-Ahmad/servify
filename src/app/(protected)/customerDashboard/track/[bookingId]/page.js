@@ -346,9 +346,13 @@ export default function TrackBooking({ params }) {
       <div className="w-full max-w-5xl px-6 mb-6">
         <button 
           onClick={() => router.push("/customerDashboard/track")}
-          className={`flex items-center gap-2 text-sm font-bold transition-colors ${dark ? "text-slate-400 hover:text-white" : "text-slate-500 hover:text-slate-900"}`}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 ${
+            dark 
+              ? "bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700" 
+              : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-slate-200"
+          }`}
         >
-          <ArrowLeft className="w-4 h-4" /> Back to Tracking
+          <ArrowLeft className="w-4 h-4" /> {t("Back to Tracking") || "Back to Tracking"}
         </button>
       </div>
 
