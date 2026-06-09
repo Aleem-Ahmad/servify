@@ -54,7 +54,7 @@ function AllProvidersContent() {
   }, [activeCategory, providers]);
 
   return (
-    <div className={`min-h-screen pt-28 pb-20 ${dark ? "bg-[#050a14] text-slate-100" : "bg-slate-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
+    <div className={`min-h-screen pt-36 pb-20 ${dark ? "bg-[#050a14] text-slate-100" : "bg-slate-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
       
       {/* ── HERO & FILTERS ── */}
       <div className="max-w-7xl mx-auto px-6 mb-12 text-center">
@@ -115,7 +115,7 @@ function AllProvidersContent() {
                 >
                   <div className="relative h-48 overflow-hidden">
                     <img 
-                      src={p.image || "/default-avatar.png"} 
+                      src={p.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=ff7a00&color=fff&size=200`} 
                       alt={p.name} 
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                     />

@@ -52,7 +52,7 @@ export default function TrackingOverview() {
   );
 
   return (
-    <div className={`min-h-screen pt-28 pb-20 px-6 ${dark ? "bg-[#050a14] text-slate-100" : "bg-slate-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
+    <div className={`min-h-screen pt-36 pb-20 px-6 ${dark ? "bg-[#050a14] text-slate-100" : "bg-slate-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
       <div className="max-w-4xl mx-auto space-y-8">
         
         {/* Header */}
@@ -75,8 +75,8 @@ export default function TrackingOverview() {
 
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}
-            className={`flex items-center gap-2 px-4 py-3 rounded-2xl border w-full md:w-80 shadow-lg transition-all duration-300 focus-within:ring-2 focus-within:ring-orange-500/50 focus-within:border-orange-500 ${
-              dark ? "bg-slate-900/80 border-slate-700 backdrop-blur-md" : "bg-white/80 border-slate-200 backdrop-blur-md"
+            className={`flex items-center gap-3 px-5 py-3.5 rounded-full border w-full md:w-80 shadow-md transition-all duration-300 focus-within:shadow-orange-500/20 focus-within:ring-2 focus-within:ring-orange-500/50 focus-within:border-orange-500 hover:shadow-lg ${
+              dark ? "bg-slate-900/90 border-slate-700 backdrop-blur-md" : "bg-white border-slate-200 backdrop-blur-md"
             }`}
           >
             <Search className={`w-5 h-5 ${dark ? "text-orange-400" : "text-orange-500"}`} />

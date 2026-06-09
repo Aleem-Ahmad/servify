@@ -71,11 +71,11 @@ export default function ComplaintsSection() {
   });
 
   const statusLabels = {
-    All: t("status.all") || "All",
-    Pending: t("status.pending") || "Pending",
-    "In-Progress": t("status.inProgress") || "In Progress",
-    Completed: t("status.completed") || "Completed",
-    Cancelled: t("status.cancelled") || "Cancelled",
+    All: t("status.all") || (isUrdu ? "تمام" : "All"),
+    Pending: t("status.pending") || (isUrdu ? "زیر التواء" : "Pending"),
+    "In-Progress": t("status.inProgress") || (isUrdu ? "جاری ہے" : "In Progress"),
+    Completed: t("status.completed") || (isUrdu ? "مکمل" : "Completed"),
+    Cancelled: t("status.cancelled") || (isUrdu ? "منسوخ" : "Cancelled"),
   };
 
   return (
@@ -107,15 +107,15 @@ export default function ComplaintsSection() {
           </button>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
           {["All", "Pending", "In-Progress", "Completed", "Cancelled"].map((status) => (
             <button
               key={status}
               type="button"
               onClick={() => setStatusFilter(status)}
-              className={`cd-filter-chip ${statusFilter === status ? "active" : ""}`}
+              className={`cd-filter-chip whitespace-nowrap flex-shrink-0 ${statusFilter === status ? "active" : ""}`}
             >
-              {statusLabels[status] || status}
+              {statusLabels[status]}
             </button>
           ))}
         </div>

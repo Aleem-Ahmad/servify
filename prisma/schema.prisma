@@ -58,6 +58,7 @@ model User {
   category         String?
   experience       String?
   providerType     String?
+  services         Json?     // Array of service name strings
   image            String?
   
   createdAt        DateTime  @default(now())
@@ -65,12 +66,14 @@ model User {
   
   schedule          Schedule?   @relation("UserSchedule")
   offers           Offer[]      @relation("UserOffers")
+  teamMembers      TeamMember[] @relation("TeamMembers")
   // Relations
   customerBookings Booking[] @relation("CustomerBookings")
   providerBookings Booking[] @relation("ProviderBookings")
   reviewsGiven     Review[]  @relation("ReviewsGiven")
   reviewsReceived  Review[]  @relation("ReviewsReceived")
   sentMessages      ChatMessage[] @relation("ChatMessageSender")
+  bargainOffersProposed BargainOffer[] @relation("BargainProposer")
 }
 
 model Booking {
@@ -146,6 +149,7 @@ model Review {
   rating           Int
   comment          String?
   mediaUrls        String[]
+  voiceUrl         String?
   isFlagged        Boolean   @default(false)
   
   createdAt        DateTime  @default(now())
@@ -197,7 +201,22 @@ model BargainOffer {
   createdAt    DateTime @default(now())
 
   booking      Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  proposer     User     @relation("BargainProposer", fields: [proposerId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
   @@index([proposerId])
+}
+
+model TeamMember {
+  id         String   @id @default(uuid())
+  providerId String
+  name       String
+  role       String   @default("Technician") // 'Technician', 'Supervisor', 'Admin'
+  phone      String?
+  cnic       String?
+  status     String   @default("Active")
+  createdAt  DateTime @default(now())
+  provider   User     @relation("TeamMembers", fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
 }

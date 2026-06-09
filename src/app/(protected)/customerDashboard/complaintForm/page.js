@@ -108,9 +108,22 @@ function BookingFormContent() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (step === 2 && !formData.location) {
+      shareLocation();
+    }
+    if (step === 4 && !otp && !isGeneratingOtp) {
+      triggerOtpGeneration();
+    }
+  }, [step, formData.location, otp, isGeneratingOtp]);
+
   // Audio recording handlers
   const startRecording = async () => {
-    if (typeof window === "undefined" || !navigator.mediaDevices) return;
+    if (typeof window === "undefined") return;
+    if (!navigator.mediaDevices || !window.isSecureContext) {
+      alert("Microphone access is disabled. Please ensure you are using a secure connection (HTTPS) or localhost.");
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream);
@@ -704,16 +717,10 @@ function BookingFormContent() {
 
                   <div className="bf-otp-box">
                     {!otp ? (
-                      <button
-                        type="button"
-                        onClick={triggerOtpGeneration}
-                        disabled={isGeneratingOtp || (!isOpenBooking && !providerChosen) || !formData.category}
-                        className="bf-btn-otp"
-                      >
-                        {isGeneratingOtp
-                          ? (isUrdu ? "OTP بن رہا ہے..." : "Generating OTP...")
-                          : (isUrdu ? "تصدیقی OTP بنائیں" : "Generate Verification OTP")}
-                      </button>
+                      <div className="bf-btn-otp" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        {isUrdu ? "OTP بن رہا ہے..." : "Generating Verification OTP..."}
+                      </div>
                     ) : (
                       <>
                         <div className="bf-otp-success">

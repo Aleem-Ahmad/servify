@@ -33,13 +33,21 @@ export async function GET(request, { params }) {
       return NextResponse.json({ success: false, message: "Booking not found" }, { status: 404 });
     }
 
-    if (booking.customerId !== userId && booking.providerId !== userId) {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+    const isProviderAndUnassigned = booking.providerId === null && user?.role === 'provider';
+
+    if (booking.customerId !== userId && booking.providerId !== userId && !isProviderAndUnassigned) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
     }
 
     // Fetch all bargain offers for this booking
     const offers = await prisma.bargainOffer.findMany({
       where: { bookingId: id },
+      include: {
+        proposer: {
+          select: { name: true, image: true, trustScore: true, phone: true }
+        }
+      },
       orderBy: { createdAt: 'desc' }
     });
 
@@ -84,7 +92,10 @@ export async function POST(request, { params }) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
     }
 
-    if (proposerType === 'provider' && booking.providerId !== userId) {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+    const isProviderAndUnassigned = booking.providerId === null && user?.role === 'provider';
+
+    if (proposerType === 'provider' && booking.providerId !== userId && !isProviderAndUnassigned) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
     }
 
@@ -145,7 +156,7 @@ export async function PUT(request, { params }) {
     // Get the offer
     const offer = await prisma.bargainOffer.findUnique({
       where: { id: offerId },
-      include: { booking: true }
+      include: { booking: true, proposer: true }
     });
 
     if (!offer || offer.bookingId !== id) {
@@ -161,7 +172,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ success: false, message: "Cannot accept your own offer" }, { status: 400 });
     }
 
-    if (offer.proposerType === 'customer' && booking.providerId !== userId) {
+    if (offer.proposerType === 'customer' && booking.providerId !== null && booking.providerId !== userId) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
     }
 
@@ -176,11 +187,31 @@ export async function PUT(request, { params }) {
         data: { status: 'Accepted' }
       });
 
+      // Get accepting provider details if needed
+      let providerIdToAssign = booking.providerId;
+      let providerNameToAssign = booking.providerName;
+      
+      if (!providerIdToAssign) {
+        if (offer.proposerType === 'provider') {
+           providerIdToAssign = offer.proposerId;
+           providerNameToAssign = offer.proposer.name;
+        } else {
+           // Customer proposed, provider accepted
+           providerIdToAssign = userId;
+           const acceptingUser = await prisma.user.findUnique({where: {id: userId}});
+           providerNameToAssign = acceptingUser?.name;
+        }
+      }
+
       // Update booking with agreed price
       await prisma.booking.update({
         where: { id },
         data: {
           bargainingStatus: 'Agreed',
+          status: 'Accepted',
+          providerId: providerIdToAssign,
+          providerName: providerNameToAssign,
+          visitTime: new Date(Date.now() + 60 * 60 * 1000), // Default to 1 hour from now
           agreedPrice: offer.proposedPrice,
           finalPrice: offer.proposedPrice
         }

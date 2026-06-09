@@ -33,7 +33,7 @@ export default function ProviderDashboard() {
     }
   };
 
-  const [counts, setCounts] = useState({ new: 0, pending: 0, done: 0 });
+  const [counts, setCounts] = useState({ new: 0, pending: 0, done: 0, emergencies: 0 });
   const [recentComplaints, setRecentComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -90,13 +90,19 @@ export default function ProviderDashboard() {
             else if (c.status === "Completed") doneCount++;
           });
           
-          setCounts({ new: newCount, pending: pendingCount, done: doneCount });
-          
-          // Get 3 most recent requests
+          setCounts(prev => ({ ...prev, new: newCount, pending: pendingCount, done: doneCount }));
           setRecentComplaints(data.slice(0, 3));
         }
+
+        // Fetch emergency count
+        const emergencyRes = await fetch(`/api/bookings/emergency`);
+        if (emergencyRes.ok) {
+          const emergencyData = await emergencyRes.json();
+          setCounts(prev => ({ ...prev, emergencies: emergencyData.length }));
+        }
+
       } catch (error) {
-        console.error("Failed to fetch complaint stats:", error);
+        console.error("Failed to fetch stats:", error);
       } finally {
         setLoading(false);
       }
@@ -113,6 +119,15 @@ export default function ProviderDashboard() {
       bg: "bg-blue-500/10",
       text: "text-blue-500",
       path: "/providerDashboard/viewComplaint?type=new"
+    },
+    { 
+      title: isUrdu ? "ہنگامی صورتحال" : "🚨 Emergencies", 
+      value: counts.emergencies, 
+      icon: AlertCircle, 
+      color: "from-red-500 to-rose-600",
+      bg: "bg-red-500/10",
+      text: "text-red-500",
+      path: "/providerDashboard/viewComplaint?type=emergency"
     },
     { 
       title: isUrdu ? "زیر التوا کام" : "Active Jobs", 

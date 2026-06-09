@@ -554,7 +554,12 @@ export default function Authentication() {
                           <option value="Other">{t("auth.other")}</option>
                         </select>
 
-                        <input name="dob" type="date" value={formData.dob} onChange={handleInputChange} required className="auth-input" />
+                        <div className="auth-input-wrap" style={{ flex: 1 }}>
+                          <label style={{ display: "block", fontSize: "0.75rem", color: "#64748b", marginBottom: "4px", fontWeight: "600" }}>
+                            {t("auth.dob") || "Date of Birth"}
+                          </label>
+                          <input name="dob" type="date" value={formData.dob} onChange={handleInputChange} required className="auth-input" />
+                        </div>
                       </div>
 
                       <div className="auth-field-row">

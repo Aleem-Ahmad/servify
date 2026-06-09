@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { bookingId, customerId, providerId, rating, comment, mediaUrls } = body;
+    const { bookingId, customerId, providerId, rating, comment, mediaUrls, voiceUrl } = body;
 
     if (!bookingId || !providerId || !rating) {
       return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 });
@@ -33,6 +33,7 @@ export async function POST(request) {
         rating,
         comment: comment || '',
         mediaUrls: mediaUrls || [],
+        voiceUrl: voiceUrl || null,
       }
     });
 
@@ -92,6 +93,7 @@ export async function GET(request) {
       rating: r.rating,
       comment: r.comment,
       mediaUrls: r.mediaUrls || [],
+      voiceUrl: r.voiceUrl || null,
       customerName: r.customer?.name || 'Anonymous',
       createdAt: r.createdAt,
     }));

@@ -7,9 +7,6 @@ import {
   LogOut,
   MapPin,
   User,
-  ShieldCheck,
-  Package,
-  Clock,
   X,
   Save,
   Mail,
@@ -126,11 +123,6 @@ export default function AccountPage() {
     { label: t("Main Address"), value: profile.address || (isUrdu ? "درج نہیں" : "Not Set"), wide: true },
   ];
 
-  const stats = [
-    { label: isUrdu ? "کل بکنگز" : "Total Gigs", value: 0, icon: Package, color: "blue" },
-    { label: isUrdu ? "جاری" : "In Progress", value: 0, icon: Clock, color: "amber" },
-    { label: isUrdu ? "تنازعات" : "Open Disputes", value: 0, icon: ShieldCheck, color: "emerald" },
-  ];
 
   return (
     <div className="acc-page" dir={isUrdu ? "rtl" : "ltr"}>
@@ -165,7 +157,11 @@ export default function AccountPage() {
             <div className="acc-hero-profile">
               <div className="acc-avatar-wrap">
                 <div className="acc-avatar">
-                  <User className="w-12 h-12 text-orange-500" />
+                  {(profile.image || profile.documents?.profile) ? (
+                    <img src={profile.image || profile.documents?.profile} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-12 h-12 text-orange-500" />
+                  )}
                 </div>
                 <button
                   type="button"
@@ -185,7 +181,6 @@ export default function AccountPage() {
                 </p>
                 <div className="acc-badges">
                   <span className="acc-badge acc-badge-orange">{t("Customer")}</span>
-                  <span className="acc-badge acc-badge-purple">VIP Member</span>
                 </div>
               </div>
             </div>
@@ -197,29 +192,6 @@ export default function AccountPage() {
           </div>
         </motion.div>
 
-        {/* Stats */}
-        <div className="acc-stats">
-          {stats.map((stat, i) => {
-            const Icon = stat.icon;
-            return (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 + 0.08 }}
-                className="acc-stat"
-              >
-                <div className={`acc-stat-icon ${stat.color}`}>
-                  <Icon className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="acc-stat-value">{stat.value}</div>
-                  <div className="acc-stat-label">{stat.label}</div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
 
         {/* Details / Edit */}
         <AnimatePresence mode="wait">
@@ -297,6 +269,7 @@ export default function AccountPage() {
                 <div className="acc-field">
                   <label className="acc-label" htmlFor="acc-district">{isUrdu ? "ضلع" : "District"}</label>
                   <select id="acc-district" name="district" value={editForm.district} onChange={handleInputChange} className="acc-select">
+                    <option value="">{isUrdu ? "منتخب کریں" : "Select"}</option>
                     <option value="Okara">Okara</option>
                   </select>
                 </div>

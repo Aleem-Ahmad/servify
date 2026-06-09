@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { 
   MapPin, Navigation, Clock, User, Phone, MessageSquare, 
-  ShieldCheck, ArrowLeft, Zap, Wallet, AlertTriangle, DollarSign 
+  ShieldCheck, ArrowLeft, Zap, Wallet, AlertTriangle, DollarSign,
+  Camera, Mic, Play, Square, Trash2, X
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
@@ -33,7 +34,72 @@ export default function TrackBooking({ params }) {
   const [showFeedback, setShowFeedback] = useState(false);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [mediaUrls, setMediaUrls] = useState([]);
+  const [voiceUrl, setVoiceUrl] = useState("");
   const [submittingFeedback, setSubmittingFeedback] = useState(false);
+
+  // Audio recording state
+  const [recordingStatus, setRecordingStatus] = useState("idle"); // idle, recording, hasRecording
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const audioChunksRef = useRef([]);
+  const audioPlayerRef = useRef(null);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+      recorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setVoiceUrl(reader.result);
+        };
+        reader.readAsDataURL(audioBlob);
+        audioChunksRef.current = [];
+      };
+      recorder.start();
+      setMediaRecorder(recorder);
+      setRecordingStatus("recording");
+    } catch (err) {
+      console.error("Microphone access denied", err);
+      alert("Could not access microphone. Please check permissions.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && recordingStatus === "recording") {
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach(track => track.stop());
+      setRecordingStatus("hasRecording");
+    }
+  };
+
+  const deleteRecording = () => {
+    setVoiceUrl("");
+    setRecordingStatus("idle");
+  };
+
+  const handleMediaUpload = (e) => {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+      if (file.size > 10 * 1024 * 1024) {
+        alert("File is too large. Maximum size is 10MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setMediaUrls(prev => [...prev, reader.result]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeMediaItem = (idx) => {
+    setMediaUrls(prev => prev.filter((_, i) => i !== idx));
+  };
 
   // Bargaining state
   const [showBargaining, setShowBargaining] = useState(false);
@@ -226,7 +292,9 @@ export default function TrackBooking({ params }) {
           bookingId: resolvedParams.bookingId,
           providerId: booking.providerId,
           rating: rating,
-          comment: comment
+          comment: comment,
+          mediaUrls: mediaUrls,
+          voiceUrl: voiceUrl
         })
       });
       
@@ -235,6 +303,9 @@ export default function TrackBooking({ params }) {
         setShowFeedback(false);
         setRating(0);
         setComment("");
+        setMediaUrls([]);
+        setVoiceUrl("");
+        setRecordingStatus("idle");
       } else {
         alert("Failed to submit feedback. Please try again.");
       }
@@ -459,10 +530,29 @@ export default function TrackBooking({ params }) {
                   <div className="space-y-2 mb-3">
                     {bargainOffers.map((offer) => (
                       <div key={offer.id} className={`p-3 rounded-lg border ${dark ? "bg-slate-800/50 border-slate-700" : "bg-white border-slate-200"}`}>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-bold text-slate-500">
-                            {offer.proposerType === 'customer' ? 'Your Offer' : 'Provider Offer'}
-                          </span>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="text-xs font-bold text-slate-500 flex items-center gap-2">
+                            {offer.proposerType === 'customer' ? (
+                              <span>Your Offer</span>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                {offer.proposer && (
+                                  <div className="w-6 h-6 rounded-full overflow-hidden bg-slate-200 border border-slate-300">
+                                    <img src={offer.proposer.image || '/default-avatar.png'} alt="Provider" className="w-full h-full object-cover" onError={(e) => { e.target.src = "/default-avatar.png"; }} />
+                                  </div>
+                                )}
+                                <span className="text-slate-800 dark:text-slate-200">
+                                  {offer.proposer ? offer.proposer.name : 'Provider Offer'}
+                                </span>
+                                {offer.proposer?.trustScore > 0 && (
+                                  <span className="flex items-center text-[10px] text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded-full">
+                                    <ShieldCheck className="w-3 h-3 mr-0.5" />
+                                    {offer.proposer.trustScore}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
                           <span className={`text-xs font-bold px-2 py-0.5 rounded ${
                             offer.status === 'Accepted' ? 'bg-emerald-500/10 text-emerald-500' :
                             offer.status === 'Rejected' ? 'bg-red-500/10 text-red-500' :
@@ -636,6 +726,55 @@ export default function TrackBooking({ params }) {
                   fontFamily: 'inherit'
                 }}
               />
+            </div>
+
+            {/* Media Uploads */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '8px', opacity: 0.8 }}>
+                Attachments (Optional)
+              </label>
+              
+              <div className="flex gap-2 mb-3">
+                <label className="flex-1 flex flex-col items-center justify-center p-3 rounded-xl border-2 border-dashed cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-500/10 border-slate-300 dark:border-slate-600 transition-colors text-slate-500 hover:text-orange-500 hover:border-orange-500">
+                  <Camera className="w-6 h-6 mb-1" />
+                  <span className="text-xs font-bold">Add Photos</span>
+                  <input type="file" multiple accept="image/*,video/*" className="hidden" onChange={handleMediaUpload} />
+                </label>
+
+                {recordingStatus === "idle" && (
+                  <button onClick={startRecording} className="flex-1 flex flex-col items-center justify-center p-3 rounded-xl border-2 border-dashed cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-500/10 border-slate-300 dark:border-slate-600 transition-colors text-slate-500 hover:text-orange-500 hover:border-orange-500">
+                    <Mic className="w-6 h-6 mb-1" />
+                    <span className="text-xs font-bold">Voice Note</span>
+                  </button>
+                )}
+                {recordingStatus === "recording" && (
+                  <button onClick={stopRecording} className="flex-1 flex flex-col items-center justify-center p-3 rounded-xl border-2 border-orange-500 bg-orange-500/10 text-orange-500 animate-pulse">
+                    <Square className="w-6 h-6 mb-1 fill-current" />
+                    <span className="text-xs font-bold text-orange-500">Stop Recording</span>
+                  </button>
+                )}
+                {recordingStatus === "hasRecording" && (
+                  <div className="flex-1 flex flex-col items-center justify-center p-2 rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 relative">
+                    <audio src={voiceUrl} controls className="w-full h-8 mb-1" />
+                    <button onClick={deleteRecording} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 transition-colors">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {mediaUrls.length > 0 && (
+                <div className="grid grid-cols-4 gap-2">
+                  {mediaUrls.map((url, i) => (
+                    <div key={i} className="relative group aspect-square">
+                      <img src={url} alt="upload" className="w-full h-full object-cover rounded-lg border dark:border-slate-700" />
+                      <button onClick={() => removeMediaItem(i)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow hover:bg-red-600">
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div style={{ display: 'flex', gap: '12px' }}>

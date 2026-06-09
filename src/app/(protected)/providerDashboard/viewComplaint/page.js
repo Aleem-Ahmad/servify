@@ -49,18 +49,33 @@ function ComplaintsList() {
   const fetchComplaints = async (userId) => {
     setLoading(true);
     try {
-      // Fetch assigned + open bookings of matching category
-      const res = await fetch(`/api/bookings?providerId=${userId}`);
-      if (res.ok) {
-        const data = await res.json();
-        const mappedData = data.map(c => ({
-          ...c,
-          frontendStatus: c.status === "Pending" ? "new"
-            : (c.status === "Accepted" || c.status === "In-Progress") ? "pending"
-            : c.status === "Completed" ? "done"
-            : c.status
-        }));
-        setComplaints(mappedData);
+      let mappedData = [];
+
+      if (type === 'emergency') {
+        const res = await fetch(`/api/bookings/emergency`);
+        if (res.ok) {
+          const data = await res.json();
+          mappedData = data.map(c => ({
+            ...c,
+            frontendStatus: "emergency"
+          }));
+        }
+      } else {
+        // Fetch assigned + open bookings of matching category
+        const res = await fetch(`/api/bookings?providerId=${userId}`);
+        if (res.ok) {
+          const data = await res.json();
+          mappedData = data.map(c => ({
+            ...c,
+            frontendStatus: c.status === "Pending" ? "new"
+              : (c.status === "Accepted" || c.status === "In-Progress") ? "pending"
+              : c.status === "Completed" ? "done"
+              : c.status
+          }));
+        }
+      }
+      
+      setComplaints(mappedData);
 
         // Fetch bargain offers for bookings with active bargaining
         mappedData.forEach(async (c) => {
@@ -68,7 +83,6 @@ function ComplaintsList() {
             await fetchBargainOffers(c.id);
           }
         });
-      }
     } catch (error) {
       console.error("Failed to fetch complaints:", error);
     } finally {
@@ -577,6 +591,52 @@ function ComplaintsList() {
                 </div>
               </div>
             </div>
+
+            {/* ── Customer Media Section ── */}
+            {(selectedComplaint.mediaUrls?.length > 0 || selectedComplaint.voiceUrl) && (
+              <div style={{ marginTop: '18px', paddingTop: '14px', borderTop: dark ? '1px solid #334155' : '1px solid #f1f5f9' }}>
+                <span style={{ opacity: 0.6, display: 'block', fontSize: '0.78rem', marginBottom: '10px', fontWeight: 700, textTransform: 'uppercase' }}>📸 Customer Attachments</span>
+                
+                {selectedComplaint.voiceUrl && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px',
+                    borderRadius: '14px', marginBottom: '10px',
+                    background: dark ? 'rgba(255,122,0,0.1)' : '#fff7ed',
+                    border: dark ? '1px solid rgba(255,122,0,0.2)' : '1px solid #fed7aa'
+                  }}>
+                    <span style={{ fontSize: '16px' }}>🎤</span>
+                    <audio controls src={selectedComplaint.voiceUrl} style={{ height: '36px', flex: 1, maxWidth: '100%' }} />
+                  </div>
+                )}
+
+                {selectedComplaint.mediaUrls?.length > 0 && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))', gap: '8px' }}>
+                    {selectedComplaint.mediaUrls.map((url, idx) => {
+                      if (url.startsWith('data:video') || url.includes('.mp4')) {
+                        return (
+                          <video key={idx} src={url} controls style={{
+                            width: '100%', aspectRatio: '1', borderRadius: '12px', objectFit: 'cover',
+                            border: dark ? '1px solid #334155' : '1px solid #e2e8f0'
+                          }} />
+                        );
+                      }
+                      return (
+                        <img key={idx} src={url} alt={`Customer photo ${idx + 1}`}
+                          onClick={() => window.open(url, '_blank')}
+                          style={{
+                            width: '100%', aspectRatio: '1', borderRadius: '12px', objectFit: 'cover',
+                            cursor: 'pointer', transition: 'transform 0.2s',
+                            border: dark ? '1px solid #334155' : '1px solid #e2e8f0'
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
             
             <button
               onClick={() => setSelectedComplaint(null)}
@@ -639,19 +699,35 @@ function ComplaintsList() {
         ← {t("Back")}
       </button>
 
+      {/* Emergency Banner */}
+      {type === 'emergency' && (
+        <div className="emergency-banner" style={{ marginBottom: '24px' }}>
+          <div className="emergency-dot" />
+          <div style={{ flex: 1 }}>
+            <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#ef4444' }}>EMERGENCY REQUESTS QUEUE</h3>
+            <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#dc2626', opacity: 0.9 }}>
+              These requests need immediate attention. Accepting an emergency drops all other scheduled jobs into lower priority.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Heading Header Panel */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
         <div>
           <h2 style={{ fontSize: '1.8rem', fontWeight: '900', margin: 0 }}>
             {type === "new" ? "🆕 " + t("New Requests")
               : type === "pending" ? "⚡ " + t("Active Jobs")
+              : type === "emergency" ? "🚨 " + t("Emergencies")
               : "✅ " + t("Completed Jobs")}
           </h2>
           <p style={{ fontSize: '0.82rem', opacity: 0.6, marginTop: '4px' }}>
-            {type === 'new' ? 'Incoming jobs available to you based on your category.' : 'Current active assignments you scheduled.'}
+            {type === 'new' ? 'Incoming jobs available to you based on your category.' 
+              : type === 'emergency' ? 'Immediate service required. Customers expect arrival ASAP.' 
+              : 'Current active assignments you scheduled.'}
           </p>
         </div>
-        <span style={{ background: '#ff7a00', color: '#fff', borderRadius: '20px', padding: '6px 16px', fontWeight: '950', fontSize: '1rem' }}>
+        <span style={{ background: type === 'emergency' ? '#ef4444' : '#ff7a00', color: '#fff', borderRadius: '20px', padding: '6px 16px', fontWeight: '950', fontSize: '1rem' }}>
           {filtered.length}
         </span>
       </div>
@@ -660,7 +736,7 @@ function ComplaintsList() {
       {filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '80px 20px', opacity: 0.7 }}>
           <div style={{ fontSize: '4rem', marginBottom: '16px' }}>
-            {type === 'new' ? '📭' : type === 'pending' ? '🔧' : '🎉'}
+            {type === 'new' ? '📭' : type === 'pending' ? '🔧' : type === 'emergency' ? '🚨' : '🎉'}
           </div>
           <p style={{ fontSize: '1.1rem', fontWeight: '600' }}>{t("viewComplaint.noRequests")}</p>
         </div>
@@ -790,7 +866,11 @@ function ComplaintsList() {
                           }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                               <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#64748b' }}>
-                                {offer.proposerType === 'customer' ? 'Customer Offer' : 'Your Offer'}
+                                {offer.proposerType === 'customer' 
+                                  ? 'Customer Offer' 
+                                  : offer.proposerId === user?.id 
+                                    ? 'Your Offer' 
+                                    : 'Competitor Offer'}
                               </span>
                               <span style={{
                                 fontSize: '0.65rem',

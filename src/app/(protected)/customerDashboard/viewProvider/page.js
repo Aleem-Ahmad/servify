@@ -83,7 +83,7 @@ function ViewProviderContent() {
   const badge = provider.badge || "Verified";
 
   return (
-    <div className={`min-h-screen pt-24 pb-20 ${dark ? "bg-[#050a14] text-slate-100" : "bg-slate-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
+    <div className={`min-h-screen pt-36 pb-20 ${dark ? "bg-[#050a14] text-slate-100" : "bg-slate-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
       <div className="max-w-6xl mx-auto px-6">
         
         <button
@@ -112,7 +112,7 @@ function ViewProviderContent() {
             <div className="px-8 pb-8 flex flex-col items-center text-center -mt-16 relative z-10">
               <div className="provider-image-container">
                 <img
-                  src={provider.image || `https://i.pravatar.cc/150?u=${provider.email}`}
+                  src={provider.image || (provider.documents?.profile) || `https://ui-avatars.com/api/?name=${encodeURIComponent(provider.name || 'Provider')}&background=ff7a00&color=fff&size=150`}
                   alt={provider.name}
                   className="provider-image"
                 />

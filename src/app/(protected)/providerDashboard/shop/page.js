@@ -1,26 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./shop.css";
+import "../providerDashboard.css";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import { 
-  Camera, 
-  MapPin, 
-  Phone, 
-  Mail, 
-  Clock, 
-  Settings, 
-  LogOut, 
-  Star, 
-  Briefcase, 
-  TrendingUp,
-  LayoutGrid,
-  CheckCircle,
-  AlertCircle,
-  User,
-  ShieldCheck
+  Camera, MapPin, Phone, Mail, Clock, Settings, LogOut, Star, 
+  Briefcase, TrendingUp, LayoutGrid, CheckCircle, AlertCircle, 
+  User, ShieldCheck, Plus, X, Trash2, Upload, Users, UserPlus
 } from "lucide-react";
 
 export default function ShopPage() {
@@ -28,18 +17,40 @@ export default function ShopPage() {
   const { theme } = useTheme();
   const { user, logout } = useAuth();
   const dark = theme === "dark";
+  const fileInputRef = useRef(null);
+  
   const [isEditing, setIsEditing] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [offers, setOffers] = useState([]);
   
-  // Re-sync whenever user object loads or updates from server
+  // Services state
+  const [services, setServices] = useState([]);
+  const [newService, setNewService] = useState("");
+  const [servicesSaving, setServicesSaving] = useState(false);
+  
+  // Portfolio state
+  const [portfolio, setPortfolio] = useState([]);
+  const [portfolioSaving, setPortfolioSaving] = useState(false);
+
+  // Team state
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [showTeamForm, setShowTeamForm] = useState(false);
+  const [teamForm, setTeamForm] = useState({ name: "", role: "Technician", phone: "", cnic: "" });
+  const [teamLoading, setTeamLoading] = useState(false);
+  
+  const isAgency = user?.providerType === "Agency" || user?.providerType === "Company";
+
   useEffect(() => {
-    if (user) setIsOnline(user.isOnline || false);
+    if (user) {
+      setIsOnline(user.isOnline || false);
+      setServices(user.services || [user.category || "Service"]);
+      setPortfolio(user.documents?.portfolio || []);
+    }
   }, [user]);
 
-  // Fetch this provider's reviews
+  // Fetch reviews
   useEffect(() => {
     if (!user?.id) return;
     const fetchReviews = async () => {
@@ -52,7 +63,7 @@ export default function ShopPage() {
     fetchReviews();
   }, [user?.id]);
 
-  // Fetch this provider's offers
+  // Fetch offers
   useEffect(() => {
     if (!user?.id) return;
     const fetchOffers = async () => {
@@ -66,6 +77,21 @@ export default function ShopPage() {
     };
     fetchOffers();
   }, [user?.id]);
+
+  // Fetch team members
+  useEffect(() => {
+    if (!user?.id || !isAgency) return;
+    const fetchTeam = async () => {
+      try {
+        const res = await fetch('/api/provider/team');
+        if (res.ok) {
+          const data = await res.json();
+          setTeamMembers(data);
+        }
+      } catch(e) { console.error('Failed to load team', e); }
+    };
+    fetchTeam();
+  }, [user?.id, isAgency]);
   
   const isVerified = user?.status === "Active";
   const avgRating = reviews.length
@@ -79,7 +105,6 @@ export default function ShopPage() {
     email: user?.email || "N/A",
     address: user?.address || "N/A",
     category: user?.category || "General Service",
-    services: user?.services || [user?.category || "Service"],
     pricing: user?.hourlyRate ? `PKR ${user.hourlyRate}/hour` : "Negotiable",
     timing: "9:00 AM - 6:00 PM"
   };
@@ -109,7 +134,6 @@ export default function ShopPage() {
   const [editForm, setEditForm] = useState({});
   const [saveLoading, setSaveLoading] = useState(false);
 
-  // Populate edit form when editing starts
   const startEditing = () => {
     setEditForm({
       phone: user?.phone || '',
@@ -133,7 +157,6 @@ export default function ShopPage() {
       if (res.ok && data.success) {
         alert('Profile updated successfully!');
         setIsEditing(false);
-        // Refresh page to show new data
         window.location.reload();
       } else {
         alert(data.message || 'Failed to update profile');
@@ -145,6 +168,114 @@ export default function ShopPage() {
     }
   };
 
+  // ─── SERVICES MANAGEMENT ───
+  const handleAddService = () => {
+    const trimmed = newService.trim();
+    if (!trimmed) return;
+    if (services.includes(trimmed)) {
+      alert("This service already exists!");
+      return;
+    }
+    const updated = [...services, trimmed];
+    setServices(updated);
+    setNewService("");
+    saveServices(updated);
+  };
+
+  const handleRemoveService = (svc) => {
+    const updated = services.filter(s => s !== svc);
+    setServices(updated);
+    saveServices(updated);
+  };
+
+  const saveServices = async (list) => {
+    setServicesSaving(true);
+    try {
+      await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ services: list })
+      });
+    } catch(e) { console.error("Failed to save services"); }
+    finally { setServicesSaving(false); }
+  };
+
+  // ─── PORTFOLIO UPLOAD ───
+  const handlePortfolioUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    
+    files.forEach(file => {
+      if (file.size > 2 * 1024 * 1024) {
+        alert(`File "${file.name}" is too large. Maximum 2MB per image.`);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPortfolio(prev => {
+          const updated = [...prev, reader.result];
+          savePortfolio(updated);
+          return updated;
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  };
+
+  const handleRemovePortfolioImage = (idx) => {
+    setPortfolio(prev => {
+      const updated = prev.filter((_, i) => i !== idx);
+      savePortfolio(updated);
+      return updated;
+    });
+  };
+
+  const savePortfolio = async (images) => {
+    setPortfolioSaving(true);
+    try {
+      // Get current documents and merge portfolio
+      const currentDocs = user?.documents || {};
+      await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documents: { ...currentDocs, portfolio: images } })
+      });
+    } catch(e) { console.error("Failed to save portfolio"); }
+    finally { setPortfolioSaving(false); }
+  };
+
+  // ─── TEAM MANAGEMENT ───
+  const handleAddTeamMember = async () => {
+    if (!teamForm.name.trim()) {
+      alert("Team member name is required.");
+      return;
+    }
+    setTeamLoading(true);
+    try {
+      const res = await fetch('/api/provider/team', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(teamForm)
+      });
+      if (res.ok) {
+        const member = await res.json();
+        setTeamMembers(prev => [...prev, member]);
+        setTeamForm({ name: "", role: "Technician", phone: "", cnic: "" });
+        setShowTeamForm(false);
+      }
+    } catch(e) { alert("Failed to add team member."); }
+    finally { setTeamLoading(false); }
+  };
+
+  const handleRemoveTeamMember = async (id) => {
+    if (!confirm("Remove this team member?")) return;
+    try {
+      await fetch(`/api/provider/team?id=${id}`, { method: 'DELETE' });
+      setTeamMembers(prev => prev.filter(m => m.id !== id));
+    } catch(e) { console.error("Failed to remove member"); }
+  };
+
   return (
     <div className={`dashboard-shop-container ${dark ? "dark" : ""}`}>
       
@@ -152,7 +283,7 @@ export default function ShopPage() {
       <div className="shop-premium-header">
         <div className="profile-hero">
           <div className="avatar-wrapper">
-             <img src={user?.image || `https://i.pravatar.cc/150?u=${user?.email}`} alt="Profile" className="main-avatar" />
+             <img src={user?.image || (user?.documents?.profile) || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'P')}&background=ff7a00&color=fff&size=150`} alt="Profile" className="main-avatar" />
              <button className="upload-badge" title="Change Photo"><Camera size={16} /></button>
           </div>
           <div className="hero-text">
@@ -262,61 +393,244 @@ export default function ShopPage() {
             )}
           </div>
 
+          {/* ── SERVICES OFFERED (EDITABLE) ── */}
           <div className="content-card">
-            <h3>{t("Services Offered")}</h3>
+            <div className="card-header">
+              <h3>{t("Services Offered")}</h3>
+              {servicesSaving && <span style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: 600 }}>Saving...</span>}
+            </div>
             <div className="services-tag-cloud">
-              {shopData.services.map((svc, i) => (
-                <span key={i} className="service-chip">{svc}</span>
+              {services.map((svc, i) => (
+                <span key={i} className="service-chip">
+                  {svc}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveService(svc)}
+                    style={{
+                      background: 'none', border: 'none', color: 'inherit', cursor: 'pointer',
+                      marginLeft: '6px', padding: '0', fontSize: '14px', opacity: 0.6, lineHeight: 1
+                    }}
+                    title="Remove"
+                  >
+                    ×
+                  </button>
+                </span>
               ))}
-              <button className="add-chip-btn">+</button>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              <input
+                type="text"
+                placeholder="Add a service (e.g. Wiring)"
+                value={newService}
+                onChange={e => setNewService(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleAddService()}
+                style={{
+                  flex: 1, padding: '10px 14px', borderRadius: '12px',
+                  border: '1.5px solid var(--border)', background: 'transparent',
+                  color: 'inherit', fontSize: '14px', fontFamily: 'inherit'
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleAddService}
+                style={{
+                  padding: '10px 18px', borderRadius: '12px',
+                  background: 'var(--primary)', color: 'white', border: 'none',
+                  fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
+                  fontSize: '13px', transition: 'transform 0.2s'
+                }}
+              >
+                <Plus size={16} /> Add
+              </button>
             </div>
           </div>
 
+          {/* ── CURRENT OFFERS ── */}
           <div className="content-card">
             <h3>{t("Current Offers")}</h3>
             {offers.length === 0 ? (
-              <p className={`text-sm ${dark ? "text-slate-400" : "text-slate-500"}`}>No active offers. Create offers to attract more customers!</p>
+              <p className={`text-sm ${dark ? "text-slate-400" : "text-slate-500"}`}>No active offers. Create offers from the Settings card above!</p>
             ) : (
               <div className="space-y-3">
-                {offers.map((offer) => (
-                  <div key={offer.id} className={`p-3 rounded-xl ${dark ? "bg-orange-500/10 border border-orange-500/20" : "bg-orange-50 border border-orange-200"}`}>
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-orange-600 dark:text-orange-400">{offer.title}</span>
-                      {offer.discountPct && (
-                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${dark ? "bg-orange-500/20 text-orange-400" : "bg-orange-500 text-white"}`}>
-                          {offer.discountPct}% OFF
-                        </span>
+                {offers.filter(o => new Date(o.validTo) >= new Date()).map((offer) => {
+                  const daysLeft = Math.ceil((new Date(offer.validTo) - new Date()) / (1000*60*60*24));
+                  return (
+                    <div key={offer.id} className={`p-3 rounded-xl ${dark ? "bg-orange-500/10 border border-orange-500/20" : "bg-orange-50 border border-orange-200"}`}>
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-orange-600 dark:text-orange-400">{offer.title}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {offer.discountPct && (
+                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${dark ? "bg-orange-500/20 text-orange-400" : "bg-orange-500 text-white"}`}>
+                              {offer.discountPct}% OFF
+                            </span>
+                          )}
+                          <span style={{ fontSize: '11px', fontWeight: 700, color: daysLeft <= 3 ? '#ef4444' : '#10b981' }}>
+                            {daysLeft <= 0 ? 'Expired' : `${daysLeft}d left`}
+                          </span>
+                        </div>
+                      </div>
+                      {offer.description && (
+                        <p className={`text-xs mt-1 ${dark ? "text-slate-400" : "text-slate-600"}`}>{offer.description}</p>
                       )}
+                      <p className={`text-xs mt-2 ${dark ? "text-slate-500" : "text-slate-500"}`}>
+                        Valid: {new Date(offer.validFrom).toLocaleDateString()} - {new Date(offer.validTo).toLocaleDateString()}
+                      </p>
                     </div>
-                    {offer.description && (
-                      <p className={`text-xs mt-1 ${dark ? "text-slate-400" : "text-slate-600"}`}>{offer.description}</p>
-                    )}
-                    <p className={`text-xs mt-2 ${dark ? "text-slate-500" : "text-slate-500"}`}>
-                      Valid: {new Date(offer.validFrom).toLocaleDateString()} - {new Date(offer.validTo).toLocaleDateString()}
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
         </div>
 
-        {/* RIGHT COLUMN: PORTFOLIO */}
+        {/* RIGHT COLUMN: PORTFOLIO & TEAM */}
         <div className="shop-right">
+          
+          {/* ── PORTFOLIO (REAL UPLOAD) ── */}
           <div className="content-card">
             <div className="card-header">
-              <h3>{t("Portfolio")}</h3>
-              <LayoutGrid size={16} opacity={0.5} />
+              <h3>{t("Portfolio")} — Proof of Work</h3>
+              {portfolioSaving && <span style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: 600 }}>Saving...</span>}
             </div>
-            <div className="portfolio-gallery">
-               <div className="gallery-item" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1621905235213-979929259275?w=300)' }}></div>
-               <div className="gallery-item" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=300)' }}></div>
-               <div className="gallery-add">
-                 <span>Add Photo</span>
-               </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handlePortfolioUpload}
+              style={{ display: 'none' }}
+            />
+            <div className="portfolio-upload-grid">
+              {portfolio.map((img, idx) => (
+                <div key={idx} className="portfolio-thumb">
+                  <img src={img} alt={`Portfolio ${idx + 1}`} />
+                  <button
+                    className="portfolio-thumb-remove"
+                    onClick={() => handleRemovePortfolioImage(idx)}
+                    title="Remove"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+              <div
+                className="portfolio-add-btn"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload size={18} />
+                <span>Upload</span>
+              </div>
             </div>
+            {portfolio.length === 0 && (
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '10px' }}>
+                Upload photos of your past work to build trust with customers.
+              </p>
+            )}
           </div>
 
+          {/* ── TEAM MANAGEMENT (Agency/Company only) ── */}
+          {isAgency && (
+            <div className="content-card">
+              <div className="card-header">
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Users size={18} /> {t("Team Members")}
+                </h3>
+                <button
+                  className="btn-edit-inline"
+                  onClick={() => setShowTeamForm(!showTeamForm)}
+                >
+                  <UserPlus size={14} /> Add
+                </button>
+              </div>
+
+              {showTeamForm && (
+                <div style={{
+                  display: 'flex', flexDirection: 'column', gap: '10px',
+                  padding: '16px', borderRadius: '14px', marginBottom: '16px',
+                  border: '1.5px dashed var(--border)', background: 'rgba(0,0,0,0.02)'
+                }}>
+                  <input
+                    type="text" placeholder="Member Name"
+                    value={teamForm.name}
+                    onChange={e => setTeamForm(p => ({ ...p, name: e.target.value }))}
+                    className="pcard-input"
+                  />
+                  <select
+                    value={teamForm.role}
+                    onChange={e => setTeamForm(p => ({ ...p, role: e.target.value }))}
+                    className="pcard-select"
+                  >
+                    <option value="Technician">Technician</option>
+                    <option value="Supervisor">Supervisor</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Helper">Helper</option>
+                  </select>
+                  <input
+                    type="text" placeholder="Phone (optional)"
+                    value={teamForm.phone}
+                    onChange={e => setTeamForm(p => ({ ...p, phone: e.target.value }))}
+                    className="pcard-input"
+                  />
+                  <input
+                    type="text" placeholder="CNIC (optional)"
+                    value={teamForm.cnic}
+                    onChange={e => setTeamForm(p => ({ ...p, cnic: e.target.value }))}
+                    className="pcard-input"
+                  />
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={handleAddTeamMember}
+                      disabled={teamLoading}
+                      className="pcard-btn-add-offer"
+                      style={{ flex: 1, justifyContent: 'center' }}
+                    >
+                      {teamLoading ? "Adding..." : "Add Member"}
+                    </button>
+                    <button
+                      onClick={() => setShowTeamForm(false)}
+                      style={{
+                        padding: '10px 16px', borderRadius: '12px',
+                        border: '1.5px solid var(--border)', background: 'transparent',
+                        color: 'inherit', cursor: 'pointer', fontWeight: 600, fontSize: '13px'
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {teamMembers.length === 0 ? (
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>No team members added yet.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {teamMembers.map(m => (
+                    <div key={m.id} className="team-member-card">
+                      <div className="team-member-avatar">
+                        {m.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="team-member-info">
+                        <div className="team-member-name">{m.name}</div>
+                        <div className="team-member-role">{m.role}{m.phone ? ` • ${m.phone}` : ''}</div>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveTeamMember(m.id)}
+                        style={{
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          color: '#ef4444', padding: '4px', borderRadius: '8px'
+                        }}
+                        title="Remove member"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── VERIFICATION STATUS ── */}
           <div className="verification-status-card" style={{ borderColor: isVerified ? 'var(--primary)' : '#ef4444' }}>
              <div className="v-icon-wrap" style={{ background: isVerified ? 'rgba(255,122,0,0.1)' : 'rgba(239,68,68,0.1)', color: isVerified ? 'var(--primary)' : '#ef4444' }}>
                {isVerified ? <ShieldCheck size={24} /> : <AlertCircle size={24} />}
