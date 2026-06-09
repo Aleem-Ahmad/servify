@@ -321,7 +321,17 @@ export default function AccountPage() {
 
                 <div className="acc-field">
                   <label className="acc-label" htmlFor="acc-dob">{t("Birth Date")}</label>
-                  <input id="acc-dob" type="date" name="dob" value={editForm.dob} onChange={handleInputChange} className="acc-input" />
+                  <input 
+                    id="acc-dob" 
+                    type="text" 
+                    placeholder={t("Birth Date") || "Date of Birth"}
+                    onFocus={(e) => (e.target.type = "date")}
+                    onBlur={(e) => (e.target.type = e.target.value ? "date" : "text")}
+                    name="dob" 
+                    value={editForm.dob} 
+                    onChange={handleInputChange} 
+                    className="acc-input" 
+                  />
                 </div>
 
                 <div className="acc-form-actions">

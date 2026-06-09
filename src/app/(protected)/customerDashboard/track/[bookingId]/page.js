@@ -290,7 +290,7 @@ export default function TrackBooking({ params }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           bookingId: resolvedParams.bookingId,
-          providerId: booking.providerId,
+          providerId: booking.provider || booking.providerId,
           rating: rating,
           comment: comment,
           mediaUrls: mediaUrls,

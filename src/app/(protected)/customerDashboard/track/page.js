@@ -52,7 +52,7 @@ export default function TrackingOverview() {
   );
 
   return (
-    <div className={`min-h-screen pt-36 pb-20 px-6 ${dark ? "bg-[#050a14] text-slate-100" : "bg-slate-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
+    <div className={`cd-page-scroll ${dark ? "bg-[#050a14] text-slate-100" : "bg-slate-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
       <div className="max-w-4xl mx-auto space-y-8">
         
         {/* Header */}

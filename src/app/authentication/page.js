@@ -558,7 +558,17 @@ export default function Authentication() {
                           <label style={{ display: "block", fontSize: "0.75rem", color: "#64748b", marginBottom: "4px", fontWeight: "600" }}>
                             {t("auth.dob") || "Date of Birth"}
                           </label>
-                          <input name="dob" type="date" value={formData.dob} onChange={handleInputChange} required className="auth-input" />
+                          <input 
+                            name="dob" 
+                            type="text" 
+                            placeholder={t("auth.dob") || "Date of Birth"}
+                            onFocus={(e) => (e.target.type = "date")} 
+                            onBlur={(e) => (e.target.type = e.target.value ? "date" : "text")} 
+                            value={formData.dob} 
+                            onChange={handleInputChange} 
+                            required 
+                            className="auth-input" 
+                          />
                         </div>
                       </div>
 

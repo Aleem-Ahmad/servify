@@ -61,7 +61,7 @@ export async function POST(request) {
     return NextResponse.json({ success: true, message: 'Thank you for your feedback!' });
   } catch (error) {
     console.error('Feedback POST error:', error);
-    return NextResponse.json({ success: false, message: 'Failed to submit feedback' }, { status: 500 });
+    return NextResponse.json({ success: false, message: 'Failed to submit feedback', error: error.message }, { status: 500 });
   }
 }
 

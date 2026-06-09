@@ -156,10 +156,11 @@ function ViewProviderContent() {
                     {provider.phone}
                   </div>
                 )}
-                {provider.city && (
+                {(provider.district || provider.tehseel || provider.address) && (
                   <div className="info-item">
                     <div className="info-icon"><MapPin className="w-4 h-4" /></div>
-                    {provider.city}{provider.district ? `, ${provider.district}` : ''}
+                    {[provider.tehseel, provider.district].filter(Boolean).join(", ")} 
+                    {(!provider.tehseel && !provider.district && provider.address) ? provider.address : ""}
                   </div>
                 )}
                 {provider.email && (
