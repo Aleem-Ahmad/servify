@@ -7,7 +7,7 @@ import {
   ShieldCheck, ArrowLeft, Zap, Wallet, AlertTriangle, DollarSign,
   Camera, Mic, Play, Square, Trash2, X
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
 import { motion } from "framer-motion";
 import BookingChat from "@/components/SharedComponents/Chat/BookingChat";
@@ -19,8 +19,9 @@ const TileLayer = dynamic(() => import("react-leaflet").then(mod => mod.TileLaye
 const Marker = dynamic(() => import("react-leaflet").then(mod => mod.Marker), { ssr: false });
 const Popup = dynamic(() => import("react-leaflet").then(mod => mod.Popup), { ssr: false });
 
-export default function TrackBooking({ params }) {
+export default function TrackBooking() {
   const router = useRouter();
+  const { bookingId } = useParams();
   const { theme } = useTheme();
   const dark = theme === "dark";
 
@@ -108,12 +109,12 @@ export default function TrackBooking({ params }) {
   const [bargainOffers, setBargainOffers] = useState([]);
   const [submittingBargain, setSubmittingBargain] = useState(false);
 
-  // Unwrap params and fetch booking details
+  // Fetch booking details
   useEffect(() => {
+    if (!bookingId) return;
     const fetchBookingDetails = async () => {
       try {
-        const resolvedParams = await params;
-        const res = await fetch(`/api/bookings/${resolvedParams.bookingId}`);
+        const res = await fetch(`/api/bookings/${bookingId}`);
         if (res.ok) {
           const data = await res.json();
           setBooking(data);
@@ -137,7 +138,7 @@ export default function TrackBooking({ params }) {
 
           // Fetch bargain offers if bargaining is active
           if (data.bargainingStatus === 'Negotiating' || data.bargainingStatus === 'Agreed') {
-            fetchBargainOffers(resolvedParams.bookingId);
+            fetchBargainOffers(bookingId);
           }
         }
       } catch (err) {
@@ -147,7 +148,7 @@ export default function TrackBooking({ params }) {
       }
     };
     fetchBookingDetails();
-  }, [params]);
+  }, [bookingId]);
 
   // Fetch bargain offers
   const fetchBargainOffers = async (bookingId) => {
@@ -171,8 +172,7 @@ export default function TrackBooking({ params }) {
 
     setSubmittingBargain(true);
     try {
-      const resolvedParams = await params;
-      const res = await fetch(`/api/bookings/${resolvedParams.bookingId}/bargain`, {
+      const res = await fetch(`/api/bookings/${bookingId}/bargain`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -188,7 +188,7 @@ export default function TrackBooking({ params }) {
         setBargainPrice("");
         setBargainMessage("");
         setShowBargaining(false);
-        fetchBargainOffers(resolvedParams.bookingId);
+        fetchBargainOffers(bookingId);
       } else {
         alert("Failed to submit bargain offer. Please try again.");
       }
@@ -204,8 +204,7 @@ export default function TrackBooking({ params }) {
     if (!confirm("Are you sure you want to accept this offer?")) return;
 
     try {
-      const resolvedParams = await params;
-      const res = await fetch(`/api/bookings/${resolvedParams.bookingId}/bargain`, {
+      const res = await fetch(`/api/bookings/${bookingId}/bargain`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -217,9 +216,9 @@ export default function TrackBooking({ params }) {
       if (res.ok) {
         const data = await res.json();
         alert("Offer accepted! The agreed price is PKR " + data.agreedPrice);
-        fetchBargainOffers(resolvedParams.bookingId);
+        fetchBargainOffers(bookingId);
         // Refresh booking details
-        const bookingRes = await fetch(`/api/bookings/${resolvedParams.bookingId}`);
+        const bookingRes = await fetch(`/api/bookings/${bookingId}`);
         if (bookingRes.ok) {
           setBooking(await bookingRes.json());
         }
@@ -236,8 +235,7 @@ export default function TrackBooking({ params }) {
     if (!confirm("Are you sure you want to reject this offer?")) return;
 
     try {
-      const resolvedParams = await params;
-      const res = await fetch(`/api/bookings/${resolvedParams.bookingId}/bargain`, {
+      const res = await fetch(`/api/bookings/${bookingId}/bargain`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -248,7 +246,7 @@ export default function TrackBooking({ params }) {
 
       if (res.ok) {
         alert("Offer rejected.");
-        fetchBargainOffers(resolvedParams.bookingId);
+        fetchBargainOffers(bookingId);
       } else {
         alert("Failed to reject offer. Please try again.");
       }
@@ -284,12 +282,11 @@ export default function TrackBooking({ params }) {
     
     setSubmittingFeedback(true);
     try {
-      const resolvedParams = await params;
       const res = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          bookingId: resolvedParams.bookingId,
+          bookingId: bookingId,
           providerId: booking.provider || booking.providerId,
           rating: rating,
           comment: comment,

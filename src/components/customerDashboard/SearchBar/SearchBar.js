@@ -103,8 +103,36 @@ export default function SearchBar() {
     setTimeout(() => setShowFilter(false), 320);
   };
 
+  const [isLocating, setIsLocating] = useState(false);
+
   const openMap = () => {
-    setLocation("Karachi, PK");
+    if (navigator.geolocation) {
+      setIsLocating(true);
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const { latitude, longitude } = position.coords;
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            const data = await response.json();
+            const city = data.address.city || data.address.town || data.address.village || data.address.state || "Current Location";
+            const country = data.address.country_code ? data.address.country_code.toUpperCase() : "";
+            setLocation(`${city}${country && city !== "Current Location" ? `, ${country}` : ""}`);
+          } catch (error) {
+            console.error("Error fetching location details:", error);
+            setLocation("Karachi, PK");
+          } finally {
+            setIsLocating(false);
+          }
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          setLocation("Karachi, PK"); // Fallback
+          setIsLocating(false);
+        }
+      );
+    } else {
+      setLocation("Karachi, PK"); // Fallback
+    }
   };
 
   const handleSearch = () => {
@@ -152,7 +180,7 @@ export default function SearchBar() {
           {/* Location */}
           <button className="sb-field sb-location" onClick={openMap}>
             <span className="sb-field-icon"><IconPin size={15} /></span>
-            <span className="sb-field-text">{location || t("search.location", { defaultValue: "Location" })}</span>
+            <span className="sb-field-text">{isLocating ? t("search.locating", { defaultValue: "Locating..." }) : (location || t("search.location", { defaultValue: "Location" }))}</span>
           </button>
 
           <div className="sb-divider" />
@@ -236,7 +264,7 @@ export default function SearchBar() {
                 className={`sb-sheet-field ${location ? "filled" : ""}`}
                 onClick={openMap}
               >
-                <span>{location || t("search.tapLocation", { defaultValue: "Tap to select location" })}</span>
+                <span>{isLocating ? t("search.locating", { defaultValue: "Locating..." }) : (location || t("search.tapLocation", { defaultValue: "Tap to select location" }))}</span>
                 <IconChevron size={14} />
               </button>
             </div>
