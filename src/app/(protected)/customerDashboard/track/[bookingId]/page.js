@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { motion } from "framer-motion";
 import BookingChat from "@/components/SharedComponents/Chat/BookingChat";
 import "leaflet/dist/leaflet.css";
@@ -24,6 +25,7 @@ export default function TrackBooking() {
   const { bookingId } = useParams();
   const { theme } = useTheme();
   const dark = theme === "dark";
+  const { t } = useLanguage();
 
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);

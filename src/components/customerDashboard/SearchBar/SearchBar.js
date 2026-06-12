@@ -105,9 +105,27 @@ export default function SearchBar() {
 
   const [isLocating, setIsLocating] = useState(false);
 
-  const openMap = () => {
+  const openMap = async () => {
+    setIsLocating(true);
+
+    const fetchIpLocation = async () => {
+      try {
+        const res = await fetch("https://ipapi.co/json/");
+        const data = await res.json();
+        if (data && data.city) {
+          setLocation(`${data.city}, ${data.country}`);
+        } else {
+          setLocation("Location Unavailable");
+        }
+      } catch (err) {
+        console.error("IP geolocation failed", err);
+        setLocation("Location Unavailable");
+      } finally {
+        setIsLocating(false);
+      }
+    };
+
     if (navigator.geolocation) {
-      setIsLocating(true);
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           try {
@@ -117,21 +135,20 @@ export default function SearchBar() {
             const city = data.address.city || data.address.town || data.address.village || data.address.state || "Current Location";
             const country = data.address.country_code ? data.address.country_code.toUpperCase() : "";
             setLocation(`${city}${country && city !== "Current Location" ? `, ${country}` : ""}`);
+            setIsLocating(false);
           } catch (error) {
             console.error("Error fetching location details:", error);
-            setLocation("Karachi, PK");
-          } finally {
-            setIsLocating(false);
+            fetchIpLocation();
           }
         },
         (error) => {
           console.error("Geolocation error:", error);
-          setLocation("Karachi, PK"); // Fallback
-          setIsLocating(false);
-        }
+          fetchIpLocation();
+        },
+        { timeout: 10000 }
       );
     } else {
-      setLocation("Karachi, PK"); // Fallback
+      fetchIpLocation();
     }
   };
 
