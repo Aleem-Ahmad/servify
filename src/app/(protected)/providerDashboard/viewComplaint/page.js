@@ -199,14 +199,16 @@ function ComplaintsList() {
     }
   }, [user?.id]);
 
-  // Poll for new bargain offers every 10 seconds
+  // Poll for new bargain offers every 30 seconds (staggered to avoid rate limits)
   useEffect(() => {
     if (!user?.id) return;
-    const interval = setInterval(() => {
-      complaints.forEach(c => {
-        fetchBargainOffers(c.id);
-      });
-    }, 10000);
+    const interval = setInterval(async () => {
+      // Stagger requests: wait 500ms between each to avoid rate limiting
+      for (const c of complaints) {
+        await fetchBargainOffers(c.id);
+        await new Promise(res => setTimeout(res, 500));
+      }
+    }, 30000);
     return () => clearInterval(interval);
   }, [user?.id, complaints]);
 
@@ -844,191 +846,199 @@ function ComplaintsList() {
                 {/* Bargaining Section */}
                 {type === "new" && (
                   <div style={{
-                    marginTop: '12px',
-                    padding: '12px',
-                    borderRadius: '12px',
-                    border: dark ? '1px solid rgba(255,122,0,0.2)' : '1px solid rgba(255,122,0,0.2)',
-                    background: dark ? 'rgba(255,122,0,0.05)' : 'rgba(255,122,0,0.05)'
+                    marginTop: '16px',
+                    borderRadius: '16px',
+                    border: dark ? '1px solid rgba(255,122,0,0.25)' : '1px solid rgba(255,122,0,0.2)',
+                    background: dark ? 'linear-gradient(135deg, rgba(255,122,0,0.08), rgba(30,20,10,0.6))' : 'linear-gradient(135deg, rgba(255,122,0,0.05), rgba(255,250,245,0.9))',
+                    overflow: 'hidden'
                   }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', color: '#ff7a00', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <DollarSign style={{ width: '14px', height: '14px' }} /> Price Negotiation
+                    {/* Header */}
+                    <div style={{
+                      padding: '12px 16px',
+                      borderBottom: dark ? '1px solid rgba(255,122,0,0.15)' : '1px solid rgba(255,122,0,0.1)',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      background: dark ? 'rgba(255,122,0,0.08)' : 'rgba(255,122,0,0.06)'
+                    }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#ff7a00', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <DollarSign style={{ width: '13px', height: '13px' }} /> Price Negotiation
                       </span>
                       {c.bargainingStatus === 'Agreed' && (
-                        <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#10b981' }}>✓ Agreed</span>
+                        <span style={{ fontSize: '0.68rem', fontWeight: '700', color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '2px 10px', borderRadius: '20px', border: '1px solid rgba(16,185,129,0.2)' }}>✓ Price Agreed</span>
+                      )}
+                      {c.bargainingStatus === 'Negotiating' && (
+                        <span style={{ fontSize: '0.68rem', fontWeight: '700', color: '#f59e0b', background: 'rgba(245,158,11,0.1)', padding: '2px 10px', borderRadius: '20px', border: '1px solid rgba(245,158,11,0.2)' }}>● Negotiating</span>
                       )}
                     </div>
 
-                    {bargainOffers[c.id] && bargainOffers[c.id].length > 0 ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
-                        {bargainOffers[c.id].map((offer) => (
-                          <div key={offer.id} style={{
-                            padding: '8px',
-                            borderRadius: '8px',
-                            border: dark ? '1px solid #334155' : '1px solid #e2e8f0',
-                            background: dark ? 'rgba(15,23,42,0.5)' : '#ffffff'
-                          }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                              <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#64748b' }}>
-                                {offer.proposerType === 'customer' 
-                                  ? 'Customer Offer' 
-                                  : offer.proposerId === user?.id 
-                                    ? 'Your Offer' 
-                                    : 'Competitor Offer'}
-                              </span>
-                              <span style={{
-                                fontSize: '0.65rem',
-                                fontWeight: '700',
-                                padding: '2px 8px',
-                                borderRadius: '4px',
-                                background: offer.status === 'Accepted' ? 'rgba(16,185,129,0.1)' :
-                                          offer.status === 'Rejected' ? 'rgba(239,68,68,0.1)' :
-                                          offer.status === 'Pending' ? 'rgba(245,158,11,0.1)' :
-                                          'rgba(100,116,139,0.1)',
-                                color: offer.status === 'Accepted' ? '#10b981' :
-                                       offer.status === 'Rejected' ? '#ef4444' :
-                                       offer.status === 'Pending' ? '#f59e0b' :
-                                       '#64748b'
+                    <div style={{ padding: '12px 16px' }}>
+                      {/* Offers List */}
+                      {bargainOffers[c.id] && bargainOffers[c.id].length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+                          {bargainOffers[c.id].map((offer) => {
+                            const isCustomer = offer.proposerType === 'customer';
+                            const isMyOffer = offer.proposerId === user?.id;
+                            return (
+                              <div key={offer.id} style={{
+                                borderRadius: '10px',
+                                border: isCustomer
+                                  ? dark ? '1px solid rgba(99,102,241,0.3)' : '1px solid rgba(99,102,241,0.2)'
+                                  : dark ? '1px solid rgba(255,122,0,0.3)' : '1px solid rgba(255,122,0,0.2)',
+                                background: isCustomer
+                                  ? dark ? 'rgba(99,102,241,0.08)' : 'rgba(99,102,241,0.05)'
+                                  : dark ? 'rgba(255,122,0,0.08)' : 'rgba(255,122,0,0.05)',
+                                overflow: 'hidden'
                               }}>
-                                {offer.status}
-                              </span>
-                            </div>
-                            <div style={{ fontSize: '1rem', fontWeight: '800', color: '#ff7a00' }}>PKR {offer.proposedPrice}</div>
-                            {offer.message && <p style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '4px' }}>{offer.message}</p>}
-                            {offer.status === 'Pending' && offer.proposerType === 'customer' && (
-                              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                                <button
-                                  onClick={() => handleAcceptOffer(c.id, offer.id)}
-                                  style={{
-                                    flex: 1,
-                                    padding: '6px',
-                                    borderRadius: '6px',
-                                    background: '#10b981',
-                                    color: '#ffffff',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    fontWeight: '700',
-                                    fontSize: '0.7rem'
-                                  }}
-                                >
-                                  Accept
-                                </button>
-                                <button
-                                  onClick={() => handleRejectOffer(c.id, offer.id)}
-                                  style={{
-                                    flex: 1,
-                                    padding: '6px',
-                                    borderRadius: '6px',
-                                    background: '#ef4444',
-                                    color: '#ffffff',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    fontWeight: '700',
-                                    fontSize: '0.7rem'
-                                  }}
-                                >
-                                  Reject
-                                </button>
+                                {/* Offer header bar */}
+                                <div style={{
+                                  padding: '6px 10px',
+                                  borderBottom: dark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)',
+                                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                  background: dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
+                                }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <div style={{
+                                      width: '6px', height: '6px', borderRadius: '50%',
+                                      background: isCustomer ? '#6366f1' : '#ff7a00'
+                                    }} />
+                                    <span style={{ fontSize: '0.68rem', fontWeight: '700', color: isCustomer ? '#6366f1' : '#ff7a00' }}>
+                                      {isCustomer ? 'Customer Offer' : isMyOffer ? 'Your Offer' : 'Competitor Offer'}
+                                    </span>
+                                  </div>
+                                  <span style={{
+                                    fontSize: '0.62rem', fontWeight: '700', padding: '2px 8px', borderRadius: '20px',
+                                    background: offer.status === 'Accepted' ? 'rgba(16,185,129,0.15)' :
+                                               offer.status === 'Rejected' ? 'rgba(239,68,68,0.15)' :
+                                               'rgba(245,158,11,0.15)',
+                                    color: offer.status === 'Accepted' ? '#10b981' :
+                                           offer.status === 'Rejected' ? '#ef4444' : '#f59e0b',
+                                    border: `1px solid ${offer.status === 'Accepted' ? 'rgba(16,185,129,0.3)' : offer.status === 'Rejected' ? 'rgba(239,68,68,0.3)' : 'rgba(245,158,11,0.3)'}`
+                                  }}>
+                                    {offer.status}
+                                  </span>
+                                </div>
+                                {/* Offer body */}
+                                <div style={{ padding: '8px 10px' }}>
+                                  <div style={{ fontSize: '1.1rem', fontWeight: '900', color: '#ff7a00', letterSpacing: '-0.02em' }}>
+                                    PKR {offer.proposedPrice.toLocaleString()}
+                                  </div>
+                                  {offer.message && (
+                                    <p style={{ fontSize: '0.68rem', color: dark ? '#94a3b8' : '#64748b', marginTop: '4px', fontStyle: 'italic' }}>
+                                      "{offer.message}"
+                                    </p>
+                                  )}
+                                  {offer.status === 'Pending' && isCustomer && (
+                                    <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
+                                      <button
+                                        onClick={() => handleAcceptOffer(c.id, offer.id)}
+                                        style={{
+                                          flex: 1, padding: '7px', borderRadius: '8px',
+                                          background: 'linear-gradient(135deg, #10b981, #059669)',
+                                          color: '#ffffff', border: 'none', cursor: 'pointer',
+                                          fontWeight: '700', fontSize: '0.68rem',
+                                          boxShadow: '0 2px 8px rgba(16,185,129,0.3)'
+                                        }}
+                                      >✓ Accept</button>
+                                      <button
+                                        onClick={() => handleRejectOffer(c.id, offer.id)}
+                                        style={{
+                                          flex: 1, padding: '7px', borderRadius: '8px',
+                                          background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                                          color: '#ffffff', border: 'none', cursor: 'pointer',
+                                          fontWeight: '700', fontSize: '0.68rem',
+                                          boxShadow: '0 2px 8px rgba(239,68,68,0.3)'
+                                        }}
+                                      >✕ Reject</button>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p style={{ fontSize: '0.7rem', color: '#64748b', marginBottom: '8px' }}>No offers yet. Start negotiating!</p>
-                    )}
-
-                    {!showBargaining[c.id] ? (
-                      <button
-                        onClick={() => setShowBargaining(prev => ({ ...prev, [c.id]: true }))}
-                        style={{
-                          width: '100%',
-                          padding: '8px',
-                          borderRadius: '8px',
-                          background: 'linear-gradient(135deg, #ff7a00, #ffba75)',
-                          color: '#ffffff',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontWeight: '700',
-                          fontSize: '0.75rem',
-                          boxShadow: '0 4px 12px rgba(255,122,0,0.2)'
-                        }}
-                      >
-                        {c.bargainingStatus === 'Agreed' ? 'Renegotiate Price' : 'Propose Your Price'}
-                      </button>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <input
-                          type="number"
-                          placeholder="Enter your price (PKR)"
-                          value={bargainPrice[c.id] || ''}
-                          onChange={(e) => setBargainPrice(prev => ({ ...prev, [c.id]: e.target.value }))}
-                          style={{
-                            width: '100%',
-                            padding: '8px 12px',
-                            borderRadius: '8px',
-                            border: dark ? '1.5px solid #334155' : '1.5px solid #cbd5e1',
-                            background: dark ? '#0f172a' : '#f8fafc',
-                            color: dark ? '#f1f5f9' : '#1e293b',
-                            fontSize: '0.85rem',
-                            outline: 'none'
-                          }}
-                        />
-                        <textarea
-                          placeholder="Add a message (optional)"
-                          value={bargainMessage[c.id] || ''}
-                          onChange={(e) => setBargainMessage(prev => ({ ...prev, [c.id]: e.target.value }))}
-                          rows={2}
-                          style={{
-                            width: '100%',
-                            padding: '8px 12px',
-                            borderRadius: '8px',
-                            border: dark ? '1.5px solid #334155' : '1.5px solid #cbd5e1',
-                            background: dark ? '#0f172a' : '#f8fafc',
-                            color: dark ? '#f1f5f9' : '#1e293b',
-                            fontSize: '0.85rem',
-                            outline: 'none',
-                            resize: 'none'
-                          }}
-                        />
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button
-                            onClick={() => setShowBargaining(prev => ({ ...prev, [c.id]: false }))}
-                            style={{
-                              flex: 1,
-                              padding: '8px',
-                              borderRadius: '8px',
-                              background: dark ? '#334155' : '#e2e8f0',
-                              color: dark ? '#f1f5f9' : '#475569',
-                              border: 'none',
-                              cursor: 'pointer',
-                              fontWeight: '700',
-                              fontSize: '0.75rem'
-                            }}
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={() => handleSubmitBargain(c.id)}
-                            disabled={submittingBargain[c.id]}
-                            style={{
-                              flex: 1,
-                              padding: '8px',
-                              borderRadius: '8px',
-                              background: '#ff7a00',
-                              color: '#ffffff',
-                              border: 'none',
-                              cursor: 'pointer',
-                              fontWeight: '700',
-                              fontSize: '0.75rem',
-                              opacity: submittingBargain[c.id] ? 0.5 : 1
-                            }}
-                          >
-                            {submittingBargain[c.id] ? 'Submitting...' : 'Submit Offer'}
-                          </button>
+                            );
+                          })}
                         </div>
-                      </div>
-                    )}
+                      ) : (
+                        <div style={{
+                          textAlign: 'center', padding: '12px 0', marginBottom: '10px',
+                          color: dark ? '#475569' : '#94a3b8', fontSize: '0.72rem', fontWeight: '500'
+                        }}>
+                          No offers yet — be the first to propose a price!
+                        </div>
+                      )}
+
+                      {/* Propose button or form */}
+                      {!showBargaining[c.id] ? (
+                        <button
+                          onClick={() => setShowBargaining(prev => ({ ...prev, [c.id]: true }))}
+                          style={{
+                            width: '100%', padding: '10px', borderRadius: '10px',
+                            background: 'linear-gradient(135deg, #ff7a00, #ff9a3c)',
+                            color: '#ffffff', border: 'none', cursor: 'pointer',
+                            fontWeight: '800', fontSize: '0.75rem', letterSpacing: '0.02em',
+                            boxShadow: '0 4px 14px rgba(255,122,0,0.35)',
+                            transition: 'transform 0.15s, box-shadow 0.15s'
+                          }}
+                          onMouseEnter={e => { e.target.style.transform = 'translateY(-1px)'; e.target.style.boxShadow = '0 6px 18px rgba(255,122,0,0.45)'; }}
+                          onMouseLeave={e => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 14px rgba(255,122,0,0.35)'; }}
+                        >
+                          {c.bargainingStatus === 'Agreed' ? '↺ Renegotiate Price' : '💰 Propose Your Price'}
+                        </button>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <input
+                            type="number"
+                            placeholder="Your price in PKR"
+                            value={bargainPrice[c.id] || ''}
+                            onChange={(e) => setBargainPrice(prev => ({ ...prev, [c.id]: e.target.value }))}
+                            style={{
+                              width: '100%', padding: '10px 12px', borderRadius: '10px',
+                              border: dark ? '1.5px solid #334155' : '1.5px solid #e2e8f0',
+                              background: dark ? '#0f172a' : '#ffffff',
+                              color: dark ? '#f1f5f9' : '#1e293b',
+                              fontSize: '0.88rem', fontWeight: '600', outline: 'none',
+                              boxSizing: 'border-box'
+                            }}
+                          />
+                          <textarea
+                            placeholder="Add a short message (optional)"
+                            value={bargainMessage[c.id] || ''}
+                            onChange={(e) => setBargainMessage(prev => ({ ...prev, [c.id]: e.target.value }))}
+                            rows={2}
+                            style={{
+                              width: '100%', padding: '10px 12px', borderRadius: '10px',
+                              border: dark ? '1.5px solid #334155' : '1.5px solid #e2e8f0',
+                              background: dark ? '#0f172a' : '#ffffff',
+                              color: dark ? '#f1f5f9' : '#1e293b',
+                              fontSize: '0.82rem', outline: 'none', resize: 'none', fontFamily: 'inherit',
+                              boxSizing: 'border-box'
+                            }}
+                          />
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              onClick={() => setShowBargaining(prev => ({ ...prev, [c.id]: false }))}
+                              style={{
+                                flex: 1, padding: '9px', borderRadius: '10px',
+                                background: dark ? '#1e293b' : '#f1f5f9',
+                                color: dark ? '#94a3b8' : '#475569',
+                                border: dark ? '1px solid #334155' : '1px solid #e2e8f0',
+                                cursor: 'pointer', fontWeight: '700', fontSize: '0.72rem'
+                              }}
+                            >Cancel</button>
+                            <button
+                              onClick={() => handleSubmitBargain(c.id)}
+                              disabled={submittingBargain[c.id]}
+                              style={{
+                                flex: 2, padding: '9px', borderRadius: '10px',
+                                background: submittingBargain[c.id] ? '#94a3b8' : 'linear-gradient(135deg, #ff7a00, #ff9a3c)',
+                                color: '#ffffff', border: 'none', cursor: submittingBargain[c.id] ? 'not-allowed' : 'pointer',
+                                fontWeight: '800', fontSize: '0.72rem',
+                                boxShadow: submittingBargain[c.id] ? 'none' : '0 3px 10px rgba(255,122,0,0.3)'
+                              }}
+                            >
+                              {submittingBargain[c.id] ? 'Submitting...' : 'Send Offer →'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
