@@ -77,11 +77,9 @@ function ComplaintsList() {
       
       setComplaints(mappedData);
 
-        // Fetch bargain offers for bookings with active bargaining
+        // Fetch bargain offers for ALL bookings (so offers are always visible)
         mappedData.forEach(async (c) => {
-          if (c.bargainingStatus === 'Negotiating' || c.bargainingStatus === 'Agreed') {
-            await fetchBargainOffers(c.id);
-          }
+          await fetchBargainOffers(c.id);
         });
     } catch (error) {
       console.error("Failed to fetch complaints:", error);
@@ -200,6 +198,17 @@ function ComplaintsList() {
       fetchComplaints(user.id);
     }
   }, [user?.id]);
+
+  // Poll for new bargain offers every 10 seconds
+  useEffect(() => {
+    if (!user?.id) return;
+    const interval = setInterval(() => {
+      complaints.forEach(c => {
+        fetchBargainOffers(c.id);
+      });
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [user?.id, complaints]);
 
   const filtered = complaints.filter(c => c.frontendStatus === type);
 

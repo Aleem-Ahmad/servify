@@ -137,11 +137,6 @@ export default function TrackBooking() {
               setProviderLoc([lat + 0.0058, lng + 0.0084]);
             }
           }
-
-          // Fetch bargain offers if bargaining is active
-          if (data.bargainingStatus === 'Negotiating' || data.bargainingStatus === 'Agreed') {
-            fetchBargainOffers(bookingId);
-          }
         }
       } catch (err) {
         console.error("Error fetching booking details:", err);
@@ -150,6 +145,17 @@ export default function TrackBooking() {
       }
     };
     fetchBookingDetails();
+    // Always fetch bargain offers on load
+    fetchBargainOffers(bookingId);
+  }, [bookingId]);
+
+  // Poll for new bargain offers every 10 seconds
+  useEffect(() => {
+    if (!bookingId) return;
+    const interval = setInterval(() => {
+      fetchBargainOffers(bookingId);
+    }, 10000);
+    return () => clearInterval(interval);
   }, [bookingId]);
 
   // Fetch bargain offers
