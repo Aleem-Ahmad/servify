@@ -68,8 +68,18 @@ export async function middleware(request) {
   const { pathname } = request.nextUrl;
   const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
   
-  // Apply rate limiting to all requests
-  if (!checkRateLimit(ip, 100, 60000)) {
+  // Skip rate limiting for static assets, images, and non-critical GET endpoints
+  const skipRateLimit = pathname.startsWith('/_next') || 
+                        pathname.startsWith('/favicon') ||
+                        pathname.endsWith('.css') ||
+                        pathname.endsWith('.js') ||
+                        pathname.endsWith('.png') ||
+                        pathname.endsWith('.jpg') ||
+                        pathname.endsWith('.svg') ||
+                        (pathname.includes('/bargain') && request.method === 'GET');
+
+  // Apply rate limiting (500 requests per minute, generous for dashboard polling)
+  if (!skipRateLimit && !checkRateLimit(ip, 500, 60000)) {
     return NextResponse.json(
       { error: 'Too many requests' },
       { status: 429, headers: { 'Retry-After': '60' } }

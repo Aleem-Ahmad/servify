@@ -199,19 +199,6 @@ function ComplaintsList() {
     }
   }, [user?.id]);
 
-  // Poll for new bargain offers every 30 seconds (staggered to avoid rate limits)
-  useEffect(() => {
-    if (!user?.id) return;
-    const interval = setInterval(async () => {
-      // Stagger requests: wait 500ms between each to avoid rate limiting
-      for (const c of complaints) {
-        await fetchBargainOffers(c.id);
-        await new Promise(res => setTimeout(res, 500));
-      }
-    }, 30000);
-    return () => clearInterval(interval);
-  }, [user?.id, complaints]);
-
   const filtered = complaints.filter(c => c.frontendStatus === type);
 
   // Trigger Accept Scheduling Prompt

@@ -149,12 +149,12 @@ export default function TrackBooking() {
     fetchBargainOffers(bookingId);
   }, [bookingId]);
 
-  // Poll for new bargain offers every 10 seconds
+  // Poll for new bargain offers every 30 seconds
   useEffect(() => {
     if (!bookingId) return;
     const interval = setInterval(() => {
       fetchBargainOffers(bookingId);
-    }, 10000);
+    }, 30000);
     return () => clearInterval(interval);
   }, [bookingId]);
 
