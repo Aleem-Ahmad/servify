@@ -231,7 +231,8 @@ export default function TrackBooking() {
           setBooking(await bookingRes.json());
         }
       } else {
-        alert("Failed to accept offer. Please try again.");
+        const errorData = await res.json();
+        alert("Failed to accept offer: " + (errorData.message || "Unknown error"));
       }
     } catch (error) {
       alert("Network error. Please try again.");
