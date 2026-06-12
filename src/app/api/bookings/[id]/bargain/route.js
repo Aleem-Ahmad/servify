@@ -21,7 +21,8 @@ export async function GET(request, { params }) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     
     // Verify user has access to this booking
     const booking = await prisma.booking.findUnique({
@@ -66,7 +67,8 @@ export async function POST(request, { params }) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     const { proposedPrice, message, proposerType } = await request.json();
 
     if (!proposedPrice || proposedPrice <= 0) {
@@ -136,7 +138,8 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     const { offerId, action } = await request.json();
 
     if (!offerId || !action || (action !== 'accept' && action !== 'reject')) {

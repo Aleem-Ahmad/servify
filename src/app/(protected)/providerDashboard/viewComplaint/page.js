@@ -530,17 +530,12 @@ function ComplaintsList() {
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
           zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
-          <div onClick={e => e.stopPropagation()} style={{
-            background: dark ? '#1e293b' : '#ffffff', borderRadius: '24px', padding: '32px',
-            maxWidth: '500px', width: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-            border: dark ? '1px solid #334155' : '1px solid #e2e8f0',
-            color: dark ? '#f1f5f9' : '#1e293b'
-          }}>
+          <div onClick={e => e.stopPropagation()} className={`complaint-detail-modal ${dark ? 'dark' : ''}`}>
             <h3 style={{ marginBottom: '20px', color: '#ff7a00', fontWeight: '900', fontSize: '1.4rem' }}>
               📋 Detailed Request
             </h3>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '0.9rem' }}>
+            <div className="complaint-details-grid" style={{ fontSize: '0.9rem' }}>
               <div style={{ borderBottom: dark ? '1px solid #334155' : '1px solid #f1f5f9', paddingBottom: '10px' }}>
                 <span style={{ opacity: 0.6, display: 'block', fontSize: '0.78rem' }}>Customer</span>
                 <strong>{selectedComplaint.customerName || "Anonymous"}</strong>
@@ -741,7 +736,7 @@ function ComplaintsList() {
           <p style={{ fontSize: '1.1rem', fontWeight: '600' }}>{t("viewComplaint.noRequests")}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="complaints-grid-container">
           {filtered.map(c => (
             <div key={c.id} style={cardStyle}>
               

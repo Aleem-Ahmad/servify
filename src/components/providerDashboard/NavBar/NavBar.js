@@ -53,7 +53,7 @@ export default function ProviderNavbar() {
       </nav>
 
       {/* ─── MOBILE BOTTOM TAB BAR (Visible on mobile/tablet under 900px) ─── */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-4 py-2 shadow-lg">
+      <div className="mobile-bottom-tabs fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-4 py-2 shadow-lg">
         <div className="max-w-md mx-auto flex items-center justify-around">
           <Link 
             href="/providerDashboard"
