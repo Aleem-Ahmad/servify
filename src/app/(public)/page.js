@@ -19,6 +19,7 @@ export default function LandingPage() {
       <Navbar type="public" />
 
       <main className="lp-main">
+        {/* Umar test */}
         {/* Hero Section */}
         <section id="home" className="lp-section lp-hero">
           <Hero />
