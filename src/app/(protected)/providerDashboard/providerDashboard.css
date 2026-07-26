@@ -42,7 +42,7 @@ body {
 
 .dashboard-home, .dashboard-shop, .dashboard-feedback {
   min-height: calc(100vh - 65px);
-  padding: 40px 20px;
+  padding: 40px 20px 100px; /* extra bottom padding so content clears mobile nav */
   max-width: 1200px;
   margin: 0 auto;
   animation: fadeUp 0.6s ease forwards;

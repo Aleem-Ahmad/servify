@@ -5,7 +5,7 @@
 .provider-dashboard {
   margin-left: 240px; /* sidebar width */
 
-  height: 100vh; /* exact viewport */
+  min-height: 100vh; /* grows with page content instead of locking to viewport */
   width: calc(100% - 240px);
 
   padding: 24px;
@@ -16,7 +16,7 @@
   display: flex;
   flex-direction: column;
 
-  overflow: hidden; /* prevent overflow */
+  overflow-x: hidden; /* only block horizontal scroll, allow vertical scroll */
 }
 
 /* ===============================
@@ -95,7 +95,7 @@
   .provider-dashboard {
     margin-left: 0;
     width: 100%;
-    height: 100vh;
+    min-height: 100vh; /* keep min-height, not fixed height */
   }
 
   .bento-grid {
