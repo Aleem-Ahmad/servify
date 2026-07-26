@@ -329,6 +329,9 @@
     padding-bottom: max(32px, env(safe-area-inset-bottom));
     transform: translateY(100%);
     opacity: 1;
+    /* Prevent sheet from being taller than the screen */
+    max-height: 80dvh;
+    overflow-y: auto;
   }
 
   .sb-sheet.open {
