@@ -245,5 +245,11 @@
   "Mark as Done": "Mark as Done",
   "View Details": "View Details",
   "Complaint accepted! It is now in your pending list.": "Complaint accepted! It is now in your pending list.",
-  "Great! Job marked as completed.": "Great! Job marked as completed."
+  "Great! Job marked as completed.": "Great! Job marked as completed.",
+  "status.all": "All",
+  "status.pending": "Pending",
+  "status.inProgress": "In Progress",
+  "status.completed": "Completed",
+  "status.cancelled": "Cancelled",
+  "auth.uploadPhoto": "Profile Picture"
 }

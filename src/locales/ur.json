@@ -313,5 +313,11 @@
   "Mark as Done": "مکمل قرار دیں",
   "View Details": "تفصیل دیکھیں",
   "Complaint accepted! It is now in your pending list.": "شکایت قبول ہو گئی! اب یہ آپ کی زیر التواء فہرست میں ہے۔",
-  "Great! Job marked as completed.": "بہت اچھے! کام مکمل شدہ قرار دے دیا گیا۔"
+  "Great! Job marked as completed.": "بہت اچھے! کام مکمل شدہ قرار دے دیا گیا۔",
+  "status.all": "تمام",
+  "status.pending": "زیر التواء",
+  "status.inProgress": "جاری ہے",
+  "status.completed": "مکمل",
+  "status.cancelled": "منسوخ",
+  "auth.uploadPhoto": "پروفائل تصویر"
 }
