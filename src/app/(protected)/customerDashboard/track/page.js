@@ -75,17 +75,15 @@ export default function TrackingOverview() {
 
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}
-            className={`flex items-center gap-3 px-5 py-3.5 rounded-full border w-full md:w-80 shadow-md transition-all duration-300 focus-within:shadow-orange-500/20 focus-within:ring-2 focus-within:ring-orange-500/50 focus-within:border-orange-500 hover:shadow-lg ${
-              dark ? "bg-slate-900/90 border-slate-700 backdrop-blur-md" : "bg-white border-slate-200 backdrop-blur-md"
-            }`}
+            className="cd-search-bar"
           >
-            <Search className={`w-5 h-5 ${dark ? "text-orange-400" : "text-orange-500"}`} />
+            <Search className={`w-5 h-5 shrink-0 ${dark ? "text-orange-400" : "text-orange-500"}`} />
             <input 
               type="text" 
               placeholder={isUrdu ? "تلاش کریں..." : "Search bookings..."}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={`bg-transparent border-none outline-none w-full text-sm font-medium placeholder:text-slate-400 ${dark ? "text-white" : "text-slate-900"}`}
+              className="cd-search-input"
             />
           </motion.div>
         </div>
