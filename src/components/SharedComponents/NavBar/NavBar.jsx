@@ -5,11 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   Sun, Moon, Globe, Home, Wrench, Users, HelpCircle, 
-  MessageCircle, User, PlusCircle
+  MessageCircle, User, PlusCircle, Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useNotifications } from "@/context/NotificationContext";
 import "@/styles/navbar.css";
 
 export default function Navbar({ type = "public" }) {
@@ -18,6 +19,7 @@ export default function Navbar({ type = "public" }) {
   const { theme, toggleTheme } = useTheme();
   const darkMode = theme === "dark";
   const { t, locale, changeLanguage } = useLanguage();
+  const { permission, requestPermission } = useNotifications();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -93,6 +95,19 @@ export default function Navbar({ type = "public" }) {
           >
             <Globe size={18} />
             <span>{locale}</span>
+          </button>
+
+          <button 
+            onClick={requestPermission}
+            className={`svx-icon relative ${permission === "granted" ? "text-orange-500" : ""}`}
+            title={permission === "granted" ? "Notifications Enabled" : "Enable Push Notifications"}
+          >
+            <Bell size={18} />
+            {permission === "granted" ? (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full" />
+            ) : (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full animate-ping" />
+            )}
           </button>
 
           <div className="svx-sep"></div>

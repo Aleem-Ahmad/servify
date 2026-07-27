@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { cookies } from "next/headers";
+import { eventBus, EVENTS } from "@/lib/eventBus";
 
 // Helper function to get current user from cookies
 async function getCurrentUserId() {
@@ -123,6 +124,17 @@ export async function POST(request, { params }) {
       }
     });
 
+    // Publish event for real-time notifications
+    eventBus.publish(EVENTS.BARGAIN_OFFER_MADE, {
+      bookingId: id,
+      offerId: offer.id,
+      proposerId: userId,
+      proposerType,
+      proposedPrice,
+      message: message || '',
+      targetId: proposerType === 'customer' ? booking.providerId : booking.customerId,
+    }).catch(err => console.error('[EventBus] bargain offer error:', err));
+
     return NextResponse.json({ success: true, offer });
   } catch (error) {
     console.error("Error creating bargain offer:", error);
@@ -230,6 +242,14 @@ export async function PUT(request, { params }) {
         data: { status: 'Rejected' }
       });
 
+      eventBus.publish(EVENTS.BARGAIN_OFFER_ACCEPTED, {
+        bookingId: id,
+        offerId,
+        agreedPrice: offer.proposedPrice,
+        customerId: booking.customerId,
+        providerId: providerIdToAssign,
+      }).catch(err => console.error('[EventBus] bargain accept error:', err));
+
       return NextResponse.json({ success: true, message: "Offer accepted", agreedPrice: offer.proposedPrice });
     } else {
       // Reject the offer
@@ -237,6 +257,13 @@ export async function PUT(request, { params }) {
         where: { id: offerId },
         data: { status: 'Rejected' }
       });
+
+      eventBus.publish('bargain.offer_rejected', {
+        bookingId: id,
+        offerId,
+        proposerId: offer.proposerId,
+        targetId: offer.proposerId,
+      }).catch(err => console.error('[EventBus] bargain reject error:', err));
 
       return NextResponse.json({ success: true, message: "Offer rejected" });
     }

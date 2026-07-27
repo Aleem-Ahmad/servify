@@ -163,11 +163,13 @@ export default function ProviderDashboard() {
           <div>
             <motion.div 
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4 ${
-                dark ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" : "bg-purple-50 text-purple-600 border border-purple-200"
-              }`}
+              className="flex items-center gap-3 mb-4"
             >
-              <Briefcase className="w-3.5 h-3.5" /> {isUrdu ? "پرووائیڈر ڈیش بورڈ" : "Provider Dashboard"}
+              <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${
+                dark ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" : "bg-purple-50 text-purple-600 border border-purple-200"
+              }`}>
+                <Briefcase className="w-3.5 h-3.5" /> {isUrdu ? "پرووائیڈر ڈیش بورڈ" : "Provider Dashboard"}
+              </div>
             </motion.div>
             <motion.h1 
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}

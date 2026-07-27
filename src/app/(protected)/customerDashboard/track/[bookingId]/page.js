@@ -25,7 +25,8 @@ export default function TrackBooking() {
   const { bookingId } = useParams();
   const { theme } = useTheme();
   const dark = theme === "dark";
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const isUrdu = locale === "ur";
 
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -263,6 +264,35 @@ export default function TrackBooking() {
       alert("Network error. Please try again.");
     }
   };
+  
+  // Cancel booking
+  const handleCancelBooking = async () => {
+    if (!confirm(isUrdu ? "کیا آپ واقعی اس بکنگ کو منسوخ کرنا چاہتے ہیں؟" : "Are you sure you want to cancel this booking?")) return;
+
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'Cancelled'
+        })
+      });
+
+      if (res.ok) {
+        alert(isUrdu ? "بکنگ کامیابی سے منسوخ کر دی گئی ہے۔" : "Booking cancelled successfully.");
+        // Refresh booking details
+        const bookingRes = await fetch(`/api/bookings/${bookingId}`);
+        if (bookingRes.ok) {
+          setBooking(await bookingRes.json());
+        }
+      } else {
+        const errorData = await res.json();
+        alert(isUrdu ? "منسوخی ناکام ہو گئی: " + (errorData.message || "نامعلوم خرابی") : "Failed to cancel booking: " + (errorData.message || "Unknown error"));
+      }
+    } catch (error) {
+      alert(isUrdu ? "نیٹ ورک کی خرابی۔ دوبارہ کوشش کریں۔" : "Network error. Please try again.");
+    }
+  };
 
   // Simulate provider movement on the map if job is active
   useEffect(() => {
@@ -366,7 +396,26 @@ export default function TrackBooking() {
         
         {/* ── MAP CONTAINER OR WAITING BANNER ── */}
         <div className="flex-1 min-h-[300px] lg:min-h-0">
-          {isPending ? (
+          {booking.status === "Cancelled" || booking.status === "Rejected" ? (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
+              className={`w-full h-full rounded-[2.5rem] p-10 flex flex-col items-center justify-center text-center border relative overflow-hidden ${
+                dark ? "bg-slate-900/60 border-slate-800" : "bg-white border-slate-200"
+              }`}
+            >
+              <div className="w-20 h-20 bg-red-500/15 rounded-full flex items-center justify-center text-red-500 mb-6">
+                <X className="w-12 h-12" />
+              </div>
+              <h2 className="text-3xl font-black mb-3">
+                {booking.status === "Cancelled" ? (isUrdu ? "شکایت منسوخ کر دی گئی" : "Booking Cancelled") : (isUrdu ? "شکایت مسترد کر دی گئی" : "Booking Rejected")}
+              </h2>
+              <p className={`max-w-md text-sm leading-relaxed ${dark ? "text-slate-400" : "text-slate-500"}`}>
+                {booking.status === "Cancelled" 
+                  ? (isUrdu ? "یہ بکنگ درخواست آپ کی طرف سے منسوخ کر دی گئی ہے۔" : "This service request has been cancelled by you.") 
+                  : (isUrdu ? "یہ بکنگ درخواست سروس پرووائیڈر کی طرف سے مسترد کر دی گئی ہے۔" : "This service request was rejected by the provider.")}
+              </p>
+            </motion.div>
+          ) : isPending ? (
             <motion.div 
               initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
               className={`w-full h-full rounded-[2.5rem] p-10 flex flex-col items-center justify-center text-center border relative overflow-hidden ${
@@ -641,7 +690,7 @@ export default function TrackBooking() {
             )}
 
             {/* Quick Actions */}
-            {isAccepted && (
+            {isAccepted && booking.status === "In-Progress" && (
               <div className="space-y-2.5 mt-auto">
                 <a href={`tel:${booking.providerPhone || "03000000000"}`} className="w-full py-3.5 rounded-xl flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-bold shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.01] text-sm text-center">
                   <Phone className="w-4.5 h-4.5" /> Call Provider
@@ -651,6 +700,30 @@ export default function TrackBooking() {
                 }`}>
                   <MessageSquare className="w-4.5 h-4.5" /> Send Message
                 </a>
+              </div>
+            )}
+
+            {(isPending || booking.status === "Accepted") && (
+              <div className="space-y-2.5 mt-auto">
+                {booking.status === "Accepted" && (
+                  <>
+                    <a href={`tel:${booking.providerPhone || "03000000000"}`} className="w-full py-3.5 rounded-xl flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-bold shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.01] text-sm text-center">
+                      <Phone className="w-4.5 h-4.5" /> Call Provider
+                    </a>
+                    <a href="#booking-chat" className={`w-full py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold transition-all border text-sm ${
+                      dark ? "bg-slate-800 hover:bg-slate-700 text-white border-slate-700" : "bg-slate-100 hover:bg-slate-200 text-slate-900 border-slate-200"
+                    }`}>
+                      <MessageSquare className="w-4.5 h-4.5" /> Send Message
+                    </a>
+                  </>
+                )}
+                
+                <button
+                  onClick={handleCancelBooking}
+                  className="w-full py-3.5 rounded-xl flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold transition-all text-sm text-center shadow-lg shadow-red-500/10 border-none outline-none cursor-pointer"
+                >
+                  <X className="w-4.5 h-4.5" /> {isUrdu ? "بکنگ منسوخ کریں" : "Cancel Booking"}
+                </button>
               </div>
             )}
           </div>

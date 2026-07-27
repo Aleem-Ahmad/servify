@@ -1,14 +1,24 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { eventBus, EVENTS } from '@/lib/eventBus';
+import { withRetry } from '@/lib/retry';
+import { bookingRateLimit } from '@/lib/rateLimit';
 
 export async function PATCH(request, { params }) {
+  // Rate limiting
+  const rl = await bookingRateLimit(request);
+  if (!rl.allowed) return rl.response;
+
   try {
     const { id } = await params;
     const { status, providerId, providerName, visitTime, otp } = await request.json();
     console.log(`PATCH booking id=${id} status=${status} providerId=${providerId} otp=${otp}`);
 
     if (status === "In-Progress") {
-      const booking = await prisma.booking.findUnique({ where: { id } });
+      const booking = await withRetry(
+        () => prisma.booking.findUnique({ where: { id } }),
+        { label: 'find-booking-otp-check', retries: 2 }
+      );
       if (!booking) {
         return NextResponse.json({ success: false, message: "Booking not found" }, { status: 404 });
       }
@@ -25,13 +35,19 @@ export async function PATCH(request, { params }) {
     if (providerId) {
       updateData.providerId = providerId;
       
-      const providerUser = await prisma.user.findUnique({ where: { id: providerId } });
+      const providerUser = await withRetry(
+        () => prisma.user.findUnique({ where: { id: providerId } }),
+        { label: 'find-provider-user', retries: 2 }
+      );
       if (providerUser) {
         updateData.providerName = providerUser.name;
         updateData.providerPhone = providerUser.phone || undefined;
         updateData.hourlyRate = Number(providerUser.rate) || 0;
         
-        const booking = await prisma.booking.findUnique({ where: { id } });
+        const booking = await withRetry(
+          () => prisma.booking.findUnique({ where: { id } }),
+          { label: 'find-booking-hours', retries: 2 }
+        );
         if (booking) {
           const hours = Number(booking.hours) || 1;
           updateData.budget = (Number(providerUser.rate) || 0) * hours;
@@ -47,10 +63,30 @@ export async function PATCH(request, { params }) {
       updateData.visitTime = new Date(visitTime);
     }
 
-    const result = await prisma.booking.update({
-      where: { id },
-      data: updateData
-    });
+    const result = await withRetry(
+      () => prisma.booking.update({ where: { id }, data: updateData }),
+      { label: 'update-booking-status', retries: 3 }
+    );
+
+    // ── Publish event to the message bus ──────────────────────────────────────
+    const eventMap = {
+      'Accepted':    EVENTS.BOOKING_ACCEPTED,
+      'Cancelled':   EVENTS.BOOKING_CANCELLED,
+      'Completed':   EVENTS.BOOKING_COMPLETED,
+      'Rejected':    EVENTS.BOOKING_REJECTED,
+      'In-Progress': EVENTS.BOOKING_IN_PROGRESS,
+    };
+    const eventName = eventMap[status];
+    if (eventName) {
+      eventBus.publish(eventName, {
+        bookingId: id,
+        status,
+        providerId: result.providerId,
+        customerId: result.customerId,
+        providerName: result.providerName,
+        customerName: result.customerName,
+      }).catch((err) => console.error('[EventBus] publish error:', err));
+    }
 
     return NextResponse.json({
       success: true,
@@ -69,12 +105,10 @@ export async function PATCH(request, { params }) {
 export async function GET(request, { params }) {
   try {
     const { id } = await params;
-    let booking = await prisma.booking.findUnique({
-      where: { id },
-      include: {
-        provider: true
-      }
-    });
+    let booking = await withRetry(
+      () => prisma.booking.findUnique({ where: { id }, include: { provider: true } }),
+      { label: 'get-booking', retries: 2 }
+    );
 
     if (!booking) {
       return NextResponse.json({ message: "Booking not found" }, { status: 404 });
@@ -82,11 +116,14 @@ export async function GET(request, { params }) {
 
     if (!booking.otp) {
       const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
-      booking = await prisma.booking.update({
-        where: { id },
-        data: { otp: generatedOtp },
-        include: { provider: true }
-      });
+      booking = await withRetry(
+        () => prisma.booking.update({
+          where: { id },
+          data: { otp: generatedOtp },
+          include: { provider: true }
+        }),
+        { label: 'set-booking-otp', retries: 2 }
+      );
     }
 
     return NextResponse.json({

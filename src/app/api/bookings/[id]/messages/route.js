@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import prisma from "@/lib/prisma";
+import { eventBus } from "@/lib/eventBus";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -104,6 +105,17 @@ export async function POST(request, { params }) {
         },
       },
     });
+
+    // Publish event to notify peer
+    const recipientId = booking.customerId === userId ? booking.providerId : booking.customerId;
+    eventBus.publish('chat.message', {
+      bookingId: id,
+      messageId: message.id,
+      senderId: userId,
+      senderName: message.sender?.name || 'Someone',
+      recipientId,
+      body: text,
+    }).catch(err => console.error('[EventBus] chat message error:', err));
 
     return NextResponse.json({
       success: true,

@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { eventBus, EVENTS } from '@/lib/eventBus';
+import { withRetry } from '@/lib/retry';
+import { bookingRateLimit, apiRateLimit } from '@/lib/rateLimit';
 
 export async function POST(request) {
+  const rl = await bookingRateLimit(request);
+  if (!rl.allowed) return rl.response;
+
   try {
     const bookingData = await request.json();
     
@@ -12,32 +18,44 @@ export async function POST(request) {
 
     const otp = bookingData.otp || Math.floor(1000 + Math.random() * 9000).toString();
 
-    const newBooking = await prisma.booking.create({
-      data: {
-        customerId: bookingData.userId,
-        providerId: bookingData.providerId || null,
-        service: bookingData.category,
-        details: bookingData.description,
-        voiceUrl: bookingData.voiceUrl || null,
-        mediaUrls: bookingData.mediaUrls || [],
-        urgency: bookingData.urgency || 'Normal',
-        hours: hours,
-        hourlyRate: hourlyRate,
-        budget: calculatedBudget,
-        customerName: bookingData.customerName,
-        customerPhone: bookingData.customerPhone,
-        customerAddress: bookingData.customerAddress,
-        locationStr: bookingData.location,
-        providerName: bookingData.providerName,
-        date: bookingData.date ? new Date(bookingData.date) : new Date(),
-        status: "Pending",
-        payment: {
-          method: bookingData.paymentMethod || 'Cash',
-          status: 'Unpaid'
-        },
-        otp: otp
-      }
-    });
+    const newBooking = await withRetry(
+      () => prisma.booking.create({
+        data: {
+          customerId: bookingData.userId,
+          providerId: bookingData.providerId || null,
+          service: bookingData.category,
+          details: bookingData.description,
+          voiceUrl: bookingData.voiceUrl || null,
+          mediaUrls: bookingData.mediaUrls || [],
+          urgency: bookingData.urgency || 'Normal',
+          hours: hours,
+          hourlyRate: hourlyRate,
+          budget: calculatedBudget,
+          customerName: bookingData.customerName,
+          customerPhone: bookingData.customerPhone,
+          customerAddress: bookingData.customerAddress,
+          locationStr: bookingData.location,
+          providerName: bookingData.providerName,
+          date: bookingData.date ? new Date(bookingData.date) : new Date(),
+          status: "Pending",
+          payment: {
+            method: bookingData.paymentMethod || 'Cash',
+            status: 'Unpaid'
+          },
+          otp: otp
+        }
+      }),
+      { label: 'create-booking', retries: 2 }
+    );
+
+    // Publish booking.created event
+    eventBus.publish(EVENTS.BOOKING_CREATED, {
+      bookingId: newBooking.id,
+      customerId: newBooking.customerId,
+      service: newBooking.service,
+      urgency: newBooking.urgency,
+      providerId: newBooking.providerId,
+    }).catch((err) => console.error('[EventBus] publish error:', err));
 
     return NextResponse.json({
       success: true,
@@ -55,6 +73,9 @@ export async function POST(request) {
 }
 
 export async function GET(request) {
+  const rl = await apiRateLimit(request);
+  if (!rl.allowed) return rl.response;
+
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
@@ -66,7 +87,10 @@ export async function GET(request) {
     }
     
     if (providerId) {
-      const providerUser = await prisma.user.findUnique({ where: { id: providerId } });
+      const providerUser = await withRetry(
+        () => prisma.user.findUnique({ where: { id: providerId } }),
+        { label: 'get-provider-category', retries: 2 }
+      );
       const providerCategory = providerUser?.category;
 
       query = {
@@ -81,15 +105,18 @@ export async function GET(request) {
       };
     }
 
-    let bookings = await prisma.booking.findMany({
-      where: query,
-      include: {
-        provider: {
-          select: { name: true, phone: true }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    });
+    let bookings = await withRetry(
+      () => prisma.booking.findMany({
+        where: query,
+        include: {
+          provider: {
+            select: { name: true, phone: true }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      }),
+      { label: 'list-bookings', retries: 2 }
+    );
 
     // Robust Auto-OTP Generation and DB Persistence
     for (let b of bookings) {
