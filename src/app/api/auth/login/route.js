@@ -100,6 +100,13 @@ export async function POST(request) {
       maxAge: 60 * 60 * 24 * 7,
       path: '/',
     });
+    response.cookies.set('userRole', user.role, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    });
 
     return response;
   } catch (error) {

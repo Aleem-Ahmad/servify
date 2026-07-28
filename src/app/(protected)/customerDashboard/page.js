@@ -401,6 +401,8 @@ export default function CustomerDashboard() {
                     src={provider.image || "/default-avatar.png"}
                     alt={provider.name}
                     className="cd-provider-img"
+                    fetchPriority="high"
+                    loading="eager"
                   />
                   <div className="flex-1 min-w-0 cd-provider-info">
                     <strong>{provider.name}</strong>

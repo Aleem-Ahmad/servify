@@ -117,6 +117,7 @@ export async function middleware(request) {
     try {
       const cookieStore = await cookies();
       const userId = cookieStore.get('userId')?.value;
+      const userRole = cookieStore.get('userRole')?.value;
       
       if (!userId) {
         // Redirect to authentication page for protected routes
@@ -125,13 +126,26 @@ export async function middleware(request) {
         return NextResponse.redirect(redirectUrl);
       }
       
+      // Role-based access control
+      if (pathname.startsWith('/providerDashboard') && userRole !== 'provider') {
+        return NextResponse.redirect(new URL('/customerDashboard', request.url));
+      }
+      
+      if (pathname.startsWith('/customerDashboard') && userRole !== 'customer') {
+        return NextResponse.redirect(new URL('/providerDashboard', request.url));
+      }
+      
+      if (pathname.startsWith('/adminDashboard') && userRole !== 'admin') {
+        return NextResponse.redirect(new URL('/', request.url));
+      }
+      
       // Add user info to headers for API routes
       if (pathname.startsWith('/api')) {
         response.headers.set('x-user-id', userId);
+        if (userRole) {
+          response.headers.set('x-user-role', userRole);
+        }
       }
-      
-      // Note: Role-based access control should be handled in API routes
-      // since we don't have full user metadata in cookies
       
     } catch (error) {
       console.error('Middleware authentication error:', error);

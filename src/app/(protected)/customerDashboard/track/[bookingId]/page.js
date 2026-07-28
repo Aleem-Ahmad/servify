@@ -489,7 +489,7 @@ export default function TrackBooking() {
           {/* Provider Profile Summary Header */}
           <div className="p-8 pb-6 border-b border-slate-200 dark:border-slate-800 text-center">
             <div className="w-20 h-20 mx-auto rounded-full bg-slate-200 dark:bg-slate-800 border-4 border-orange-500/30 overflow-hidden mb-4">
-              <img src={booking.providerImage || "/default-avatar.png"} alt="Provider" className="w-full h-full object-cover" onError={(e) => { e.target.src = "/default-avatar.png"; }} />
+              <img src={booking.providerImage || "/default-avatar.png"} alt="Provider" className="w-full h-full object-cover" fetchPriority="high" loading="eager" onError={(e) => { e.target.src = "/default-avatar.png"; }} />
             </div>
             
             <h2 className="text-xl font-black mb-1">{booking.providerName || "Unassigned Specialist"}</h2>
@@ -660,14 +660,14 @@ export default function TrackBooking() {
                       placeholder="Enter your price (PKR)"
                       value={bargainPrice}
                       onChange={(e) => setBargainPrice(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none focus:ring-2 focus:ring-orange-500/50 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                      className="w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none focus:ring-2 focus:ring-orange-500/50 bg-white text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                     />
                     <textarea
                       placeholder="Add a message (optional)"
                       value={bargainMessage}
                       onChange={(e) => setBargainMessage(e.target.value)}
                       rows={2}
-                      className="w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none focus:ring-2 focus:ring-orange-500/50 dark:bg-slate-800 dark:border-slate-700 dark:text-white resize-none"
+                      className="w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none focus:ring-2 focus:ring-orange-500/50 bg-white text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white resize-none"
                     />
                     <div className="flex gap-2">
                       <button

@@ -13,11 +13,13 @@ import {
 } from "lucide-react";
 
 export default function ShopPage() {
+  const router = useRouter();
   const { t } = useLanguage();
   const { theme } = useTheme();
   const { user, logout } = useAuth();
   const dark = theme === "dark";
   const fileInputRef = useRef(null);
+  const avatarInputRef = useRef(null);
   
   const [isEditing, setIsEditing] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
@@ -276,6 +278,31 @@ export default function ShopPage() {
     } catch(e) { console.error("Failed to remove member"); }
   };
 
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch('/api/user/upload-avatar', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        setUser(prev => ({ ...prev, image: data.url }));
+        alert("Profile picture updated successfully!");
+      } else {
+        alert(data.message || "Failed to update profile picture");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error uploading image");
+    }
+  };
+
   return (
     <div className={`dashboard-shop-container ${dark ? "dark" : ""}`}>
       
@@ -283,8 +310,9 @@ export default function ShopPage() {
       <div className="shop-premium-header">
         <div className="profile-hero">
           <div className="avatar-wrapper">
-             <img src={user?.image || (user?.documents?.profile) || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'P')}&background=ff7a00&color=fff&size=150`} alt="Profile" className="main-avatar" />
-             <button className="upload-badge" title="Change Photo"><Camera size={16} /></button>
+             <img src={user?.image || (user?.documents?.profile) || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'P')}&background=ff7a00&color=fff&size=150`} alt="Profile" className="main-avatar" fetchPriority="high" loading="eager" />
+             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleAvatarUpload} />
+             <button className="upload-badge" title="Change Photo" onClick={() => fileInputRef.current?.click()}><Camera size={16} /></button>
           </div>
           <div className="hero-text">
             <h1>{shopData.shopName}</h1>
