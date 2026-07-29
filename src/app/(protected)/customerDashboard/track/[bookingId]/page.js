@@ -624,18 +624,18 @@ export default function TrackBooking() {
                         <div className="text-lg font-black text-orange-500">PKR {offer.proposedPrice}</div>
                         {offer.message && <p className="text-xs text-slate-500 mt-1">{offer.message}</p>}
                         {offer.status === 'Pending' && offer.proposerType === 'provider' && (
-                          <div className="flex gap-2 mt-2">
+                          <div className="flex gap-2.5 mt-3">
                             <button
                               onClick={() => handleAcceptOffer(offer.id)}
-                              className="flex-1 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors"
+                              className="flex-1 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-extrabold text-xs tracking-wide shadow-md shadow-emerald-500/25 transition-all duration-150"
                             >
-                              Accept
+                              ✓ Accept Offer
                             </button>
                             <button
                               onClick={() => handleRejectOffer(offer.id)}
-                              className="flex-1 py-1.5 rounded-lg bg-red-500 text-white text-xs font-bold hover:bg-red-600 transition-colors"
+                              className="flex-1 py-2 rounded-xl bg-red-500 hover:bg-red-600 active:scale-95 text-white font-extrabold text-xs tracking-wide shadow-md shadow-red-500/25 transition-all duration-150"
                             >
-                              Reject
+                              ✕ Reject
                             </button>
                           </div>
                         )}
@@ -643,45 +643,59 @@ export default function TrackBooking() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-500 mb-3">No offers yet. Start negotiating!</p>
+                  <p className={`text-xs font-medium mb-3 ${dark ? "text-slate-400" : "text-slate-600"}`}>
+                    No offers yet. Start negotiating!
+                  </p>
                 )}
 
                 {!showBargaining ? (
                   <button
                     onClick={() => setShowBargaining(true)}
-                    className="w-full py-2.5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-bold text-xs shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.01]"
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-orange-500/25 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
                   >
-                    {booking.bargainingStatus === 'Agreed' ? 'Renegotiate Price' : 'Propose Your Price'}
+                    {booking.bargainingStatus === 'Agreed' ? '↺ Renegotiate Price' : '💰 Propose Your Price'}
                   </button>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     <input
                       type="number"
                       placeholder="Enter your price (PKR)"
                       value={bargainPrice}
                       onChange={(e) => setBargainPrice(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none focus:ring-2 focus:ring-orange-500/50 bg-white text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                      className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-semibold outline-none transition-all focus:ring-2 focus:ring-orange-500/50 ${
+                        dark 
+                          ? "bg-slate-900 border-slate-700 text-white placeholder-slate-400" 
+                          : "bg-white border-slate-300 text-slate-900 placeholder-slate-500"
+                      }`}
                     />
                     <textarea
                       placeholder="Add a message (optional)"
                       value={bargainMessage}
                       onChange={(e) => setBargainMessage(e.target.value)}
                       rows={2}
-                      className="w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none focus:ring-2 focus:ring-orange-500/50 bg-white text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white resize-none"
+                      className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-orange-500/50 resize-none ${
+                        dark 
+                          ? "bg-slate-900 border-slate-700 text-white placeholder-slate-400" 
+                          : "bg-white border-slate-300 text-slate-900 placeholder-slate-500"
+                      }`}
                     />
-                    <div className="flex gap-2">
+                    <div className="flex gap-2.5 pt-1">
                       <button
                         onClick={() => setShowBargaining(false)}
-                        className="flex-1 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                        className={`flex-1 py-2.5 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-colors border ${
+                          dark 
+                            ? "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700" 
+                            : "bg-slate-200 hover:bg-slate-300 text-slate-800 border-slate-300"
+                        }`}
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleSubmitBargain}
                         disabled={submittingBargain}
-                        className="flex-1 py-2 rounded-lg bg-orange-500 text-white font-bold text-xs hover:bg-orange-600 transition-colors disabled:opacity-50"
+                        className="flex-2 flex-[2] py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs uppercase tracking-wider shadow-md shadow-orange-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {submittingBargain ? 'Submitting...' : 'Submit Offer'}
+                        {submittingBargain ? 'Submitting...' : 'Submit Offer →'}
                       </button>
                     </div>
                   </div>

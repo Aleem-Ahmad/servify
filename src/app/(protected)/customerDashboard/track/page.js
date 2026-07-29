@@ -162,8 +162,10 @@ export default function TrackingOverview() {
                     
                     <button 
                       onClick={() => router.push(`/customerDashboard/track/${booking.id || booking._id}`)}
-                      className={`px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all ${
-                        dark ? "bg-slate-800 hover:bg-slate-700 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-900"
+                      className={`px-5 py-2.5 rounded-xl font-extrabold text-xs uppercase tracking-wider flex items-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 ${
+                        dark 
+                          ? "bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-orange-500/20" 
+                          : "bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-orange-500/25"
                       }`}
                     >
                       {isUrdu ? "ٹریک کریں" : "Track"} <ChevronRight className="w-4 h-4" />

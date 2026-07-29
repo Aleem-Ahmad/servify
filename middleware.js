@@ -20,24 +20,24 @@ const securityHeaders = {
 function checkRateLimit(ip, limit = 100, window = 60000) {
   const now = Date.now();
   const windowStart = now - window;
-  
+
   // Clean up old entries
   for (const [key, value] of rateLimit.entries()) {
     if (value.timestamp < windowStart) {
       rateLimit.delete(key);
     }
   }
-  
+
   const record = rateLimit.get(ip) || { count: 0, timestamp: now };
-  
+
   if (record.timestamp < windowStart) {
     record.count = 0;
     record.timestamp = now;
   }
-  
+
   record.count++;
   rateLimit.set(ip, record);
-  
+
   return record.count <= limit;
 }
 
@@ -67,16 +67,16 @@ const publicPaths = [
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
   const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
-  
+
   // Skip rate limiting for static assets, images, and non-critical GET endpoints
-  const skipRateLimit = pathname.startsWith('/_next') || 
-                        pathname.startsWith('/favicon') ||
-                        pathname.endsWith('.css') ||
-                        pathname.endsWith('.js') ||
-                        pathname.endsWith('.png') ||
-                        pathname.endsWith('.jpg') ||
-                        pathname.endsWith('.svg') ||
-                        (pathname.includes('/bargain') && request.method === 'GET');
+  const skipRateLimit = pathname.startsWith('/_next') ||
+    pathname.startsWith('/favicon') ||
+    pathname.endsWith('.css') ||
+    pathname.endsWith('.js') ||
+    pathname.endsWith('.png') ||
+    pathname.endsWith('.jpg') ||
+    pathname.endsWith('.svg') ||
+    (pathname.includes('/bargain') && request.method === 'GET');
 
   // Apply rate limiting (500 requests per minute, generous for dashboard polling)
   if (!skipRateLimit && !checkRateLimit(ip, 500, 60000)) {
@@ -85,14 +85,14 @@ export async function middleware(request) {
       { status: 429, headers: { 'Retry-After': '60' } }
     );
   }
-  
+
   // Apply security headers to all responses
   const response = NextResponse.next();
-  
+
   Object.entries(securityHeaders).forEach(([key, value]) => {
     response.headers.set(key, value);
   });
-  
+
   // CORS headers for API routes
   if (pathname.startsWith('/api')) {
     response.headers.set('Access-Control-Allow-Credentials', 'true');
@@ -102,45 +102,45 @@ export async function middleware(request) {
       'Access-Control-Allow-Headers',
       'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
     );
-    
+
     // Handle preflight requests
     if (request.method === 'OPTIONS') {
       return new NextResponse(null, { status: 204, headers: response.headers });
     }
   }
-  
+
   // Authentication check for protected paths
   const normalizedPath = pathname.toLowerCase();
   const isProtectedPath = protectedPaths.some(path => normalizedPath.startsWith(path.toLowerCase()));
-  
+
   if (isProtectedPath) {
     try {
       const cookieStore = await cookies();
       const userId = cookieStore.get('userId')?.value;
       const userRole = cookieStore.get('userRole')?.value;
-      
+
       if (!userId) {
         // Redirect to authentication page for protected routes
         const redirectUrl = new URL('/authentication', request.url);
         redirectUrl.searchParams.set('redirect', pathname);
         return NextResponse.redirect(redirectUrl);
       }
-      
+
       // Role-based access control (only enforce if userRole is explicitly present)
       if (userRole) {
         if (normalizedPath.startsWith('/providerdashboard') && userRole !== 'provider') {
           return NextResponse.redirect(new URL('/customerDashboard', request.url));
         }
-        
+
         if (normalizedPath.startsWith('/customerdashboard') && userRole !== 'customer') {
           return NextResponse.redirect(new URL('/providerDashboard', request.url));
         }
-        
+
         if (normalizedPath.startsWith('/admindashboard') && userRole !== 'admin') {
           return NextResponse.redirect(new URL('/', request.url));
         }
       }
-      
+
       // Add user info to headers for API routes
       if (pathname.startsWith('/api')) {
         response.headers.set('x-user-id', userId);
@@ -148,14 +148,14 @@ export async function middleware(request) {
           response.headers.set('x-user-role', userRole);
         }
       }
-      
+
     } catch (error) {
       console.error('Middleware authentication error:', error);
       // On error, redirect to auth page for safety
       return NextResponse.redirect(new URL('/authentication', request.url));
     }
   }
-  
+
   // CSRF protection for state-changing requests
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method) && pathname.startsWith('/api')) {
     const csrfToken = request.headers.get('x-csrf-token');
@@ -163,7 +163,7 @@ export async function middleware(request) {
     // For now, we'll add a header that can be validated
     response.headers.set('x-csrf-token', 'generate-new-token');
   }
-  
+
   return response;
 }
 

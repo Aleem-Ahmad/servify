@@ -1004,10 +1004,10 @@ function ComplaintsList() {
                               onClick={() => setShowBargaining(prev => ({ ...prev, [c.id]: false }))}
                               style={{
                                 flex: 1, padding: '9px', borderRadius: '10px',
-                                background: dark ? '#1e293b' : '#f1f5f9',
-                                color: dark ? '#94a3b8' : '#475569',
-                                border: dark ? '1px solid #334155' : '1px solid #e2e8f0',
-                                cursor: 'pointer', fontWeight: '700', fontSize: '0.72rem'
+                                background: dark ? '#1e293b' : '#e2e8f0',
+                                color: dark ? '#f1f5f9' : '#0f172a',
+                                border: dark ? '1px solid #334155' : '1px solid #cbd5e1',
+                                cursor: 'pointer', fontWeight: '800', fontSize: '0.72rem'
                               }}
                             >Cancel</button>
                             <button
