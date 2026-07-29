@@ -1,3 +1,5 @@
+// This File is the authentication for SUPBASE OAUTH
+// This is how google signup showing
 "use client";
 
 import { useEffect, useState } from "react";
