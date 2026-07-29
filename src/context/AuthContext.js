@@ -35,6 +35,17 @@ export function AuthProvider({ children }) {
       setUser(null);
       localStorage.removeItem("servify_user");
       setLoading(false);
+
+      if (typeof window !== "undefined") {
+        const path = window.location.pathname.toLowerCase();
+        if (
+          path.startsWith("/customerdashboard") ||
+          path.startsWith("/providerdashboard") ||
+          path.startsWith("/admindashboard")
+        ) {
+          window.location.href = "/authentication";
+        }
+      }
     };
     initAuth();
   }, []);

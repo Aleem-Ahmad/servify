@@ -110,10 +110,10 @@ export async function middleware(request) {
   }
   
   // Authentication check for protected paths
-  const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
-  const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
+  const normalizedPath = pathname.toLowerCase();
+  const isProtectedPath = protectedPaths.some(path => normalizedPath.startsWith(path.toLowerCase()));
   
-  if (isProtectedPath && !isPublicPath) {
+  if (isProtectedPath) {
     try {
       const cookieStore = await cookies();
       const userId = cookieStore.get('userId')?.value;
@@ -127,15 +127,15 @@ export async function middleware(request) {
       }
       
       // Role-based access control
-      if (pathname.startsWith('/providerDashboard') && userRole !== 'provider') {
+      if (normalizedPath.startsWith('/providerdashboard') && userRole !== 'provider') {
         return NextResponse.redirect(new URL('/customerDashboard', request.url));
       }
       
-      if (pathname.startsWith('/customerDashboard') && userRole !== 'customer') {
+      if (normalizedPath.startsWith('/customerdashboard') && userRole !== 'customer') {
         return NextResponse.redirect(new URL('/providerDashboard', request.url));
       }
       
-      if (pathname.startsWith('/adminDashboard') && userRole !== 'admin') {
+      if (normalizedPath.startsWith('/admindashboard') && userRole !== 'admin') {
         return NextResponse.redirect(new URL('/', request.url));
       }
       
