@@ -677,4 +677,279 @@
 
 .dark .cd-search-input::placeholder {
   color: #94a3b8;
+}
+
+/* ── Track Page — Booking card "Track" button ── */
+.cd-track-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff7a00, #ffab40);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(255, 122, 0, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  white-space: nowrap;
+}
+
+.cd-track-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 122, 0, 0.45);
+  background: linear-gradient(135deg, #f06a00, #ff9a00);
+}
+
+.cd-track-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(255, 122, 0, 0.3);
+}
+
+/* ── Track Detail — Action buttons ── */
+.cd-action-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  text-decoration: none;
+}
+
+.cd-action-btn:hover {
+  transform: translateY(-1px);
+}
+
+.cd-action-btn:active {
+  transform: translateY(0);
+}
+
+/* Call Provider — orange gradient */
+.cd-action-btn-call {
+  background: linear-gradient(135deg, #ff7a00, #ffab40);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(255, 122, 0, 0.3);
+}
+
+.cd-action-btn-call:hover {
+  background: linear-gradient(135deg, #f06a00, #ff9a00);
+  box-shadow: 0 8px 20px rgba(255, 122, 0, 0.4);
+}
+
+/* Send Message — slate secondary */
+.cd-action-btn-chat {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.cd-action-btn-chat:hover {
+  background: #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark .cd-action-btn-chat {
+  background: #1e293b;
+  color: #f1f5f9;
+  border-color: #334155;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dark .cd-action-btn-chat:hover {
+  background: #273549;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Cancel Booking — red */
+.cd-action-btn-cancel {
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+}
+
+.cd-action-btn-cancel:hover {
+  background: #dc2626;
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+}
+
+/* ── Bargaining Section Buttons ── */
+
+/* Propose / Renegotiate Price (full-width CTA) */
+.cd-bargain-propose-btn {
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff7a00, #ffab40);
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(255, 122, 0, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cd-bargain-propose-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(255, 122, 0, 0.45);
+}
+
+.cd-bargain-propose-btn:active {
+  transform: translateY(0);
+}
+
+/* Bargain form: Cancel button */
+.cd-bargain-cancel-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: #e2e8f0;
+  color: #0f172a;
+  border: 1.5px solid #cbd5e1;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.cd-bargain-cancel-btn:hover {
+  background: #cbd5e1;
+}
+
+.dark .cd-bargain-cancel-btn {
+  background: #1e293b;
+  color: #f1f5f9;
+  border-color: #334155;
+}
+
+.dark .cd-bargain-cancel-btn:hover {
+  background: #273549;
+}
+
+/* Bargain form: Submit button */
+.cd-bargain-submit-btn {
+  flex: 2;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff7a00, #ffab40);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 3px 12px rgba(255, 122, 0, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.cd-bargain-submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(255, 122, 0, 0.4);
+}
+
+.cd-bargain-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Offer Accept button */
+.cd-offer-accept-btn {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cd-offer-accept-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+/* Offer Reject button */
+.cd-offer-reject-btn {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 3px 10px rgba(239, 68, 68, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cd-offer-reject-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+/* Bargain input / textarea */
+.cd-bargain-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  outline: none;
+  font-family: inherit;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  color: #0f172a;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.cd-bargain-input::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.cd-bargain-input:focus {
+  border-color: #ff7a00;
+  box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.18);
+}
+
+.dark .cd-bargain-input {
+  border-color: #334155;
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
+.dark .cd-bargain-input::placeholder {
+  color: #64748b;
+}
+
+.dark .cd-bargain-input:focus {
+  border-color: #ff7a00;
+  box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.25);
 }

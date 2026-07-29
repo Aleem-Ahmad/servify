@@ -624,16 +624,16 @@ export default function TrackBooking() {
                         <div className="text-lg font-black text-orange-500">PKR {offer.proposedPrice}</div>
                         {offer.message && <p className="text-xs text-slate-500 mt-1">{offer.message}</p>}
                         {offer.status === 'Pending' && offer.proposerType === 'provider' && (
-                          <div className="flex gap-2.5 mt-3">
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                             <button
                               onClick={() => handleAcceptOffer(offer.id)}
-                              className="flex-1 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-extrabold text-xs tracking-wide shadow-md shadow-emerald-500/25 transition-all duration-150"
+                              className="cd-offer-accept-btn"
                             >
                               ✓ Accept Offer
                             </button>
                             <button
                               onClick={() => handleRejectOffer(offer.id)}
-                              className="flex-1 py-2 rounded-xl bg-red-500 hover:bg-red-600 active:scale-95 text-white font-extrabold text-xs tracking-wide shadow-md shadow-red-500/25 transition-all duration-150"
+                              className="cd-offer-reject-btn"
                             >
                               ✕ Reject
                             </button>
@@ -643,7 +643,7 @@ export default function TrackBooking() {
                     ))}
                   </div>
                 ) : (
-                  <p className={`text-xs font-medium mb-3 ${dark ? "text-slate-400" : "text-slate-600"}`}>
+                  <p style={{ fontSize: '0.8rem', fontWeight: 500, marginBottom: '12px', color: dark ? '#94a3b8' : '#475569' }}>
                     No offers yet. Start negotiating!
                   </p>
                 )}
@@ -651,49 +651,38 @@ export default function TrackBooking() {
                 {!showBargaining ? (
                   <button
                     onClick={() => setShowBargaining(true)}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-orange-500/25 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
+                    className="cd-bargain-propose-btn"
                   >
                     {booking.bargainingStatus === 'Agreed' ? '↺ Renegotiate Price' : '💰 Propose Your Price'}
                   </button>
                 ) : (
-                  <div className="space-y-2.5">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <input
                       type="number"
                       placeholder="Enter your price (PKR)"
                       value={bargainPrice}
                       onChange={(e) => setBargainPrice(e.target.value)}
-                      className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-semibold outline-none transition-all focus:ring-2 focus:ring-orange-500/50 ${
-                        dark 
-                          ? "bg-slate-900 border-slate-700 text-white placeholder-slate-400" 
-                          : "bg-white border-slate-300 text-slate-900 placeholder-slate-500"
-                      }`}
+                      className="cd-bargain-input"
                     />
                     <textarea
                       placeholder="Add a message (optional)"
                       value={bargainMessage}
                       onChange={(e) => setBargainMessage(e.target.value)}
                       rows={2}
-                      className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-orange-500/50 resize-none ${
-                        dark 
-                          ? "bg-slate-900 border-slate-700 text-white placeholder-slate-400" 
-                          : "bg-white border-slate-300 text-slate-900 placeholder-slate-500"
-                      }`}
+                      className="cd-bargain-input"
+                      style={{ resize: 'none' }}
                     />
-                    <div className="flex gap-2.5 pt-1">
+                    <div style={{ display: 'flex', gap: '8px' }}>
                       <button
                         onClick={() => setShowBargaining(false)}
-                        className={`flex-1 py-2.5 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-colors border ${
-                          dark 
-                            ? "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700" 
-                            : "bg-slate-200 hover:bg-slate-300 text-slate-800 border-slate-300"
-                        }`}
+                        className="cd-bargain-cancel-btn"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleSubmitBargain}
                         disabled={submittingBargain}
-                        className="flex-2 flex-[2] py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-xs uppercase tracking-wider shadow-md shadow-orange-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="cd-bargain-submit-btn"
                       >
                         {submittingBargain ? 'Submitting...' : 'Submit Offer →'}
                       </button>
@@ -705,38 +694,34 @@ export default function TrackBooking() {
 
             {/* Quick Actions */}
             {isAccepted && booking.status === "In-Progress" && (
-              <div className="space-y-2.5 mt-auto">
-                <a href={`tel:${booking.providerPhone || "03000000000"}`} className="w-full py-3.5 rounded-xl flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-bold shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.01] text-sm text-center">
-                  <Phone className="w-4.5 h-4.5" /> Call Provider
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: 'auto' }}>
+                <a href={`tel:${booking.providerPhone || "03000000000"}`} className="cd-action-btn cd-action-btn-call">
+                  <Phone style={{ width: 18, height: 18 }} /> Call Provider
                 </a>
-                <a href="#booking-chat" className={`w-full py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold transition-all border text-sm ${
-                  dark ? "bg-slate-800 hover:bg-slate-700 text-white border-slate-700" : "bg-slate-100 hover:bg-slate-200 text-slate-900 border-slate-200"
-                }`}>
-                  <MessageSquare className="w-4.5 h-4.5" /> Send Message
+                <a href="#booking-chat" className="cd-action-btn cd-action-btn-chat">
+                  <MessageSquare style={{ width: 18, height: 18 }} /> Send Message
                 </a>
               </div>
             )}
 
             {(isPending || booking.status === "Accepted") && (
-              <div className="space-y-2.5 mt-auto">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: 'auto' }}>
                 {booking.status === "Accepted" && (
                   <>
-                    <a href={`tel:${booking.providerPhone || "03000000000"}`} className="w-full py-3.5 rounded-xl flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-bold shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.01] text-sm text-center">
-                      <Phone className="w-4.5 h-4.5" /> Call Provider
+                    <a href={`tel:${booking.providerPhone || "03000000000"}`} className="cd-action-btn cd-action-btn-call">
+                      <Phone style={{ width: 18, height: 18 }} /> Call Provider
                     </a>
-                    <a href="#booking-chat" className={`w-full py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold transition-all border text-sm ${
-                      dark ? "bg-slate-800 hover:bg-slate-700 text-white border-slate-700" : "bg-slate-100 hover:bg-slate-200 text-slate-900 border-slate-200"
-                    }`}>
-                      <MessageSquare className="w-4.5 h-4.5" /> Send Message
+                    <a href="#booking-chat" className="cd-action-btn cd-action-btn-chat">
+                      <MessageSquare style={{ width: 18, height: 18 }} /> Send Message
                     </a>
                   </>
                 )}
                 
                 <button
                   onClick={handleCancelBooking}
-                  className="w-full py-3.5 rounded-xl flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold transition-all text-sm text-center shadow-lg shadow-red-500/10 border-none outline-none cursor-pointer"
+                  className="cd-action-btn cd-action-btn-cancel"
                 >
-                  <X className="w-4.5 h-4.5" /> {isUrdu ? "بکنگ منسوخ کریں" : "Cancel Booking"}
+                  <X style={{ width: 18, height: 18 }} /> {isUrdu ? "بکنگ منسوخ کریں" : "Cancel Booking"}
                 </button>
               </div>
             )}
