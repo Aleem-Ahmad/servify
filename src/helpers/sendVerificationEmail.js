@@ -5,7 +5,7 @@ export async function sendVerificationEmail(email, username, verifyCode) {
   try {
     // This allows you to easily change the sender in .env.local
     const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
-    
+
     const { data, error } = await resend.emails.send({
       from: `Servify <${fromEmail}>`,
       to: email,
@@ -14,13 +14,15 @@ export async function sendVerificationEmail(email, username, verifyCode) {
     });
 
     if (error) {
-      console.error("Resend error:", error);
+      // console.error("Resend error:", error);
+      // I just comment above line to hide my errors from other users
       return { success: false, message: error.message || "Failed to send verification email via Resend." };
     }
 
     return { success: true, message: "Verification email sent successfully." };
   } catch (error) {
-    console.error("Error sending verification email (Resend):", error);
+    // console.error("Error sending verification email (Resend):", error);
+    // I just comment above line to hide my errors from other users
     return { success: false, message: "Failed to send verification email." };
   }
 }

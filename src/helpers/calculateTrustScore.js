@@ -1,4 +1,5 @@
-/**
+// I past AI generated  criteria for calculating trust score for provider
+/*
  * Calculates a provider's trust score and assigns a badge.
  * 
  * Logic:
@@ -10,7 +11,7 @@
  */
 export function calculateTrustScore(metrics) {
   const { completedJobs, avgResponseTime, complaintHistory, avgRating } = metrics;
-  
+
   let score = 50; // Starting point
 
   // Job Completion

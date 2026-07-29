@@ -5,6 +5,8 @@ import {
 } from "@/lib/supabaseServer";
 
 // Maximum file size: 5MB
+// 5 * 1024 * 1024 = 5242880 bytes
+// 5 * 1024 = 5120 kb
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
 
 export const uploadImage = async (file, folder = "servify/documents") => {
