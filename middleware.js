@@ -126,17 +126,19 @@ export async function middleware(request) {
         return NextResponse.redirect(redirectUrl);
       }
       
-      // Role-based access control
-      if (normalizedPath.startsWith('/providerdashboard') && userRole !== 'provider') {
-        return NextResponse.redirect(new URL('/customerDashboard', request.url));
-      }
-      
-      if (normalizedPath.startsWith('/customerdashboard') && userRole !== 'customer') {
-        return NextResponse.redirect(new URL('/providerDashboard', request.url));
-      }
-      
-      if (normalizedPath.startsWith('/admindashboard') && userRole !== 'admin') {
-        return NextResponse.redirect(new URL('/', request.url));
+      // Role-based access control (only enforce if userRole is explicitly present)
+      if (userRole) {
+        if (normalizedPath.startsWith('/providerdashboard') && userRole !== 'provider') {
+          return NextResponse.redirect(new URL('/customerDashboard', request.url));
+        }
+        
+        if (normalizedPath.startsWith('/customerdashboard') && userRole !== 'customer') {
+          return NextResponse.redirect(new URL('/providerDashboard', request.url));
+        }
+        
+        if (normalizedPath.startsWith('/admindashboard') && userRole !== 'admin') {
+          return NextResponse.redirect(new URL('/', request.url));
+        }
       }
       
       // Add user info to headers for API routes
