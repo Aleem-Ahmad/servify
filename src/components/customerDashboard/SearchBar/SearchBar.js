@@ -153,6 +153,11 @@ export default function SearchBar() {
   };
 
   const handleSearch = () => {
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      alert("Cannot perform live search while offline. Showing cached data only.");
+      return;
+    }
+
     const params = new URLSearchParams();
     if (query) params.append("search", query);
     if (location) params.append("location", location);

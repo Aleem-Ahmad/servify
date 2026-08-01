@@ -5,6 +5,7 @@ import { LanguageProvider } from "@/context/LanguageContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { NotificationProvider } from "@/context/NotificationContext";
+import OfflineIndicator from "@/components/SharedComponents/OfflineIndicator/OfflineIndicator";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -67,6 +68,7 @@ export default function RootLayout({ children }) {
           <LanguageProvider>
             <AuthProvider>
               <NotificationProvider>
+                <OfflineIndicator />
                 {children}
               </NotificationProvider>
             </AuthProvider>
