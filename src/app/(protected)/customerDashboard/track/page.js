@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
-import { Activity, Clock, MapPin, ChevronRight, Search, ShieldCheck } from "lucide-react";
+import { Activity, Clock, MapPin, ChevronRight, Search, ShieldCheck, MessageCircle } from "lucide-react";
 
 export default function TrackingOverview() {
   const router = useRouter();
@@ -159,13 +159,22 @@ export default function TrackingOverview() {
                       </p>
                       <p className="font-bold">{booking.providerName || "Pending Assignment"}</p>
                     </div>
-                    
-                    <button 
-                      onClick={() => router.push(`/customerDashboard/track/${booking.id || booking._id}`)}
-                      className="cd-track-btn"
-                    >
-                      {isUrdu ? "ٹریک کریں" : "Track"} <ChevronRight className="w-4 h-4" />
-                    </button>
+                    <div className="flex flex-col sm:flex-row items-center gap-2">
+                      <button 
+                        onClick={() => router.push(`/customerDashboard/track/${booking.id || booking._id}`)}
+                        className={`px-3 py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-colors w-full sm:w-auto ${
+                          dark ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20" : "bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100"
+                        }`}
+                      >
+                        <MessageCircle className="w-4 h-4" /> {isUrdu ? "چیٹ" : "Chat"}
+                      </button>
+                      <button 
+                        onClick={() => router.push(`/customerDashboard/track/${booking.id || booking._id}`)}
+                        className="cd-track-btn w-full sm:w-auto flex justify-center"
+                      >
+                        {isUrdu ? "ٹریک کریں" : "Track"} <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               ))}

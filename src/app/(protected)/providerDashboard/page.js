@@ -8,7 +8,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import { 
   BellRing, Briefcase, CheckCircle, Clock, Star, 
-  TrendingUp, Activity, ArrowRight, Wrench, ShieldAlert, Calendar, MapPin, AlertCircle
+  TrendingUp, Activity, ArrowRight, Wrench, ShieldAlert, Calendar, MapPin, AlertCircle, MessageCircle
 } from "lucide-react";
 import ProviderCard from '@/components/ProviderCard';
 import InstallPWA from "@/components/SharedComponents/InstallPWA/InstallPWA";
@@ -406,12 +406,23 @@ export default function ProviderDashboard() {
                       </p>
                     </div>
                     
-                    <button 
-                      onClick={() => router.push(`/providerDashboard/viewComplaint?type=${complaint.status.toLowerCase()}`)}
-                      className="px-6 py-2 rounded-xl bg-purple-500 text-white font-bold hover:bg-purple-600 transition-colors"
-                    >
-                      {isUrdu ? "تفصیلات" : "Details"}
-                    </button>
+                    <div className="flex items-center gap-2 mt-3 sm:mt-0 w-full sm:w-auto">
+                      <button 
+                        onClick={() => router.push(`/providerDashboard/track/${complaint.id || complaint._id}`)}
+                        className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 transition-colors ${
+                          dark ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20" : "bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100"
+                        }`}
+                      >
+                        <MessageCircle className="w-4 h-4" /> {isUrdu ? "چیٹ" : "Chat"}
+                      </button>
+                      
+                      <button 
+                        onClick={() => router.push(`/providerDashboard/viewComplaint?type=${complaint.status.toLowerCase()}`)}
+                        className="flex-1 sm:flex-none px-6 py-2 rounded-xl bg-purple-500 text-white font-bold hover:bg-purple-600 transition-colors"
+                      >
+                        {isUrdu ? "تفصیلات" : "Details"}
+                      </button>
+                    </div>
                   </motion.div>
                 ))}
               </div>

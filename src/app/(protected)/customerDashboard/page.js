@@ -13,6 +13,7 @@ import {
   Activity,
   Wrench,
   User,
+  MessageCircle,
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -322,9 +323,25 @@ export default function CustomerDashboard() {
                     >
                       {booking.status}
                     </div>
+                    
+                    {/* Explicit Chat Button */}
                     <button
                       type="button"
-                      onClick={() => router.push("/customerDashboard/track")}
+                      onClick={() => router.push(`/customerDashboard/track/${booking.id || booking._id}`)}
+                      className={`px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition-colors ${
+                        dark
+                          ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20"
+                          : "bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100"
+                      }`}
+                      aria-label="Chat with provider"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      {isUrdu ? "چیٹ" : "Chat"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/customerDashboard/track/${booking.id || booking._id}`)}
                       className="cd-icon-btn"
                       aria-label={isUrdu ? "ٹریک کریں" : "Track booking"}
                     >
