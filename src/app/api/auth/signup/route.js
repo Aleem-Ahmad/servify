@@ -146,6 +146,20 @@ export async function POST(request) {
         url: '/',
         type: 'success'
       }).catch(err => console.error('[Push] Signup notify error:', err));
+      
+      // If a provider signed up, notify Admin
+      if (role === 'provider') {
+        const adminUser = await prisma.user.findFirst({ where: { role: 'admin' } });
+        if (adminUser) {
+          sendPushNotification({
+            userId: adminUser.id,
+            title: '📄 New Provider Verification Request',
+            body: `Provider '${username}' has registered and is awaiting verification.`,
+            url: '/adminDashboard/providers',
+            type: 'info'
+          }).catch(err => console.error('[Push] Admin notify error:', err));
+        }
+      }
     }
 
     return NextResponse.json({ 
