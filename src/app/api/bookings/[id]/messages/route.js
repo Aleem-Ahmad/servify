@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import prisma from "@/lib/prisma";
 import { eventBus } from "@/lib/eventBus";
+import { sendPushNotification } from '@/app/api/push/send/route';
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -116,6 +117,15 @@ export async function POST(request, { params }) {
       recipientId,
       body: text,
     }).catch(err => console.error('[EventBus] chat message error:', err));
+
+    // Send Push Notification
+    sendPushNotification({
+      userId: recipientId,
+      title: `💬 Message from ${message.sender?.name || 'Someone'}`,
+      body: text,
+      url: `/customerDashboard/track/${id}`,
+      type: 'info'
+    }).catch(err => console.error('[Push] chat message error:', err));
 
     return NextResponse.json({
       success: true,

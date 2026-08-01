@@ -18,6 +18,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import SearchBar from "@/components/customerDashboard/SearchBar/SearchBar";
+import InstallPWA from "@/components/SharedComponents/InstallPWA/InstallPWA";
 import "@/styles/landingPage.css";
 import "./customerDashboard.css";
 
@@ -139,6 +140,15 @@ export default function CustomerDashboard() {
             >
               {isUrdu ? "آج آپ کو کس سروس کی ضرورت ہے؟" : "What service do you need today?"}
             </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              style={{ marginTop: "18px" }}
+            >
+              <InstallPWA />
+            </motion.div>
           </div>
 
           <motion.div

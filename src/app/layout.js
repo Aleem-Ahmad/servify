@@ -36,10 +36,27 @@ const greatVibes = Great_Vibes({
 export const metadata = {
   title: "Servify",
   description: "FYP - Professional Home Services",
+  manifest: "/manifest.js",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Servify",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   icons: {
     icon: "/favicon.png",
     apple: "/favicon.png",
   },
+};
+
+export const viewport = {
+  themeColor: "#f97316",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({ children }) {

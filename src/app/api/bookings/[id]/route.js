@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { eventBus, EVENTS } from '@/lib/eventBus';
 import { withRetry } from '@/lib/retry';
 import { bookingRateLimit } from '@/lib/rateLimit';
+import { sendPushNotification } from '@/app/api/push/send/route';
 
 export async function PATCH(request, { params }) {
   // Rate limiting
@@ -86,6 +87,63 @@ export async function PATCH(request, { params }) {
         providerName: result.providerName,
         customerName: result.customerName,
       }).catch((err) => console.error('[EventBus] publish error:', err));
+    }
+
+    // ── Push Notifications ──────────────────────────────────────────────────
+    if (status === 'Accepted') {
+      sendPushNotification({
+        userId: result.customerId,
+        title: '🎉 Provider Accepted Your Booking!',
+        body: `${result.providerName || 'A provider'} accepted your request and is heading your way.`,
+        url: `/customerDashboard/track/${id}`,
+        type: 'success'
+      }).catch(err => console.error('[Push] error:', err));
+    }
+    else if (status === 'Cancelled') {
+      // If a provider was assigned, notify them. Customer also if provider cancelled.
+      if (result.providerId) {
+        sendPushNotification({
+          userId: result.providerId,
+          title: '⚠️ Booking Cancelled',
+          body: `Service request #${id.slice(0, 8)} was cancelled.`,
+          url: '/providerDashboard',
+          type: 'alert'
+        }).catch(err => console.error('[Push] error:', err));
+      }
+      sendPushNotification({
+        userId: result.customerId,
+        title: '⚠️ Booking Cancelled',
+        body: `Service request #${id.slice(0, 8)} was cancelled.`,
+        url: `/customerDashboard/track/${id}`,
+        type: 'alert'
+      }).catch(err => console.error('[Push] error:', err));
+    }
+    else if (status === 'Completed') {
+      sendPushNotification({
+        userId: result.customerId,
+        title: '✨ Job Finished!',
+        body: `Your provider completed the work. Please leave feedback!`,
+        url: `/customerDashboard/track/${id}`,
+        type: 'success'
+      }).catch(err => console.error('[Push] error:', err));
+    }
+    else if (status === 'Rejected') {
+      sendPushNotification({
+        userId: result.customerId,
+        title: '❌ Request Declined',
+        body: `The provider declined your booking request.`,
+        url: `/customerDashboard/track`,
+        type: 'alert'
+      }).catch(err => console.error('[Push] error:', err));
+    }
+    else if (status === 'In-Progress') {
+      sendPushNotification({
+        userId: result.customerId,
+        title: '🚗 Provider is on the way!',
+        body: `${result.providerName || 'Your provider'} has started the job and is on the way.`,
+        url: `/customerDashboard/track/${id}`,
+        type: 'info'
+      }).catch(err => console.error('[Push] error:', err));
     }
 
     return NextResponse.json({

@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { eventBus, EVENTS } from '@/lib/eventBus';
 import { withRetry } from '@/lib/retry';
 import { bookingRateLimit, apiRateLimit } from '@/lib/rateLimit';
+import { sendPushNotification } from '@/app/api/push/send/route';
 
 export async function POST(request) {
   const rl = await bookingRateLimit(request);
@@ -56,6 +57,43 @@ export async function POST(request) {
       urgency: newBooking.urgency,
       providerId: newBooking.providerId,
     }).catch((err) => console.error('[EventBus] publish error:', err));
+
+    // 1. Notify Customer (Booking Submitted)
+    sendPushNotification({
+      userId: newBooking.customerId,
+      title: '📋 Booking Received',
+      body: `Your request for ${newBooking.service} has been submitted successfully. Waiting for a provider.`,
+      url: `/customerDashboard/track/${newBooking.id}`
+    }).catch(err => console.error('[Push] Customer notify error:', err));
+
+    // 2. Notify Providers
+    if (newBooking.providerId) {
+      // Direct booking to specific provider
+      sendPushNotification({
+        userId: newBooking.providerId,
+        title: '🔔 New Direct Job Request!',
+        body: `${newBooking.customerName || 'A customer'} requested your ${newBooking.service} service.`,
+        url: `/providerDashboard`,
+        type: newBooking.urgency === 'Emergency' ? 'alert' : 'info'
+      }).catch(err => console.error('[Push] Provider direct notify error:', err));
+    } else {
+      // Broadcast to providers of this category
+      // We need to fetch providers matching this category asynchronously
+      prisma.user.findMany({
+        where: { role: 'provider', category: newBooking.service, status: 'Active' },
+        select: { id: true }
+      }).then(providers => {
+        providers.forEach(p => {
+          sendPushNotification({
+            userId: p.id,
+            title: newBooking.urgency === 'Emergency' ? '🚨 EMERGENCY Request Nearby!' : '🔔 New Job Available!',
+            body: `New request for ${newBooking.service} is pending.`,
+            url: `/providerDashboard`,
+            type: newBooking.urgency === 'Emergency' ? 'alert' : 'info'
+          }).catch(err => console.error('[Push] Provider broadcast notify error:', err));
+        });
+      }).catch(err => console.error('[Push] Find providers error:', err));
+    }
 
     return NextResponse.json({
       success: true,

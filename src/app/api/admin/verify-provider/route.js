@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { sendPushNotification } from '@/app/api/push/send/route';
 
 export async function POST(request) {
   try {
@@ -32,6 +33,24 @@ export async function POST(request) {
     }
 
     await prisma.user.update({ where: { id: providerId }, data: updateData });
+
+    if (action === 'approve') {
+      sendPushNotification({
+        userId: providerId,
+        title: '🏅 You are now a Verified Provider!',
+        body: `Your account has been approved with a ${badge || 'Basic'} badge.`,
+        url: '/providerDashboard',
+        type: 'success'
+      }).catch(err => console.error('[Push] Verify approve error:', err));
+    } else if (action === 'reject') {
+      sendPushNotification({
+        userId: providerId,
+        title: '📄 Verification Rejected',
+        body: 'Your verification was rejected. Please re-upload your documents.',
+        url: '/providerDashboard',
+        type: 'alert'
+      }).catch(err => console.error('[Push] Verify reject error:', err));
+    }
 
     return NextResponse.json({ 
       success: true, 
