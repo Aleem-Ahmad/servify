@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
 import { findUserByEmail } from "@/lib/findUserByEmail";
 import { normalizeEmail } from "@/lib/normalizeEmail";
+import { sendPushNotification } from '@/app/api/push/send/route';
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,6 +42,14 @@ export async function POST(request) {
     if (!emailResponse.success) {
       return NextResponse.json({ success: false, message: "Failed to send email. Please try again." }, { status: 500 });
     }
+
+    sendPushNotification({
+      userId: user.id,
+      title: '🔑 Password Reset Requested',
+      body: 'A password reset was requested for your account.',
+      url: '/',
+      type: 'info'
+    }).catch(err => console.error('[Push] Forgot password notify error:', err));
 
     return NextResponse.json({ success: true, message: "If that email exists, we've sent a code." });
 

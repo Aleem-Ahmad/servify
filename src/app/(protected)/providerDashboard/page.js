@@ -11,6 +11,8 @@ import {
   TrendingUp, Activity, ArrowRight, Wrench, ShieldAlert, Calendar, MapPin, AlertCircle
 } from "lucide-react";
 import ProviderCard from '@/components/ProviderCard';
+import InstallPWA from "@/components/SharedComponents/InstallPWA/InstallPWA";
+
 export default function ProviderDashboard() {
   const router = useRouter();
   const { t, locale } = useLanguage();
@@ -191,6 +193,12 @@ export default function ProviderDashboard() {
             >
               {isUrdu ? "یہاں آپ کی سروسز کی تفصیل ہے۔" : "Here's an overview of your service business today."}
             </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+              style={{ marginTop: "18px" }}
+            >
+              <InstallPWA />
+            </motion.div>
           </div>
 
           <motion.div 

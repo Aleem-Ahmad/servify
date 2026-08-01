@@ -6,6 +6,7 @@ import { sendVerificationEmail } from '@/helpers/sendVerificationEmail';
 import { uploadImage } from '@/helpers/uploadImage';
 import { normalizeEmail } from '@/lib/normalizeEmail';
 import { findUserByEmail } from '@/lib/findUserByEmail';
+import { sendPushNotification } from '@/app/api/push/send/route';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -131,6 +132,20 @@ export async function POST(request) {
     
     if (!emailResponse.success) {
       return NextResponse.json({ success: false, message: emailResponse.message }, { status: 500 });
+    }
+    
+    // We try to notify, though typically a new user won't have a push subscription yet
+    // unless they are re-registering an account or have another active session.
+    // Fetch the newly created user ID
+    const newUser = await findUserByEmail(prisma, email);
+    if (newUser) {
+      sendPushNotification({
+        userId: newUser.id,
+        title: '🎉 Welcome to Servify!',
+        body: 'Your account has been registered successfully. Please verify your email.',
+        url: '/',
+        type: 'success'
+      }).catch(err => console.error('[Push] Signup notify error:', err));
     }
 
     return NextResponse.json({ 

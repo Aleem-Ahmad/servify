@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useNotifications } from "@/context/NotificationContext";
+import { useAuth } from "@/context/AuthContext";
 import "@/styles/navbar.css";
 
 export default function Navbar({ type = "public" }) {
@@ -20,6 +21,7 @@ export default function Navbar({ type = "public" }) {
   const darkMode = theme === "dark";
   const { t, locale, changeLanguage } = useLanguage();
   const { permission, requestPermission } = useNotifications();
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -114,9 +116,17 @@ export default function Navbar({ type = "public" }) {
 
           {type === "public" ? (
             <>
-              <Link href="/authentication" className="svx-cta">
-                {t("Get Started")}
-              </Link>
+              {authLoading ? (
+                <div className="w-24 h-10 animate-pulse bg-slate-200 dark:bg-slate-800 rounded-lg"></div>
+              ) : user ? (
+                <Link href={`/${user.role}Dashboard`} className="svx-cta">
+                  {t("Dashboard")}
+                </Link>
+              ) : (
+                <Link href="/authentication" className="svx-cta">
+                  {t("Get Started")}
+                </Link>
+              )}
             </>
           ) : (
             <Link 
@@ -152,9 +162,17 @@ export default function Navbar({ type = "public" }) {
           </button>
 
           {type === "public" ? (
-            <Link href="/authentication" className="svx-cta" style={{ padding: "6px 12px", fontSize: "0.7rem", borderRadius: "8px" }}>
-              {t("Get Started")}
-            </Link>
+            authLoading ? (
+              <div className="animate-pulse bg-slate-200 dark:bg-slate-800" style={{ width: "80px", height: "30px", borderRadius: "8px" }}></div>
+            ) : user ? (
+              <Link href={`/${user.role}Dashboard`} className="svx-cta" style={{ padding: "6px 12px", fontSize: "0.7rem", borderRadius: "8px" }}>
+                {t("Dashboard")}
+              </Link>
+            ) : (
+              <Link href="/authentication" className="svx-cta" style={{ padding: "6px 12px", fontSize: "0.7rem", borderRadius: "8px" }}>
+                {t("Get Started")}
+              </Link>
+            )
           ) : (
             <Link 
               href="/customerDashboard/complaintForm"

@@ -16,3 +16,4 @@ export default function CustomerDashboardLayout({ children }) {
     </div>
   );
 }
+

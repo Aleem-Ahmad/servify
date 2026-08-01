@@ -6,6 +6,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { Sun, Moon, Globe, UploadCloud, Eye, EyeOff, User, Lock, Mail, ChevronRight, ArrowLeft, Shield, Wrench } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import "./auth.css";
 
@@ -16,9 +17,22 @@ export default function Authentication() {
   const [loadingAuth, setLoadingAuth] = useState(false);
   const { t, locale, changeLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
-  const { login, signup, loginWithGoogle } = useAuth();
+  const { user, loading: authLoading, login, signup, loginWithGoogle } = useAuth();
+  const router = useRouter();
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      if (user.role === "customer") {
+        router.push("/customerDashboard");
+      } else if (user.role === "provider") {
+        router.push("/providerDashboard");
+      } else if (user.role === "admin") {
+        router.push("/adminDashboard");
+      }
+    }
+  }, [user, authLoading, router]);
 
   const [formData, setFormData] = useState({
     username: "",
