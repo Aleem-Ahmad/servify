@@ -124,14 +124,32 @@ export default function ShopPage() {
       return;
     }
     const newStatus = !isOnline;
-    setIsOnline(newStatus);
+    setIsOnline(newStatus); // optimistic update
     try {
-      await fetch('/api/user/profile', {
+      const res = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isOnline: newStatus })
       });
-    } catch(e) {}
+      if (res.ok) {
+        // Sync localStorage so the status survives a page refresh
+        try {
+          const cached = localStorage.getItem("servify_user");
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            parsed.isOnline = newStatus;
+            localStorage.setItem("servify_user", JSON.stringify(parsed));
+          }
+        } catch (_) {}
+      } else {
+        // Revert if API failed
+        setIsOnline(!newStatus);
+        alert("Failed to update availability. Please try again.");
+      }
+    } catch(e) {
+      setIsOnline(!newStatus); // revert on network error
+      console.error("Toggle status error:", e);
+    }
   };
 
   const [editForm, setEditForm] = useState({});
