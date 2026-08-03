@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
-    // Fetch users with role provider and status Pending
+    // Fetch users with role provider and status Pending who have verified their OTP
     const pendingProviders = await prisma.user.findMany({ 
       where: {
         role: 'provider',
-        status: 'Pending'
+        status: 'Pending',
+        isVerified: true
       },
       orderBy: { createdAt: 'desc' }
     });
