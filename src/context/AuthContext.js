@@ -14,24 +14,63 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const initAuth = async () => {
-      try {
-        const res = await fetch("/api/user/profile", fetchOpts);
-        const { data: profile, ok } = await parseApiResponse(res);
-
-        if (ok && profile?.id) {
-          const normalized = {
-            ...profile,
-            id: (profile._id || profile.id)?.toString(),
-          };
-          setUser(normalized);
-          localStorage.setItem("servify_user", JSON.stringify(normalized));
-          setLoading(false);
-          return;
+      // Helper: fetch profile with up to `attempts` retries on network failure
+      const fetchProfile = async (attempts = 3, delayMs = 600) => {
+        for (let i = 0; i < attempts; i++) {
+          try {
+            const res = await fetch("/api/user/profile", fetchOpts);
+            // If the server explicitly says "not authenticated" or user not found, stop retrying
+            if (res.status === 401 || res.status === 403 || res.status === 404) {
+              return { profile: null, definitelyUnauthenticated: true };
+            }
+            const { data: profile, ok } = await parseApiResponse(res);
+            if (ok && profile?.id) {
+              return { profile, definitelyUnauthenticated: false };
+            }
+          } catch (e) {
+            console.warn(`Session fetch attempt ${i + 1} failed:`, e.message);
+          }
+          if (i < attempts - 1) {
+            await new Promise((r) => setTimeout(r, delayMs));
+          }
         }
-      } catch (e) {
-        console.error("Session fetch failed", e);
+        return { profile: null, definitelyUnauthenticated: false };
+      };
+
+      const { profile, definitelyUnauthenticated } = await fetchProfile();
+
+      if (profile?.id) {
+        const normalized = {
+          ...profile,
+          id: (profile._id || profile.id)?.toString(),
+        };
+        setUser(normalized);
+        localStorage.setItem("servify_user", JSON.stringify(normalized));
+        setLoading(false);
+        return;
       }
 
+      // If the server returned 401/403, the session is definitely gone.
+      // Otherwise, a network/server error occurred — fall back to localStorage
+      // so the user is not kicked out due to a transient problem.
+      if (!definitelyUnauthenticated) {
+        const cached = localStorage.getItem("servify_user");
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            if (parsed?.id) {
+              console.warn("Profile API unreachable — using cached session.");
+              setUser(parsed);
+              setLoading(false);
+              return;
+            }
+          } catch (_) {
+            // Corrupted cache — fall through to logout below
+          }
+        }
+      }
+
+      // Definitively unauthenticated (or no cache to fall back to)
       setUser(null);
       localStorage.removeItem("servify_user");
       setLoading(false);
