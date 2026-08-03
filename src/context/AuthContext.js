@@ -163,7 +163,16 @@ export function AuthProvider({ children }) {
       const { data } = await parseApiResponse(response);
 
       if (data.success) {
-        return { success: true, message: data.message };
+        // If server returned user data (OTP verified + account created), store in context
+        if (data.user) {
+          const userData = {
+            ...data.user,
+            id: (data.user._id || data.user.id)?.toString(),
+          };
+          setUser(userData);
+          localStorage.setItem("servify_user", JSON.stringify(userData));
+        }
+        return { success: true, message: data.message, user: data.user };
       }
 
       return { success: false, message: data.message || "Signup failed" };
