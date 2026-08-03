@@ -121,7 +121,7 @@ function AllProvidersContent() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold border border-white/20">
-                      {p.category || "Professional"}
+                      {p.category ? t(p.category) : t("Professional")}
                     </div>
                   </div>
                   
@@ -134,17 +134,17 @@ function AllProvidersContent() {
                       </div>
                       <span className="text-slate-400">•</span>
                       <div className={`text-sm ${dark ? "text-slate-400" : "text-slate-500"}`}>
-                        {p.city || "Remote"}
+                        {p.city || t("Remote")}
                       </div>
                     </div>
                     
                     <div className="mb-6 flex items-end justify-between">
                       <div>
-                        <p className={`text-xs uppercase tracking-wider font-bold mb-1 ${dark ? "text-slate-500" : "text-slate-400"}`}>Starting at</p>
+                        <p className={`text-xs uppercase tracking-wider font-bold mb-1 ${dark ? "text-slate-500" : "text-slate-400"}`}>{t("STARTING AT")}</p>
                         <p className="text-lg font-black text-orange-500">PKR {p.rate}</p>
                       </div>
                       <div className="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs font-bold flex items-center gap-1">
-                        <Zap className="w-3 h-3" /> Available
+                        <Zap className="w-3 h-3" /> {t("Available")}
                       </div>
                     </div>
                     

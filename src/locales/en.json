@@ -251,5 +251,20 @@
   "status.inProgress": "In Progress",
   "status.completed": "Completed",
   "status.cancelled": "Cancelled",
-  "auth.uploadPhoto": "Profile Picture"
+  "auth.uploadPhoto": "Profile Picture",
+  
+  "Our Top Professionals": "Our Top Professionals",
+  "Select a category to find experts in that specific field.": "Select a category to find experts in that specific field.",
+  "Find Experts": "Find Experts",
+  "STARTING AT": "STARTING AT",
+  "View Full Profile": "View Full Profile",
+  "Available": "Available",
+  "All": "All",
+  "Electrician": "Electrician",
+  "Plumber": "Plumber",
+  "Cleaning": "Cleaning",
+  "Carpenter": "Carpenter",
+  "Gardener": "Gardener",
+  "Painter": "Painter",
+  "Remote": "Remote"
 }

@@ -319,5 +319,20 @@
   "status.inProgress": "جاری ہے",
   "status.completed": "مکمل",
   "status.cancelled": "منسوخ",
-  "auth.uploadPhoto": "پروفائل تصویر"
+  "auth.uploadPhoto": "پروفائل تصویر",
+  
+  "Our Top Professionals": "ہمارے بہترین پیشہ ور",
+  "Select a category to find experts in that specific field.": "کسی مخصوص فیلڈ میں ماہرین تلاش کرنے کے لیے ایک زمرہ منتخب کریں۔",
+  "Find Experts": "ماہرین تلاش کریں",
+  "STARTING AT": "شروع از",
+  "View Full Profile": "مکمل پروفائل دیکھیں",
+  "Available": "دستیاب",
+  "All": "تمام",
+  "Electrician": "الیکٹریشن",
+  "Plumber": "پلمبر",
+  "Cleaning": "صفائی کار",
+  "Carpenter": "بڑھئی",
+  "Gardener": "مالی",
+  "Painter": "رنگ ساز",
+  "Remote": "ریموٹ"
 }
