@@ -25,8 +25,8 @@ export async function POST(request) {
       );
     }
 
-    const supabase = getSupabaseAuthClient();
-    const { data, error } = await supabase.auth.getUser(accessToken);
+    const supabase = getSupabaseAuthClient(accessToken);
+    const { data, error } = await supabase.auth.getUser();
 
     if (error || !data?.user?.email) {
       return NextResponse.json(
