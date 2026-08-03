@@ -43,6 +43,7 @@ export default function CustomerDashboard() {
   const [activeBookings, setActiveBookings] = useState([]);
   const [topProviders, setTopProviders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
 
   const categories = [
     { name: t("services.electrician"), icon: "⚡", color: "from-yellow-400 to-orange-500", query: "Electrician" },
@@ -65,9 +66,29 @@ export default function CustomerDashboard() {
     return () => window.removeEventListener("hashchange", scrollToHash);
   }, []);
 
+  // Fetch providers immediately on mount — they are public data, no auth needed
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      if (!user) return;
+    const fetchProviders = async () => {
+      try {
+        const providersRes = await fetch(`/api/providers`);
+        if (providersRes.ok) {
+          const pData = await providersRes.json();
+          setTopProviders(pData.slice(0, 4));
+        }
+      } catch (error) {
+        console.error("Error fetching providers:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProviders();
+  }, []);
+
+  // Fetch user-specific bookings only once user session is ready
+  useEffect(() => {
+    if (!user) return;
+    const fetchBookings = async () => {
+      setBookingsLoading(true);
       try {
         const bookingsRes = await fetch(`/api/bookings?userId=${user.id}`);
         if (bookingsRes.ok) {
@@ -76,19 +97,13 @@ export default function CustomerDashboard() {
             bData.filter((b) => b.status === "Pending" || b.status === "Accepted").slice(0, 3)
           );
         }
-
-        const providersRes = await fetch(`/api/providers`);
-        if (providersRes.ok) {
-          const pData = await providersRes.json();
-          setTopProviders(pData.slice(0, 4));
-        }
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
+        console.error("Error fetching bookings:", error);
       } finally {
-        setLoading(false);
+        setBookingsLoading(false);
       }
     };
-    fetchDashboardData();
+    fetchBookings();
   }, [user]);
 
   return (

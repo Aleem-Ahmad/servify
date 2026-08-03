@@ -80,7 +80,7 @@ export async function POST(request) {
       // Broadcast to providers of this category
       // We need to fetch providers matching this category asynchronously
       prisma.user.findMany({
-        where: { role: 'provider', category: newBooking.service, status: 'Active' },
+        where: { role: 'provider', category: newBooking.service, status: { in: ['Active', 'verified'] } },
         select: { id: true }
       }).then(providers => {
         providers.forEach(p => {

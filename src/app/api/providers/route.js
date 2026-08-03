@@ -39,7 +39,7 @@ export async function GET(request) {
       });
     }
 
-    let query = { role: 'provider', status: 'Active' };
+    let query = { role: 'provider', status: { in: ['Active', 'verified'] } };
 
     if (category) {
       query.category = { contains: category, mode: 'insensitive' };
