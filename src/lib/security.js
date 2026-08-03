@@ -175,7 +175,7 @@ export const isValidUrl = (url) => {
 // Common validation schemas
 export const commonSchemas = {
   email: z.string().email('Invalid email format'),
-  phone: z.string().regex(/^[1-9]\d{9}$/, 'Invalid phone number format'),
+  phone: z.string().regex(/^\+92-\d{3}-\d{7}$/, 'Invalid phone number format'),
   cnic: z.string().regex(/^\d{5}-\d{7}-\d{1}$/, 'Invalid CNIC format'),
   password: z.string().min(6, 'Password must be at least 6 characters').regex(/^(?=.*[a-zA-Z])(?=.*\d)/, 'Password must contain letters and numbers'),
   name: z.string().min(3, 'Name must be at least 3 characters').max(50, 'Name must not exceed 50 characters'),

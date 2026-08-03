@@ -113,8 +113,7 @@ export default function ProviderOnboarding() {
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-500 ml-1">Phone Number</label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">+92</span>
-                      <input type="text" className="input-premium pl-14" placeholder="3XXXXXXXXX" />
+                      <input type="text" className="input-premium" placeholder="+92-XXX-XXXXXXX" />
                     </div>
                   </div>
                   <div className="space-y-2">

@@ -73,11 +73,14 @@ function BookingFormContent() {
           
           const pId = searchParams.get("provider");
           if (pId) {
-            const found = data.find(p => p.id === pId);
+            // Check both id and _id to handle MongoDB ObjectId format
+            const found = data.find(p => p.id === pId || p._id === pId);
             if (found) {
               setProviderChosen(found);
               setIsOpenBooking(false);
               setFormData(prev => ({ ...prev, category: found.category }));
+            } else {
+              console.warn("Pre-selected provider not found in list, ID:", pId);
             }
           }
         }
@@ -222,7 +225,17 @@ function BookingFormContent() {
     }
   };
 
-  const handleNext = () => setStep(step + 1);
+  const handleNext = () => {
+    // Validate step 3: user must have chosen a provider OR explicitly selected open booking
+    if (step === 3 && !providerChosen && !isOpenBooking) {
+      alert(isUrdu
+        ? "براہ کرم ایک فراہم کنندہ منتخب کریں یا اوپن بکنگ پوسٹ کریں۔"
+        : "Please select a provider or post as an open booking before continuing."
+      );
+      return;
+    }
+    setStep(step + 1);
+  };
   const handlePrev = () => setStep(step - 1);
 
   const handleFieldChange = (e) => {
@@ -601,7 +614,15 @@ function BookingFormContent() {
                           <strong>{formData.category || (isUrdu ? "زمرہ" : "category")}</strong>
                           {isUrdu ? " کے دستیاب فراہم کنندگان دیکھ سکتے ہیں" : " providers can view and accept"}
                         </p>
-                        <button type="button" onClick={() => setIsOpenBooking(false)} className="bf-link-btn orange">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Navigate back to the full provider list so user can properly re-select
+                            const cat = formData.category ? `?category=${formData.category}` : '';
+                            router.push(`/customerDashboard/allProviders${cat}`);
+                          }}
+                          className="bf-link-btn orange"
+                        >
                           {isUrdu ? "مخصوص فراہم کنندہ منتخب کریں" : "Choose a specific provider"}
                         </button>
                       </div>
@@ -613,7 +634,6 @@ function BookingFormContent() {
                         <div className="bf-provider-grid">
                           {allProviders
                             .filter((p) => !formData.category || p.category === formData.category)
-                            .slice(0, 2)
                             .map((p, i) => (
                               <button
                                 type="button"

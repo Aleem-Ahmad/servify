@@ -65,7 +65,7 @@ export default function Authentication() {
     name: /^[a-zA-Z\s]{3,30}$/,
     email: /^[a-zA-Z0-9._%+-]+@gmail\.com$/,
     password: /^(?=.*[a-zA-Z])(?=.*\d).{6,}$/,
-    phone: /^[1-9]\d{9}$/,
+    phone: /^\+92-\d{3}-\d{7}$/,
     district: /^[a-zA-Z\s]{3,20}$/,
     tehseel: /^[a-zA-Z\s]{3,20}$/,
     cnic: /^\d{5}-\d{7}-\d{1}$/,
@@ -79,7 +79,7 @@ export default function Authentication() {
       if (name === "username") error = "Username is required";
       else if (name === "email") error = "Only @gmail.com addresses are allowed";
       else if (name === "password") error = "6+ chars, incl. letters and numbers";
-      else if (name === "phone") error = "Format: 3xxxxxxxxx (10 digits, no leading 0)";
+      else if (name === "phone") error = "Format: +92-xxx-xxxxxxx";
       else if (name === "cnic") error = "Format: xxxxx-xxxxxxx-x";
       else if (name === "name") error = "3-30 alphabetic characters";
       else if (name === "experience") error = "1-2 digits (years) required";
@@ -106,9 +106,27 @@ export default function Authentication() {
       if (val.length > 12) formatted = formatted + "-" + val.slice(12, 13);
       finalValue = formatted;
     } else if (name === "phone") {
-      let val = value.replace(/\D/g, "");
-      if (val.length > 10) val = val.slice(0, 10);
-      finalValue = val;
+      // Remove all non-digits except plus
+      let val = value.replace(/[^\d+]/g, "");
+      
+      // Auto-prefix with +92 if not present
+      if (val && !val.startsWith('+92')) {
+        // If user typed 0300, remove 0
+        if (val.startsWith('0')) val = val.substring(1);
+        val = '+92' + val.replace(/\+/g, '');
+      }
+
+      // Max length for +92xxxyyyyyyy is 13 characters (+92 + 10 digits)
+      if (val.length > 13) val = val.slice(0, 13);
+
+      let formatted = val;
+      if (val.length > 3) { // +92
+        formatted = val.slice(0, 3) + "-" + val.slice(3);
+      }
+      if (val.length > 6) { // +92-xxx
+        formatted = val.slice(0, 3) + "-" + val.slice(3, 6) + "-" + val.slice(6);
+      }
+      finalValue = formatted;
     }
 
     setFormData(prev => ({ ...prev, [name]: finalValue }));
