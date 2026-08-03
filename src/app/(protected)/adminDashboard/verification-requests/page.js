@@ -12,13 +12,18 @@ export default function VerificationRequests() {
     fetch("/api/admin/pending-verifications")
       .then(res => res.json())
       .then(data => {
-        if (data.success) {
+        if (data && data.success) {
           const normalized = (data.providers || []).map(p => ({
             ...p,
             _id: p.id // Normalize PostgreSQL id to client-side expected _id
           }));
           setRequests(normalized);
         }
+      })
+      .catch(err => {
+        console.error("Failed to fetch verifications:", err);
+      })
+      .finally(() => {
         setLoading(false);
       });
   }, []);

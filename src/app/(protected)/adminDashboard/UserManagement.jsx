@@ -145,17 +145,23 @@ export default function UserManagement() {
 
   async function fetchUsers() {
     setLoading(true);
-    const res = await getAllUsers();
-    if (res.success) {
-      const normalized = (res.users || []).map(u => ({
-        ...u,
-        _id: u.id, // Map PostgreSQL id to client-side expected _id
-      }));
-      setUsers(normalized);
-    } else {
-      showAlert(res.message || "Failed to load users", "error");
+    try {
+      const res = await getAllUsers();
+      if (res && res.success) {
+        const normalized = (res.users || []).map(u => ({
+          ...u,
+          _id: u.id, // Map PostgreSQL id to client-side expected _id
+        }));
+        setUsers(normalized);
+      } else {
+        showAlert(res?.message || "Failed to load users", "error");
+      }
+    } catch (err) {
+      console.error("Error fetching users:", err);
+      showAlert("Network error while fetching users", "error");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   function filterUsersList() {

@@ -11,9 +11,18 @@ export default function DashboardOverview() {
 
   useEffect(() => {
     async function fetchStats() {
-      const res = await getAdminStats();
-      if (res.success) setStats(res.stats);
-      setLoading(false);
+      try {
+        const res = await getAdminStats();
+        if (res && res.success) {
+          setStats(res.stats);
+        } else {
+          console.error("Failed to fetch stats:", res?.message);
+        }
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+      } finally {
+        setLoading(false);
+      }
     }
     fetchStats();
   }, []);

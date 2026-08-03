@@ -116,9 +116,7 @@ export default function Navbar({ type = "public" }) {
 
           {type === "public" ? (
             <>
-              {authLoading ? (
-                <div className="w-24 h-10 animate-pulse bg-slate-200 dark:bg-slate-800 rounded-lg"></div>
-              ) : user ? (
+              {user ? (
                 <Link href={`/${user.role}Dashboard`} className="svx-cta">
                   {t("Dashboard")}
                 </Link>
@@ -162,9 +160,7 @@ export default function Navbar({ type = "public" }) {
           </button>
 
           {type === "public" ? (
-            authLoading ? (
-              <div className="animate-pulse bg-slate-200 dark:bg-slate-800" style={{ width: "80px", height: "30px", borderRadius: "8px" }}></div>
-            ) : user ? (
+            user ? (
               <Link href={`/${user.role}Dashboard`} className="svx-cta" style={{ padding: "6px 12px", fontSize: "0.7rem", borderRadius: "8px" }}>
                 {t("Dashboard")}
               </Link>
