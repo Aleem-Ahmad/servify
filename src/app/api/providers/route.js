@@ -27,6 +27,7 @@ export async function GET(request) {
         phone: p.phone || null,
         district: p.district || null,
         tehseel: p.tehseel || null,
+        city: p.district || p.tehseel || null,
         address: p.address || null,
         rating: p.performance?.rating || 0,
         rate: p.hourlyRate || 0,
@@ -66,6 +67,7 @@ export async function GET(request) {
       experience: p.experience || '',
       phone: p.phone || null,
       district: p.district || null,
+      city: p.district || p.tehseel || null,
       offers: p.offers || [],
     }));
 
