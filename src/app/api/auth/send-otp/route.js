@@ -10,48 +10,72 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request) {
   try {
-    const { email: rawEmail } = await request.json();
+    const { email: rawEmail, username } = await request.json();
     const email = normalizeEmail(rawEmail);
 
-    // 1. Validate email
+    // 1. Validate email format
     const validation = emailSchema.safeParse({ email: rawEmail });
     if (!validation.success) {
       return NextResponse.json({ success: false, message: validation.error.errors[0].message }, { status: 400 });
     }
 
-    const user = await findUserByEmail(prisma, email);
-    if (!user) {
-      // If user not found, we might want to check if they are in the middle of signup
-      return NextResponse.json({ success: false, message: "User not found with this email. Please sign up first." }, { status: 404 });
+    // 2. Check if email already belongs to a verified user
+    const existingUserByEmail = await findUserByEmail(prisma, email);
+    if (existingUserByEmail && existingUserByEmail.isVerified) {
+      return NextResponse.json({ success: false, message: "User already exists with this email" }, { status: 400 });
     }
 
-    // 2. Generate new OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const verifyCodeExpiry = new Date(Date.now() + 3600000); // 1 hour
-    
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        verifyCode: otp,
-        verifyCodeExpiry
+    // 3. Check if username is already taken by a verified user
+    if (username) {
+      const existingUserByUsername = await prisma.user.findFirst({
+        where: { username, isVerified: true }
+      });
+      if (existingUserByUsername) {
+        return NextResponse.json({ success: false, message: "Username is already taken" }, { status: 400 });
+      }
+    }
+
+    // 4. Clean up any unverified stale users for this email/username to avoid DB unique constraint locks
+    await prisma.user.deleteMany({
+      where: {
+        isVerified: false,
+        OR: [
+          { email },
+          ...(username ? [{ username }] : [])
+        ]
       }
     });
 
-    // 3. Send Email
+    // 5. Generate 6-digit OTP code (10-minute expiry)
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // 6. Save verification code to VerifyCode table
+    await prisma.verifyCode.deleteMany({ where: { email } });
+    await prisma.verifyCode.create({
+      data: {
+        email,
+        code: otp,
+        expiresAt
+      }
+    });
+
+    // 7. Send Verification Email
     console.log(`[DEVELOPMENT] New OTP for ${email}: ${otp}`);
     
-    const emailResponse = await sendVerificationEmail(email, user.username, otp);
+    const emailResponse = await sendVerificationEmail(email, username || email.split('@')[0], otp);
     if (!emailResponse.success) {
       return NextResponse.json({ success: false, message: emailResponse.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, message: "New verification code sent to your email." });
+    return NextResponse.json({ success: true, message: "Verification code sent to your email." });
 
   } catch (error) {
-    console.error("Resend OTP Error:", error);
+    console.error("Send OTP Error:", error);
     return NextResponse.json({ 
       success: false, 
-      message: error.message || "An unexpected error occurred during OTP resending." 
+      message: error.message || "An unexpected error occurred while sending verification code." 
     }, { status: 500 });
   }
 }
+

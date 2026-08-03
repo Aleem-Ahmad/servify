@@ -6,8 +6,9 @@ import VerificationRequests from "./verification-requests/page";
 import UserManagement from "./UserManagement";
 import RegisterAdmin from "./RegisterAdmin";
 import Earnings from "./Earnings";
+import InstallPWA from "@/components/SharedComponents/InstallPWA/InstallPWA";
 import "./adminPanel.css";
-import { LayoutDashboard, Users, UserCheck, Settings, LogOut, Search, Bell, UserPlus, Coins } from "lucide-react";
+import { LayoutDashboard, Users, UserCheck, Settings, LogOut, Search, Bell, UserPlus, Coins, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -39,13 +40,16 @@ export default function AdminDashboardPage() {
           </div>
           <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#f1f5f9' }}>Admin</span>
         </div>
-        <button 
-          onClick={() => logout()}
-          style={{ padding: 8, borderRadius: 10, color: '#f87171', background: 'transparent', border: 'none', cursor: 'pointer' }}
-          aria-label="Logout"
-        >
-          <LogOut style={{ width: 20, height: 20 }} />
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <InstallPWA />
+          <button 
+            onClick={() => logout()}
+            style={{ padding: 8, borderRadius: 10, color: '#f87171', background: 'transparent', border: 'none', cursor: 'pointer' }}
+            aria-label="Logout"
+          >
+            <LogOut style={{ width: 20, height: 20 }} />
+          </button>
+        </div>
       </header>
 
       {/* ─── DESKTOP SIDEBAR ─── */}
@@ -92,7 +96,8 @@ export default function AdminDashboardPage() {
             <p className="header-subtitle">Welcome back, {user?.name || "Admin"}</p>
           </div>
 
-          <div className="admin-toolbar">
+          <div className="admin-toolbar" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <InstallPWA />
             <div className="admin-search-box" style={{ display: 'none' }}> {/* Hidden on mobile via CSS */}
               <Search className="search-icon" />
               <input type="text" placeholder="Search anything..." />
@@ -148,20 +153,3 @@ export default function AdminDashboardPage() {
   );
 }
 
-function ShieldCheck({ className, style }) {
-  return (
-    <svg 
-      className={className}
-      style={style}
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    >
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
-  );
-}

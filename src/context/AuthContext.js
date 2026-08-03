@@ -14,6 +14,23 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const initAuth = async () => {
+      // Pre-warm from localStorage first — this prevents a flash-logout
+      // when a freshly Google-logged-in user navigates to a protected page
+      // before the HTTP-only cookie has fully propagated to the browser.
+      const cachedRaw = localStorage.getItem("servify_user");
+      if (cachedRaw) {
+        try {
+          const cached = JSON.parse(cachedRaw);
+          if (cached?.id) {
+            setUser(cached);
+            setLoading(false);
+            // Continue to background-verify with the server, but don't block the UI
+          }
+        } catch (_) {
+          localStorage.removeItem("servify_user");
+        }
+      }
+
       // Helper: fetch profile with up to `attempts` retries on network failure
       const fetchProfile = async (attempts = 3, delayMs = 600) => {
         for (let i = 0; i < attempts; i++) {
@@ -163,7 +180,16 @@ export function AuthProvider({ children }) {
       const { data } = await parseApiResponse(response);
 
       if (data.success) {
-        return { success: true, message: data.message };
+        // If server returned user data (OTP verified + account created), store in context
+        if (data.user) {
+          const userData = {
+            ...data.user,
+            id: (data.user._id || data.user.id)?.toString(),
+          };
+          setUser(userData);
+          localStorage.setItem("servify_user", JSON.stringify(userData));
+        }
+        return { success: true, message: data.message, user: data.user };
       }
 
       return { success: false, message: data.message || "Signup failed" };

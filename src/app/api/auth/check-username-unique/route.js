@@ -25,6 +25,11 @@ export async function GET(request) {
 
     const { username } = result.data;
 
+    // Delete any unverified stale users to ensure clean username availability
+    await prisma.user.deleteMany({
+      where: { username, isVerified: false }
+    });
+
     const existingVerifiedUser = await prisma.user.findFirst({
       where: { username, isVerified: true }
     });

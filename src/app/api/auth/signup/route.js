@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { signupSchema } from '@/Schemas/signupSchema';
 import bcrypt from 'bcryptjs';
-import { sendVerificationEmail } from '@/helpers/sendVerificationEmail';
 import { uploadImage } from '@/helpers/uploadImage';
 import { normalizeEmail } from '@/lib/normalizeEmail';
 import { findUserByEmail } from '@/lib/findUserByEmail';
@@ -24,10 +23,28 @@ export async function POST(request) {
     } else {
       body = await request.json();
     }
-    console.log("Signup request body keys:", Object.keys(body));
-    console.log("Signup request body cnic:", body.cnic);
 
-    // 1. Validate data using Zod
+    const email = normalizeEmail(body.email || "");
+    const otpCode = (body.otp || body.code || "").trim();
+
+    // 1. Verify OTP from VerifyCode table
+    if (!otpCode) {
+      return NextResponse.json({ success: false, message: "Verification code (OTP) is required" }, { status: 400 });
+    }
+
+    const verifyRecord = await prisma.verifyCode.findFirst({
+      where: {
+        email,
+        code: otpCode,
+        expiresAt: { gt: new Date() }
+      }
+    });
+
+    if (!verifyRecord) {
+      return NextResponse.json({ success: false, message: "Invalid or expired verification code" }, { status: 400 });
+    }
+
+    // 2. Validate data using Zod
     const validation = signupSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json({ 
@@ -39,11 +56,11 @@ export async function POST(request) {
 
     const signupData = {
       ...validation.data,
-      email: normalizeEmail(validation.data.email),
+      email,
     };
-    const { username, email, password, role } = signupData;
+    const { username, password, role } = signupData;
 
-    // 2. Check if username is already taken by a verified user
+    // 3. Check if username is already taken by a verified user
     const existingUserVerifiedByUsername = await prisma.user.findFirst({
       where: {
         username,
@@ -55,12 +72,24 @@ export async function POST(request) {
       return NextResponse.json({ success: false, message: "Username is already taken" }, { status: 400 });
     }
 
-    // 3. Check if email is already taken
+    // 4. Check if email is already taken by a verified user
     const existingUserByEmail = await findUserByEmail(prisma, email);
-    const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiryDate = new Date(Date.now() + 3600000); // 1 hour
+    if (existingUserByEmail && existingUserByEmail.isVerified) {
+      return NextResponse.json({ success: false, message: "User already exists with this email" }, { status: 400 });
+    }
 
-    // 4. Handle File Uploads (for providers)
+    // 5. Delete any unverified stale users for this email/username to avoid DB unique constraint locks
+    await prisma.user.deleteMany({
+      where: {
+        isVerified: false,
+        OR: [
+          { email },
+          { username }
+        ]
+      }
+    });
+
+    // 6. Handle File Uploads (for providers)
     let documents = {};
     if (role === 'provider' && contentType.includes("multipart/form-data")) {
       const cnicFrontFile = formData.get("cnicFront");
@@ -76,7 +105,7 @@ export async function POST(request) {
       }
     }
 
-    // 4.1 Handle Profile Image Upload
+    // 6.1 Handle Profile Image Upload
     let profileImageUrl = "";
     if (contentType.includes("multipart/form-data")) {
       const profileFile = formData.get("profile");
@@ -88,87 +117,81 @@ export async function POST(request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    if (existingUserByEmail) {
-      if (existingUserByEmail.isVerified) {
-        return NextResponse.json({ success: false, message: "User already exists with this email" }, { status: 400 });
-      } else {
-        // Update unverified user
-        const mergedDocs = { 
-          ...(existingUserByEmail.documents ? existingUserByEmail.documents : {}), 
-          ...documents 
-        };
-        
-        await prisma.user.update({
-          where: { id: existingUserByEmail.id },
-          data: {
-            ...signupData,
-            password: hashedPassword,
-            verifyCode,
-            verifyCodeExpiry: expiryDate,
-            documents: mergedDocs,
-            ...(profileImageUrl && { image: profileImageUrl })
-          }
-        });
+    // 7. Create fully verified user in database upon OTP success
+    const newUser = await prisma.user.create({
+      data: {
+        ...signupData,
+        password: hashedPassword,
+        verifyCode: "",
+        verifyCodeExpiry: new Date(),
+        isVerified: true,
+        status: role === 'provider' ? 'Pending' : 'Active',
+        documents,
+        ...(profileImageUrl && { image: profileImageUrl })
       }
-    } else {
-      // Create new user
-      await prisma.user.create({
-        data: {
-          ...signupData,
-          password: hashedPassword,
-          verifyCode,
-          verifyCodeExpiry: expiryDate,
-          isVerified: false,
-          status: role === 'provider' ? 'Pending' : 'Active',
-          documents,
-          ...(profileImageUrl && { image: profileImageUrl })
-        }
-      });
-    }
+    });
 
-    // 5. Send verification email
-    console.log(`[DEVELOPMENT] New OTP for ${email}: ${verifyCode}`);
-    const emailResponse = await sendVerificationEmail(email, username, verifyCode);
-    
-    if (!emailResponse.success) {
-      return NextResponse.json({ success: false, message: emailResponse.message }, { status: 500 });
-    }
-    
-    // We try to notify, though typically a new user won't have a push subscription yet
-    // unless they are re-registering an account or have another active session.
-    // Fetch the newly created user ID
-    const newUser = await findUserByEmail(prisma, email);
-    if (newUser) {
-      sendPushNotification({
-        userId: newUser.id,
-        title: '🎉 Welcome to Servify!',
-        body: 'Your account has been registered successfully. Please verify your email.',
-        url: '/',
-        type: 'success'
-      }).catch(err => console.error('[Push] Signup notify error:', err));
-      
-      // If a provider signed up, notify Admin
-      if (role === 'provider') {
-        const adminUser = await prisma.user.findFirst({ where: { role: 'admin' } });
-        if (adminUser) {
-          sendPushNotification({
-            userId: adminUser.id,
-            title: '📄 New Provider Verification Request',
-            body: `Provider '${username}' has registered and is awaiting verification.`,
-            url: '/adminDashboard/providers',
-            type: 'info'
-          }).catch(err => console.error('[Push] Admin notify error:', err));
-        }
+    // 8. Delete used verification code
+    await prisma.verifyCode.deleteMany({ where: { email } });
+
+    // 9. Send notifications
+    sendPushNotification({
+      userId: newUser.id,
+      title: '🎉 Welcome to Servify!',
+      body: 'Your account has been registered and verified successfully.',
+      url: '/',
+      type: 'success'
+    }).catch(err => console.error('[Push] Signup notify error:', err));
+
+    if (role === 'provider') {
+      const adminUser = await prisma.user.findFirst({ where: { role: 'admin' } });
+      if (adminUser) {
+        sendPushNotification({
+          userId: adminUser.id,
+          title: '📄 New Provider Verification Request',
+          body: `Provider '${username}' has registered and is awaiting verification.`,
+          url: '/adminDashboard/providers',
+          type: 'info'
+        }).catch(err => console.error('[Push] Admin notify error:', err));
       }
     }
 
-    return NextResponse.json({ 
+    // 10. Set HTTP-only session cookies for instant login
+    const response = NextResponse.json({ 
       success: true, 
-      message: "User registered successfully. Please verify your email.",
+      message: "Account verified and created successfully!",
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        username: newUser.username,
+        isVerified: newUser.isVerified,
+        status: newUser.status,
+        image: newUser.image,
+      }
     }, { status: 201 });
+
+    response.cookies.set("userId", newUser.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    });
+    response.cookies.set("userRole", newUser.role, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    });
+
+    return response;
 
   } catch (error) {
     console.error("Signup error:", error);
     return NextResponse.json({ success: false, message: error.message || "Server error during registration" }, { status: 500 });
   }
 }
+

@@ -148,11 +148,27 @@ export default function Authentication() {
       return;
     }
     setVerifying(true);
+    setLoadingAuth(true);
     try {
+      // Store temporary registration data in browser sessionStorage (temporary cache)
+      const pendingData = {
+        ...formData,
+        role,
+        profilePreview: previews.profile,
+        cnicFrontPreview: previews.cnicFront,
+        cnicBackPreview: previews.cnicBack
+      };
+      // Omit File objects from JSON storage
+      delete pendingData.profile;
+      delete pendingData.cnicFront;
+      delete pendingData.cnicBack;
+      
+      sessionStorage.setItem("servify_pending_signup", JSON.stringify(pendingData));
+
       const res = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email })
+        body: JSON.stringify({ email: formData.email, username: formData.username })
       });
       const data = await res.json();
       if (data.success) {
@@ -166,6 +182,7 @@ export default function Authentication() {
       alert("Connection error. Please check your internet and try again.");
     } finally {
       setVerifying(false);
+      setLoadingAuth(false);
     }
   };
 
@@ -175,27 +192,32 @@ export default function Authentication() {
       return;
     }
     setVerifying(true);
+    setLoadingAuth(true);
     try {
-      const res = await fetch('/api/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, code: otp })
-      });
-      const data = await res.json();
-      if (data.success) {
-        setIsVerified(true);
-        alert("Email verified successfully! You can now log in.");
-        setIsSignup(false);
-        setStep(1);
-        setOtp("");
+      // Send complete registration payload + OTP to create account
+      const signupPayload = {
+        ...formData,
+        role,
+        otp
+      };
+
+      const result = await signup(signupPayload);
+      if (result.success) {
+        sessionStorage.removeItem("servify_pending_signup");
+        alert("Account verified and created successfully!");
+        const userRole = result.user?.role || role;
+        if (userRole === "admin") router.push("/adminDashboard");
+        else if (userRole === "provider") router.push("/providerDashboard");
+        else router.push("/customerDashboard");
       } else {
-        alert(data.message || "Invalid or expired code");
+        alert(result.message || "Invalid or expired verification code");
       }
     } catch (err) {
       console.error("Verify Error:", err);
       alert("Connection error during verification.");
     } finally {
       setVerifying(false);
+      setLoadingAuth(false);
     }
   };
 
@@ -290,22 +312,7 @@ export default function Authentication() {
   const handleSignup = async (e) => {
     if (e) e.preventDefault();
     if (!isStepValid()) return;
-
-    setLoadingAuth(true);
-    try {
-      const result = await signup({ ...formData, role });
-      if (result.success) {
-        alert("Verification code sent to your Gmail!");
-        setStep(7);
-      } else {
-        alert(result.message || "Registration failed. Please try again.");
-      }
-    } catch (err) {
-      console.error("Signup flow error:", err);
-      alert("Network error. Please check your connection.");
-    } finally {
-      setLoadingAuth(false);
-    }
+    await handleSendOTP();
   };
 
   const dark = theme === "dark";
