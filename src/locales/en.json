@@ -141,7 +141,7 @@
   "auth.islam": "Islam",
   "auth.christianity": "Christianity",
   "auth.hinduism": "Hinduism",
-  "auth.phonePlaceholder": "Phone Number (3xxxxxxxxx)",
+  "auth.phonePlaceholder": "Phone Number (+92-xxx-xxxxxxx)",
   "auth.emailPlaceholder": "Gmail Address",
   "auth.selectDistrict": "Select District",
   "auth.selectTehseel": "Select Tehseel",
