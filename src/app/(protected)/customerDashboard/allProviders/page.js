@@ -54,7 +54,7 @@ function AllProvidersContent() {
   }, [activeCategory, providers]);
 
   return (
-    <div className={`min-h-screen pt-36 pb-20 ${dark ? "bg-[#050a14] text-slate-100" : "bg-slate-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
+    <div className={`min-h-screen pt-48 pb-20 ${dark ? "bg-[#050a14] text-slate-100" : "bg-slate-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
       
       {/* ── HERO & FILTERS ── */}
       <div className="max-w-7xl mx-auto px-6 mb-12 text-center">
@@ -74,8 +74,8 @@ function AllProvidersContent() {
               key={cat}
               className={`px-6 py-3 rounded-full font-bold transition-all border ${
                 activeCategory.toLowerCase() === cat.toLowerCase()
-                  ? "bg-gradient-to-r from-orange-500 to-orange-400 text-white border-transparent shadow-lg shadow-orange-500/25 scale-105"
-                  : dark ? "bg-slate-800/50 text-slate-400 border-slate-700 hover:border-orange-500/50 hover:text-orange-400" : "bg-white text-slate-500 border-slate-200 hover:border-orange-300 hover:text-orange-500"
+                  ? "bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-500/30 scale-105"
+                  : dark ? "bg-slate-800/50 text-slate-400 border-slate-700 hover:border-orange-500/50 hover:text-orange-400" : "bg-white text-slate-500 border-slate-200 hover:border-orange-300 hover:text-orange-500 hover:bg-orange-50/50"
               }`}
               onClick={() => setActiveCategory(cat)}
             >
