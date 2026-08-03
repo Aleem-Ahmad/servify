@@ -152,77 +152,123 @@ export default function ProviderDashboard() {
   ];
 
   return (
-    <div className={`min-h-screen pb-20 ${dark ? "bg-[#050a14] text-slate-100" : "bg-slate-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
-      
-      {/* ── Header ── */}
-      <div className={`relative pt-28 pb-16 px-6 rounded-b-[3rem] overflow-hidden ${
-        dark ? "bg-slate-900 border-b border-slate-800" : "bg-white border-b border-slate-200 shadow-sm"
-      }`}>
-        <div className="absolute top-0 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 -translate-x-1/3" />
-        <div className="absolute bottom-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none translate-y-1/3 translate-x-1/3" />
+    <div className={`min-h-screen pb-20 ${dark ? "bg-[#050a14] text-slate-100" : "bg-gray-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
 
-        <div className="relative z-10 max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-          <div>
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-3 mb-4"
-            >
-              <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${
-                dark ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" : "bg-purple-50 text-purple-600 border border-purple-200"
-              }`}>
-                <Briefcase className="w-3.5 h-3.5" /> {isUrdu ? "پرووائیڈر ڈیش بورڈ" : "Provider Dashboard"}
-              </div>
-            </motion.div>
-            <motion.h1 
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-              className="text-3xl md:text-5xl font-extrabold tracking-tight mb-2"
-            >
-              {isUrdu ? (
-                (() => {
-                  const h = new Date().getHours();
-                  if (h >= 5 && h < 12) return "صبح بخیر،";
-                  if (h >= 12 && h < 17) return "دوپہر بخیر،";
-                  if (h >= 17 && h < 21) return "شام بخیر،";
-                  return "شب بخیر،";
-                })()
-              ) : getGreeting()} <span className="text-gradient-purple">{user?.name || "Professional"}</span>
-            </motion.h1>
-            <motion.p 
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-              className={`text-lg ${dark ? "text-slate-400" : "text-slate-500"}`}
-            >
-              {isUrdu ? "یہاں آپ کی سروسز کی تفصیل ہے۔" : "Here's an overview of your service business today."}
-            </motion.p>
+      {/* ── Hero Header ── */}
+      <div className={`relative overflow-hidden ${
+        dark
+          ? "bg-gradient-to-br from-slate-900 via-[#0f0c29] to-slate-900"
+          : "bg-gradient-to-br from-orange-50 via-white to-purple-50"
+      }`}>
+        {/* Decorative blobs */}
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-orange-500/10 rounded-full blur-[120px] pointer-events-none -translate-y-1/2 -translate-x-1/3" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-[100px] pointer-events-none translate-y-1/2 translate-x-1/3" />
+        <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-amber-400/5 rounded-full blur-[80px] pointer-events-none -translate-x-1/2 -translate-y-1/2" />
+
+        <div className="relative z-10 max-w-6xl mx-auto px-6 pt-10 pb-10">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+
+            {/* Left: Greeting */}
+            <div className="flex-1">
+              <motion.div
+                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-2 mb-4"
+              >
+                <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest border ${
+                  dark ? "bg-purple-500/10 text-purple-400 border-purple-500/20" : "bg-purple-100 text-purple-700 border-purple-200"
+                }`}>
+                  <Briefcase className="w-3.5 h-3.5" />
+                  {isUrdu ? "پرووائیڈر ڈیش بورڈ" : "Provider Dashboard"}
+                </div>
+              </motion.div>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                className="text-4xl md:text-5xl font-black tracking-tight mb-2 leading-tight"
+              >
+                {isUrdu ? (
+                  (() => {
+                    const h = new Date().getHours();
+                    if (h >= 5 && h < 12) return "صبح بخیر،";
+                    if (h >= 12 && h < 17) return "دوپہر بخیر،";
+                    if (h >= 17 && h < 21) return "شام بخیر،";
+                    return "شب بخیر،";
+                  })()
+                ) : getGreeting()}{" "}
+                <span className="bg-gradient-to-r from-orange-500 to-purple-500 bg-clip-text text-transparent">
+                  {user?.name || "Professional"}
+                </span>
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                className={`text-base mb-6 ${dark ? "text-slate-400" : "text-slate-500"}`}
+              >
+                {isUrdu ? "یہاں آپ کی سروسز کی تفصیل ہے۔" : "Here's an overview of your service business today."}
+              </motion.p>
+
+              {/* Quick stat pills */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+                className="flex flex-wrap gap-3"
+              >
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border ${
+                  dark ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-amber-50 text-amber-700 border-amber-200"
+                }`}>
+                  <Clock className="w-4 h-4" />
+                  {loading ? "—" : counts.pending} {isUrdu ? "فعال جابز" : "Active Jobs"}
+                </div>
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border ${
+                  dark ? "bg-blue-500/10 text-blue-400 border-blue-500/20" : "bg-blue-50 text-blue-700 border-blue-200"
+                }`}>
+                  <BellRing className="w-4 h-4" />
+                  {loading ? "—" : counts.new} {isUrdu ? "نئی درخواستیں" : "New Requests"}
+                </div>
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border ${
+                  dark ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                }`}>
+                  <CheckCircle className="w-4 h-4" />
+                  {loading ? "—" : counts.done} {isUrdu ? "مکمل" : "Completed"}
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Right: Rating card */}
             <motion.div
-              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-              style={{ marginTop: "18px" }}
+              initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.25 }}
+              className={`flex-shrink-0 p-6 rounded-3xl min-w-[220px] ${
+                dark
+                  ? "bg-slate-800/60 border border-slate-700/60 backdrop-blur-xl shadow-2xl shadow-black/40"
+                  : "bg-white/80 border border-white backdrop-blur-xl shadow-xl shadow-orange-100/60"
+              }`}
             >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-300/40">
+                  <Star className="w-7 h-7 fill-white" />
+                </div>
+                <div>
+                  <p className={`text-xs font-bold uppercase tracking-widest mb-0.5 ${dark ? "text-slate-500" : "text-slate-400"}`}>
+                    {isUrdu ? "مجموعی ریٹنگ" : "Overall Rating"}
+                  </p>
+                  <div className="text-3xl font-black flex items-baseline gap-1 leading-none">
+                    4.9
+                    <span className={`text-sm font-semibold ${dark ? "text-slate-500" : "text-slate-400"}`}>/5.0</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-0.5">
+                {[1,2,3,4,5].map(s => (
+                  <Star key={s} className={`w-4 h-4 ${s <= 5 ? "text-yellow-400 fill-yellow-400" : "text-slate-300"}`} />
+                ))}
+              </div>
               <InstallPWA />
             </motion.div>
-          </div>
 
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}
-            className={`p-6 rounded-3xl flex items-center gap-4 shadow-lg ${
-              dark ? "bg-slate-800/80 border border-slate-700 backdrop-blur-md" : "bg-white border border-slate-200 backdrop-blur-md"
-            }`}
-          >
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white shadow-inner">
-              <Star className="w-8 h-8 fill-white" />
-            </div>
-            <div>
-              <p className={`text-sm font-semibold uppercase tracking-widest ${dark ? "text-slate-400" : "text-slate-500"}`}>
-                {isUrdu ? "مجموعی ریٹنگ" : "Overall Rating"}
-              </p>
-              <div className="text-3xl font-black flex items-baseline gap-1">
-                4.9 <span className="text-base font-medium text-slate-500">/ 5.0</span>
-              </div>
-            </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-12 space-y-12">
+      <div className="max-w-6xl mx-auto px-6 py-10 space-y-10">
         
         {/* Active Notifications & Warning Banners */}
         {profile?.warning && (
