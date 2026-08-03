@@ -110,10 +110,10 @@ export default function SearchBar() {
 
     const fetchIpLocation = async () => {
       try {
-        const res = await fetch("https://ipapi.co/json/");
+        const res = await fetch("https://freeipapi.com/api/json");
         const data = await res.json();
-        if (data && data.city) {
-          setLocation(`${data.city}, ${data.country}`);
+        if (data && data.cityName) {
+          setLocation(`${data.cityName}, ${data.countryCode || data.countryName}`);
         } else {
           setLocation("Location Unavailable");
         }
