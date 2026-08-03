@@ -152,7 +152,7 @@ export default function ProviderDashboard() {
   ];
 
   return (
-    <div className={`min-h-screen pb-20 ${dark ? "bg-[#050a14] text-slate-100" : "bg-gray-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
+    <div className={`min-h-screen pb-36 ${dark ? "bg-[#050a14] text-slate-100" : "bg-gray-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
 
       {/* ── Hero Header ── */}
       <div className={`relative overflow-hidden ${
@@ -393,7 +393,7 @@ export default function ProviderDashboard() {
         </section>
 
         {/* ── Recent Activity ── */}
-        <section>
+        <section className="mt-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <Activity className="w-6 h-6 text-orange-500" /> {isUrdu ? "حالیہ سرگرمی" : "Recent Activity"}
