@@ -42,75 +42,56 @@ export default function ProviderDashboard() {
   const [profile, setProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(true);
 
-  const fetchProfile = async () => {
-    try {
-      const res = await fetch("/api/user/profile");
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch provider profile:", error);
-    } finally {
-      setProfileLoading(false);
-    }
-  };
-
+  // Single parallel fetch for all dashboard data
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    if (!user?.id) return;
+    let cancelled = false;
 
-  const handleDismissWarning = async () => {
-    try {
-      const res = await fetch("/api/user/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ warning: "" })
-      });
-      if (res.ok) {
-        setProfile(prev => ({ ...prev, warning: "" }));
-      }
-    } catch (error) {
-      console.error("Failed to clear warning:", error);
-    }
-  };
-
-  useEffect(() => {
-    const fetchComplaints = async () => {
-      if (!user) return;
+    const loadAll = async () => {
       try {
-        const res = await fetch(`/api/bookings?providerId=${user.id}`);
-        if (res.ok) {
-          const data = await res.json();
-          let newCount = 0;
-          let pendingCount = 0;
-          let doneCount = 0;
-          
+        const [profileRes, bookingsRes, emergencyRes] = await Promise.all([
+          fetch("/api/user/profile"),
+          fetch(`/api/bookings?providerId=${user.id}`),
+          fetch("/api/bookings/emergency"),
+        ]);
+
+        if (cancelled) return;
+
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          setProfile(profileData);
+        }
+
+        if (bookingsRes.ok) {
+          const data = await bookingsRes.json();
+          let newCount = 0, pendingCount = 0, doneCount = 0;
           data.forEach(c => {
             if (c.status === "Pending") newCount++;
             else if (c.status === "Accepted") pendingCount++;
             else if (c.status === "Completed") doneCount++;
           });
-          
           setCounts(prev => ({ ...prev, new: newCount, pending: pendingCount, done: doneCount }));
           setRecentComplaints(data.slice(0, 3));
         }
 
-        // Fetch emergency count
-        const emergencyRes = await fetch(`/api/bookings/emergency`);
         if (emergencyRes.ok) {
           const emergencyData = await emergencyRes.json();
           setCounts(prev => ({ ...prev, emergencies: emergencyData.length }));
         }
 
       } catch (error) {
-        console.error("Failed to fetch stats:", error);
+        console.error("Dashboard fetch error:", error);
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setProfileLoading(false);
+        }
       }
     };
-    fetchComplaints();
-  }, [user]);
+
+    loadAll();
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   const statCards = [
     { 
@@ -152,7 +133,7 @@ export default function ProviderDashboard() {
   ];
 
   return (
-    <div className={`min-h-screen pb-36 ${dark ? "bg-[#050a14] text-slate-100" : "bg-gray-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
+    <div className={`min-h-screen pb-48 ${dark ? "bg-[#050a14] text-slate-100" : "bg-gray-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
 
       {/* ── Hero Header ── */}
       <div className={`relative overflow-hidden ${
@@ -393,7 +374,7 @@ export default function ProviderDashboard() {
         </section>
 
         {/* ── Recent Activity ── */}
-        <section className="mt-8">
+        <section className="mt-8 pb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <Activity className="w-6 h-6 text-orange-500" /> {isUrdu ? "حالیہ سرگرمی" : "Recent Activity"}
