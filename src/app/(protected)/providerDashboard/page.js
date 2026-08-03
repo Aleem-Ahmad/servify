@@ -42,75 +42,56 @@ export default function ProviderDashboard() {
   const [profile, setProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(true);
 
-  const fetchProfile = async () => {
-    try {
-      const res = await fetch("/api/user/profile");
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch provider profile:", error);
-    } finally {
-      setProfileLoading(false);
-    }
-  };
-
+  // Single parallel fetch for all dashboard data
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    if (!user?.id) return;
+    let cancelled = false;
 
-  const handleDismissWarning = async () => {
-    try {
-      const res = await fetch("/api/user/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ warning: "" })
-      });
-      if (res.ok) {
-        setProfile(prev => ({ ...prev, warning: "" }));
-      }
-    } catch (error) {
-      console.error("Failed to clear warning:", error);
-    }
-  };
-
-  useEffect(() => {
-    const fetchComplaints = async () => {
-      if (!user) return;
+    const loadAll = async () => {
       try {
-        const res = await fetch(`/api/bookings?providerId=${user.id}`);
-        if (res.ok) {
-          const data = await res.json();
-          let newCount = 0;
-          let pendingCount = 0;
-          let doneCount = 0;
-          
+        const [profileRes, bookingsRes, emergencyRes] = await Promise.all([
+          fetch("/api/user/profile"),
+          fetch(`/api/bookings?providerId=${user.id}`),
+          fetch("/api/bookings/emergency"),
+        ]);
+
+        if (cancelled) return;
+
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          setProfile(profileData);
+        }
+
+        if (bookingsRes.ok) {
+          const data = await bookingsRes.json();
+          let newCount = 0, pendingCount = 0, doneCount = 0;
           data.forEach(c => {
             if (c.status === "Pending") newCount++;
             else if (c.status === "Accepted") pendingCount++;
             else if (c.status === "Completed") doneCount++;
           });
-          
           setCounts(prev => ({ ...prev, new: newCount, pending: pendingCount, done: doneCount }));
           setRecentComplaints(data.slice(0, 3));
         }
 
-        // Fetch emergency count
-        const emergencyRes = await fetch(`/api/bookings/emergency`);
         if (emergencyRes.ok) {
           const emergencyData = await emergencyRes.json();
           setCounts(prev => ({ ...prev, emergencies: emergencyData.length }));
         }
 
       } catch (error) {
-        console.error("Failed to fetch stats:", error);
+        console.error("Dashboard fetch error:", error);
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setProfileLoading(false);
+        }
       }
     };
-    fetchComplaints();
-  }, [user]);
+
+    loadAll();
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   const statCards = [
     { 
@@ -152,77 +133,123 @@ export default function ProviderDashboard() {
   ];
 
   return (
-    <div className={`min-h-screen pb-20 ${dark ? "bg-[#050a14] text-slate-100" : "bg-slate-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
-      
-      {/* ── Header ── */}
-      <div className={`relative pt-28 pb-16 px-6 rounded-b-[3rem] overflow-hidden ${
-        dark ? "bg-slate-900 border-b border-slate-800" : "bg-white border-b border-slate-200 shadow-sm"
-      }`}>
-        <div className="absolute top-0 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 -translate-x-1/3" />
-        <div className="absolute bottom-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none translate-y-1/3 translate-x-1/3" />
+    <div className={`min-h-screen pb-48 ${dark ? "bg-[#050a14] text-slate-100" : "bg-gray-50 text-slate-900"}`} dir={isUrdu ? "rtl" : "ltr"}>
 
-        <div className="relative z-10 max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-          <div>
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-3 mb-4"
-            >
-              <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${
-                dark ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" : "bg-purple-50 text-purple-600 border border-purple-200"
-              }`}>
-                <Briefcase className="w-3.5 h-3.5" /> {isUrdu ? "پرووائیڈر ڈیش بورڈ" : "Provider Dashboard"}
-              </div>
-            </motion.div>
-            <motion.h1 
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-              className="text-3xl md:text-5xl font-extrabold tracking-tight mb-2"
-            >
-              {isUrdu ? (
-                (() => {
-                  const h = new Date().getHours();
-                  if (h >= 5 && h < 12) return "صبح بخیر،";
-                  if (h >= 12 && h < 17) return "دوپہر بخیر،";
-                  if (h >= 17 && h < 21) return "شام بخیر،";
-                  return "شب بخیر،";
-                })()
-              ) : getGreeting()} <span className="text-gradient-purple">{user?.name || "Professional"}</span>
-            </motion.h1>
-            <motion.p 
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-              className={`text-lg ${dark ? "text-slate-400" : "text-slate-500"}`}
-            >
-              {isUrdu ? "یہاں آپ کی سروسز کی تفصیل ہے۔" : "Here's an overview of your service business today."}
-            </motion.p>
+      {/* ── Hero Header ── */}
+      <div className={`relative overflow-hidden ${
+        dark
+          ? "bg-gradient-to-br from-slate-900 via-[#0f0c29] to-slate-900"
+          : "bg-gradient-to-br from-orange-50 via-white to-purple-50"
+      }`}>
+        {/* Decorative blobs */}
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-orange-500/10 rounded-full blur-[120px] pointer-events-none -translate-y-1/2 -translate-x-1/3" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-[100px] pointer-events-none translate-y-1/2 translate-x-1/3" />
+        <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-amber-400/5 rounded-full blur-[80px] pointer-events-none -translate-x-1/2 -translate-y-1/2" />
+
+        <div className="relative z-10 max-w-6xl mx-auto px-6 pt-10 pb-10">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+
+            {/* Left: Greeting */}
+            <div className="flex-1">
+              <motion.div
+                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-2 mb-4"
+              >
+                <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest border ${
+                  dark ? "bg-purple-500/10 text-purple-400 border-purple-500/20" : "bg-purple-100 text-purple-700 border-purple-200"
+                }`}>
+                  <Briefcase className="w-3.5 h-3.5" />
+                  {isUrdu ? "پرووائیڈر ڈیش بورڈ" : "Provider Dashboard"}
+                </div>
+              </motion.div>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                className="text-4xl md:text-5xl font-black tracking-tight mb-2 leading-tight"
+              >
+                {isUrdu ? (
+                  (() => {
+                    const h = new Date().getHours();
+                    if (h >= 5 && h < 12) return "صبح بخیر،";
+                    if (h >= 12 && h < 17) return "دوپہر بخیر،";
+                    if (h >= 17 && h < 21) return "شام بخیر،";
+                    return "شب بخیر،";
+                  })()
+                ) : getGreeting()}{" "}
+                <span className="bg-gradient-to-r from-orange-500 to-purple-500 bg-clip-text text-transparent">
+                  {user?.name || "Professional"}
+                </span>
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                className={`text-base mb-6 ${dark ? "text-slate-400" : "text-slate-500"}`}
+              >
+                {isUrdu ? "یہاں آپ کی سروسز کی تفصیل ہے۔" : "Here's an overview of your service business today."}
+              </motion.p>
+
+              {/* Quick stat pills */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+                className="flex flex-wrap gap-3"
+              >
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border ${
+                  dark ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-amber-50 text-amber-700 border-amber-200"
+                }`}>
+                  <Clock className="w-4 h-4" />
+                  {loading ? "—" : counts.pending} {isUrdu ? "فعال جابز" : "Active Jobs"}
+                </div>
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border ${
+                  dark ? "bg-blue-500/10 text-blue-400 border-blue-500/20" : "bg-blue-50 text-blue-700 border-blue-200"
+                }`}>
+                  <BellRing className="w-4 h-4" />
+                  {loading ? "—" : counts.new} {isUrdu ? "نئی درخواستیں" : "New Requests"}
+                </div>
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border ${
+                  dark ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                }`}>
+                  <CheckCircle className="w-4 h-4" />
+                  {loading ? "—" : counts.done} {isUrdu ? "مکمل" : "Completed"}
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Right: Rating card */}
             <motion.div
-              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
-              style={{ marginTop: "18px" }}
+              initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.25 }}
+              className={`flex-shrink-0 p-6 rounded-3xl min-w-[220px] ${
+                dark
+                  ? "bg-slate-800/60 border border-slate-700/60 backdrop-blur-xl shadow-2xl shadow-black/40"
+                  : "bg-white/80 border border-white backdrop-blur-xl shadow-xl shadow-orange-100/60"
+              }`}
             >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-300/40">
+                  <Star className="w-7 h-7 fill-white" />
+                </div>
+                <div>
+                  <p className={`text-xs font-bold uppercase tracking-widest mb-0.5 ${dark ? "text-slate-500" : "text-slate-400"}`}>
+                    {isUrdu ? "مجموعی ریٹنگ" : "Overall Rating"}
+                  </p>
+                  <div className="text-3xl font-black flex items-baseline gap-1 leading-none">
+                    4.9
+                    <span className={`text-sm font-semibold ${dark ? "text-slate-500" : "text-slate-400"}`}>/5.0</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-0.5">
+                {[1,2,3,4,5].map(s => (
+                  <Star key={s} className={`w-4 h-4 ${s <= 5 ? "text-yellow-400 fill-yellow-400" : "text-slate-300"}`} />
+                ))}
+              </div>
               <InstallPWA />
             </motion.div>
-          </div>
 
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}
-            className={`p-6 rounded-3xl flex items-center gap-4 shadow-lg ${
-              dark ? "bg-slate-800/80 border border-slate-700 backdrop-blur-md" : "bg-white border border-slate-200 backdrop-blur-md"
-            }`}
-          >
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white shadow-inner">
-              <Star className="w-8 h-8 fill-white" />
-            </div>
-            <div>
-              <p className={`text-sm font-semibold uppercase tracking-widest ${dark ? "text-slate-400" : "text-slate-500"}`}>
-                {isUrdu ? "مجموعی ریٹنگ" : "Overall Rating"}
-              </p>
-              <div className="text-3xl font-black flex items-baseline gap-1">
-                4.9 <span className="text-base font-medium text-slate-500">/ 5.0</span>
-              </div>
-            </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-12 space-y-12">
+      <div className="max-w-6xl mx-auto px-6 py-10 space-y-10">
         
         {/* Active Notifications & Warning Banners */}
         {profile?.warning && (
@@ -315,31 +342,31 @@ export default function ProviderDashboard() {
             <TrendingUp className="w-6 h-6 text-purple-500" /> {t("Dashboard Overview")}
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {statCards.map((card, i) => {
               const Icon = card.icon;
               return (
                 <motion.div
-                  key={i}
+                  key={card.title}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  whileHover={{ y: -5 }}
+                  transition={{ delay: i * 0.08 }}
+                  whileHover={{ y: -4 }}
                   onClick={() => router.push(card.path)}
-                  className={`p-6 rounded-3xl cursor-pointer border transition-all ${
-                    dark ? "bg-slate-900 border-slate-800 hover:border-slate-700 shadow-xl shadow-black/20" : "bg-white border-slate-200 hover:border-slate-300 shadow-lg shadow-slate-200/50"
+                  className={`p-5 rounded-2xl cursor-pointer border transition-all ${
+                    dark ? "bg-slate-900 border-slate-800 hover:border-slate-700 shadow-xl shadow-black/20" : "bg-white border-slate-200 hover:border-orange-200 shadow-md shadow-slate-100/80"
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${card.bg} ${card.text}`}>
-                      <Icon className="w-7 h-7" />
+                  <div className="flex items-start justify-between mb-3">
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${card.bg} ${card.text}`}>
+                      <Icon className="w-5 h-5" />
                     </div>
-                    <div className={`px-3 py-1 rounded-full text-xs font-bold ${dark ? "bg-slate-800" : "bg-slate-100"}`}>
+                    <div className={`px-2.5 py-1 rounded-full text-xs font-bold ${dark ? "bg-slate-800 text-slate-400" : "bg-slate-100 text-slate-500"}`}>
                       {isUrdu ? "دیکھیں" : "View"}
                     </div>
                   </div>
-                  <h3 className={`text-sm font-semibold mb-1 ${dark ? "text-slate-400" : "text-slate-500"}`}>{card.title}</h3>
-                  <div className="text-4xl font-black">{loading ? "-" : card.value}</div>
+                  <h3 className={`text-xs font-semibold mb-1 uppercase tracking-wider ${dark ? "text-slate-500" : "text-slate-400"}`}>{card.title}</h3>
+                  <div className="text-3xl font-black">{loading ? "-" : card.value}</div>
                 </motion.div>
               );
             })}
@@ -347,7 +374,7 @@ export default function ProviderDashboard() {
         </section>
 
         {/* ── Recent Activity ── */}
-        <section>
+        <section className="mt-8 pb-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <Activity className="w-6 h-6 text-orange-500" /> {isUrdu ? "حالیہ سرگرمی" : "Recent Activity"}
@@ -383,7 +410,7 @@ export default function ProviderDashboard() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className={`p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors ${
+                    className={`p-5 flex items-center justify-between gap-4 transition-colors ${
                       dark ? "hover:bg-slate-800/50" : "hover:bg-slate-50"
                     }`}
                   >
@@ -406,19 +433,19 @@ export default function ProviderDashboard() {
                       </p>
                     </div>
                     
-                    <div className="flex items-center gap-2 mt-3 sm:mt-0 w-full sm:w-auto">
+                    <div className="flex items-center gap-2 shrink-0">
                       <button 
-                        onClick={() => router.push(`/providerDashboard/track/${complaint.id || complaint._id}`)}
-                        className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 transition-colors ${
+                        onClick={() => router.push(`/providerDashboard/viewComplaint?type=${complaint.status === 'Pending' ? 'new' : complaint.status === 'Accepted' ? 'pending' : 'done'}&chat=${complaint.id || complaint._id}`)}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
                           dark ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20" : "bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100"
                         }`}
                       >
-                        <MessageCircle className="w-4 h-4" /> {isUrdu ? "چیٹ" : "Chat"}
+                        <MessageCircle className="w-3.5 h-3.5" /> {isUrdu ? "چیٹ" : "Chat"}
                       </button>
                       
                       <button 
-                        onClick={() => router.push(`/providerDashboard/viewComplaint?type=${complaint.status.toLowerCase()}`)}
-                        className="flex-1 sm:flex-none px-6 py-2 rounded-xl bg-purple-500 text-white font-bold hover:bg-purple-600 transition-colors"
+                        onClick={() => router.push(`/providerDashboard/viewComplaint?type=${complaint.status === 'Pending' ? 'new' : complaint.status === 'Accepted' ? 'pending' : 'done'}`)}
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-purple-500 text-white hover:bg-purple-600 transition-colors"
                       >
                         {isUrdu ? "تفصیلات" : "Details"}
                       </button>
