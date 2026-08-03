@@ -19,7 +19,7 @@ import "./account.css";
 
 export default function AccountPage() {
   const { t, locale } = useLanguage();
-  const { logout } = useAuth();
+  const { user, logout, setUser } = useAuth();
   const isUrdu = locale === "ur";
 
   const [profile, setProfile] = useState(null);
@@ -38,34 +38,23 @@ export default function AccountPage() {
     dob: "",
   });
 
-  const fetchProfile = async () => {
-    try {
-      const res = await fetch("/api/user/profile");
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data);
-        setEditForm({
-          name: data.name || "",
-          phone: data.phone || "",
-          district: data.district || "",
-          tehseel: data.tehseel || "",
-          address: data.address || "",
-          gender: data.gender || "",
-          religion: data.religion || "",
-          maritalStatus: data.maritalStatus || "",
-          dob: data.dob || "",
-        });
-      }
-    } catch (error) {
-      console.error("Failed to fetch profile");
-    } finally {
+  useEffect(() => {
+    if (user) {
+      setProfile(user);
+      setEditForm({
+        name: user.name || "",
+        phone: user.phone || "",
+        district: user.district || "",
+        tehseel: user.tehseel || "",
+        address: user.address || "",
+        gender: user.gender || "",
+        religion: user.religion || "",
+        maritalStatus: user.maritalStatus || "",
+        dob: user.dob || "",
+      });
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+  }, [user]);
 
   const handleInputChange = (e) => {
     setEditForm({ ...editForm, [e.target.name]: e.target.value });
@@ -83,7 +72,8 @@ export default function AccountPage() {
       if (data.success) {
         alert(t("Profile updated successfully!"));
         setIsEditing(false);
-        fetchProfile();
+        setUser(data.user);
+        localStorage.setItem("servify_user", JSON.stringify(data.user));
       } else {
         alert(data.message || "Update failed");
       }
