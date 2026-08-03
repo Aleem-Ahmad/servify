@@ -315,31 +315,31 @@ export default function ProviderDashboard() {
             <TrendingUp className="w-6 h-6 text-purple-500" /> {t("Dashboard Overview")}
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {statCards.map((card, i) => {
               const Icon = card.icon;
               return (
                 <motion.div
-                  key={i}
+                  key={card.title}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  whileHover={{ y: -5 }}
+                  transition={{ delay: i * 0.08 }}
+                  whileHover={{ y: -4 }}
                   onClick={() => router.push(card.path)}
-                  className={`p-6 rounded-3xl cursor-pointer border transition-all ${
-                    dark ? "bg-slate-900 border-slate-800 hover:border-slate-700 shadow-xl shadow-black/20" : "bg-white border-slate-200 hover:border-slate-300 shadow-lg shadow-slate-200/50"
+                  className={`p-5 rounded-2xl cursor-pointer border transition-all ${
+                    dark ? "bg-slate-900 border-slate-800 hover:border-slate-700 shadow-xl shadow-black/20" : "bg-white border-slate-200 hover:border-orange-200 shadow-md shadow-slate-100/80"
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${card.bg} ${card.text}`}>
-                      <Icon className="w-7 h-7" />
+                  <div className="flex items-start justify-between mb-3">
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${card.bg} ${card.text}`}>
+                      <Icon className="w-5 h-5" />
                     </div>
-                    <div className={`px-3 py-1 rounded-full text-xs font-bold ${dark ? "bg-slate-800" : "bg-slate-100"}`}>
+                    <div className={`px-2.5 py-1 rounded-full text-xs font-bold ${dark ? "bg-slate-800 text-slate-400" : "bg-slate-100 text-slate-500"}`}>
                       {isUrdu ? "دیکھیں" : "View"}
                     </div>
                   </div>
-                  <h3 className={`text-sm font-semibold mb-1 ${dark ? "text-slate-400" : "text-slate-500"}`}>{card.title}</h3>
-                  <div className="text-4xl font-black">{loading ? "-" : card.value}</div>
+                  <h3 className={`text-xs font-semibold mb-1 uppercase tracking-wider ${dark ? "text-slate-500" : "text-slate-400"}`}>{card.title}</h3>
+                  <div className="text-3xl font-black">{loading ? "-" : card.value}</div>
                 </motion.div>
               );
             })}
@@ -383,7 +383,7 @@ export default function ProviderDashboard() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className={`p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors ${
+                    className={`p-5 flex items-center justify-between gap-4 transition-colors ${
                       dark ? "hover:bg-slate-800/50" : "hover:bg-slate-50"
                     }`}
                   >
@@ -406,19 +406,19 @@ export default function ProviderDashboard() {
                       </p>
                     </div>
                     
-                    <div className="flex items-center gap-2 mt-3 sm:mt-0 w-full sm:w-auto">
+                    <div className="flex items-center gap-2 shrink-0">
                       <button 
                         onClick={() => router.push(`/providerDashboard/track/${complaint.id || complaint._id}`)}
-                        className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 transition-colors ${
+                        className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
                           dark ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20" : "bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100"
                         }`}
                       >
-                        <MessageCircle className="w-4 h-4" /> {isUrdu ? "چیٹ" : "Chat"}
+                        <MessageCircle className="w-3.5 h-3.5" /> {isUrdu ? "چیٹ" : "Chat"}
                       </button>
                       
                       <button 
-                        onClick={() => router.push(`/providerDashboard/viewComplaint?type=${complaint.status.toLowerCase()}`)}
-                        className="flex-1 sm:flex-none px-6 py-2 rounded-xl bg-purple-500 text-white font-bold hover:bg-purple-600 transition-colors"
+                        onClick={() => router.push(`/providerDashboard/viewComplaint?type=${complaint.status === 'Pending' ? 'new' : complaint.status === 'Accepted' ? 'pending' : 'done'}`)}
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-purple-500 text-white hover:bg-purple-600 transition-colors"
                       >
                         {isUrdu ? "تفصیلات" : "Details"}
                       </button>
