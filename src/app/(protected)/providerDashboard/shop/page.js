@@ -323,7 +323,7 @@ export default function ShopPage() {
   };
 
   return (
-    <div className={`dashboard-shop-container ${dark ? "dark" : ""}`}>
+    <div className={`dashboard-shop-container pb-48 ${dark ? "dark" : ""}`}>
       
       {/* ── HEADER & PROFILE ── */}
       <div className="shop-premium-header">
