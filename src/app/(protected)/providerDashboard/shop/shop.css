@@ -307,6 +307,13 @@
   justify-content: space-between;
   align-items: center;
   margin-top: 10px;
+  padding-bottom: 80px; /* Base padding */
+}
+
+@media (max-width: 900px) {
+  .shop-global-actions {
+    padding-bottom: 140px; /* Extra padding for mobile bottom bar */
+  }
 }
 
 .edit-overlay-footer {
