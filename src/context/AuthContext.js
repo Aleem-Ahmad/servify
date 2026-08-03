@@ -14,6 +14,23 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const initAuth = async () => {
+      // Pre-warm from localStorage first — this prevents a flash-logout
+      // when a freshly Google-logged-in user navigates to a protected page
+      // before the HTTP-only cookie has fully propagated to the browser.
+      const cachedRaw = localStorage.getItem("servify_user");
+      if (cachedRaw) {
+        try {
+          const cached = JSON.parse(cachedRaw);
+          if (cached?.id) {
+            setUser(cached);
+            setLoading(false);
+            // Continue to background-verify with the server, but don't block the UI
+          }
+        } catch (_) {
+          localStorage.removeItem("servify_user");
+        }
+      }
+
       // Helper: fetch profile with up to `attempts` retries on network failure
       const fetchProfile = async (attempts = 3, delayMs = 600) => {
         for (let i = 0; i < attempts; i++) {
