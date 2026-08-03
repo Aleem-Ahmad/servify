@@ -15,6 +15,7 @@ import {
 function ComplaintsList() {
   const searchParams = useSearchParams();
   const type = searchParams.get("type") || "new";
+  const chatId = searchParams.get("chat") || null;
   const { t } = useLanguage();
   const { theme } = useTheme();
   const { user } = useAuth();
@@ -199,6 +200,14 @@ function ComplaintsList() {
       fetchComplaints(user.id);
     }
   }, [user?.id]);
+
+  // Auto-open chat if ?chat=bookingId is in the URL
+  useEffect(() => {
+    if (chatId && complaints.length > 0 && !chatComplaint) {
+      const target = complaints.find(c => (c.id || c._id) === chatId);
+      if (target) setChatComplaint(target);
+    }
+  }, [chatId, complaints]);
 
   const filtered = complaints.filter(c => c.frontendStatus === type);
 

@@ -408,7 +408,7 @@ export default function ProviderDashboard() {
                     
                     <div className="flex items-center gap-2 shrink-0">
                       <button 
-                        onClick={() => router.push(`/providerDashboard/track/${complaint.id || complaint._id}`)}
+                        onClick={() => router.push(`/providerDashboard/viewComplaint?type=${complaint.status === 'Pending' ? 'new' : complaint.status === 'Accepted' ? 'pending' : 'done'}&chat=${complaint.id || complaint._id}`)}
                         className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
                           dark ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20" : "bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100"
                         }`}
