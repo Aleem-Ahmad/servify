@@ -8,7 +8,7 @@ const bgSyncPlugin = new BackgroundSyncPlugin("servify-offline-queue", {
 const customCache = [
   // 1. Background Sync for offline mutations (POST, PATCH, PUT, DELETE)
   {
-    matcher: ({ url, request }) => url.pathname.startsWith('/api/') && ['POST', 'PATCH', 'PUT', 'DELETE'].includes(request.method),
+    matcher: ({ url, request }) => url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/auth') && ['POST', 'PATCH', 'PUT', 'DELETE'].includes(request.method),
     handler: "NetworkOnly",
     options: {
       plugins: [bgSyncPlugin],
@@ -16,7 +16,7 @@ const customCache = [
   },
   // 2. Cache API GET requests for offline viewing (Profiles, Bookings, etc.)
   {
-    matcher: ({ url, request }) => url.pathname.startsWith('/api/') && request.method === 'GET',
+    matcher: ({ url, request }) => url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/auth') && request.method === 'GET',
     handler: "NetworkFirst",
     options: {
       cacheName: "servify-api-cache",

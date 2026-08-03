@@ -379,7 +379,7 @@ export default function ProviderDashboard() {
               <div className="divide-y divide-slate-200 dark:divide-slate-800">
                 {recentComplaints.map((complaint, i) => (
                   <motion.div 
-                    key={complaint._id}
+                    key={complaint.id || complaint._id || i}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
