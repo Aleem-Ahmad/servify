@@ -16,18 +16,8 @@ export default function ComingSoon() {
   const router = useRouter();
   const dark = theme === "dark";
 
-  // Redirect logged-in users to their appropriate dashboard
-  useEffect(() => {
-    if (user) {
-      if (user.role === 'provider') {
-        router.push('/providerDashboard');
-      } else if (user.role === 'customer') {
-        router.push('/customerDashboard');
-      } else if (user.role === 'admin') {
-        router.push('/adminDashboard');
-      }
-    }
-  }, [user, router]);
+  // Coming soon page should display for all users without immediately kicking logged-in users back
+
 
   return (
     <div className={`coming-soon-container ${dark ? "dark" : ""}`}>

@@ -23,10 +23,6 @@ export default function AdminDashboardPage() {
   const redirectTabs = new Set(["earnings", "settings"]);
 
   const handleTabClick = (tabId) => {
-    if (redirectTabs.has(tabId)) {
-      router.push("/coming-soon");
-      return;
-    }
     setActiveTab(tabId);
   };
 
