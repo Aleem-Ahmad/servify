@@ -847,14 +847,29 @@ function BookingFormContent() {
 
 export default function BookingForm() {
   return (
-    <Suspense fallback={
-      <div className="bf-page">
-        <div className="bf-container" style={{ alignItems: "center", justifyContent: "center", minHeight: 400 }}>
-          <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
-        </div>
+    <div className="bf-page" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{
+        textAlign: "center",
+        padding: "60px 32px",
+        maxWidth: 480,
+        background: "rgba(249,115,22,0.05)",
+        border: "1px solid rgba(249,115,22,0.15)",
+        borderRadius: 28,
+        margin: "0 auto"
+      }}>
+        <div style={{
+          width: 72, height: 72, borderRadius: 22,
+          background: "rgba(249,115,22,0.1)",
+          border: "1px solid rgba(249,115,22,0.2)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          margin: "0 auto 20px",
+          fontSize: 32
+        }}>🚀</div>
+        <h2 style={{ fontSize: "1.6rem", fontWeight: 900, marginBottom: 10, color: "#f97316" }}>Coming Soon</h2>
+        <p style={{ fontSize: "0.95rem", fontWeight: 500, opacity: 0.7, lineHeight: 1.7 }}>
+          We are working hard on the booking feature. It will be available very soon!
+        </p>
       </div>
-    }>
-      <BookingFormContent />
-    </Suspense>
+    </div>
   );
 }
