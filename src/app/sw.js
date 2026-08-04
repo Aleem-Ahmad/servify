@@ -8,7 +8,7 @@ const bgSyncPlugin = new BackgroundSyncPlugin("servify-offline-queue", {
 const customCache = [
   // 1. Background Sync for offline mutations (POST, PATCH, PUT, DELETE)
   {
-    matcher: ({ url, request }) => url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/auth') && ['POST', 'PATCH', 'PUT', 'DELETE'].includes(request.method),
+    matcher: ({ url, request }) => url && url.pathname && url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/auth') && ['POST', 'PATCH', 'PUT', 'DELETE'].includes(request.method),
     handler: "NetworkOnly",
     options: {
       plugins: [bgSyncPlugin],
@@ -35,7 +35,7 @@ const serwist = new Serwist({
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  runtimeCaching: customCache,
+  runtimeCaching: defaultCache,
 });
 
 serwist.addEventListeners();
