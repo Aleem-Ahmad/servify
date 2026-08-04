@@ -5,6 +5,8 @@ import { withRetry } from '@/lib/retry';
 import { bookingRateLimit } from '@/lib/rateLimit';
 import { sendPushNotification } from '@/app/api/push/send/route';
 
+export const dynamic = 'force-dynamic';
+
 export async function PATCH(request, { params }) {
   // Rate limiting
   const rl = await bookingRateLimit(request);

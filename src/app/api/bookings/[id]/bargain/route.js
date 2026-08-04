@@ -3,6 +3,8 @@ import prisma from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { eventBus, EVENTS } from "@/lib/eventBus";
 
+export const dynamic = 'force-dynamic';
+
 // Helper function to get current user from cookies
 async function getCurrentUserId() {
   try {
