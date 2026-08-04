@@ -38,8 +38,8 @@ export default function Navbar({ type = "public" }) {
     if (type === "dashboard") {
       links.push(
         { name: t("navbar.bookService") || "Book", href: "/customerDashboard/complaintForm", icon: <PlusCircle className="w-5 h-5 text-orange-500" />, isSpecial: true },
-        { name: "phone" || "phone", href: "/customerDashboard/complaintForm"},
-        { name: t("navbar.phone") || "phone", href: "/customerDashboard/complaintForm", icon: <PlusCircle className="w-5 h-5 text-orange-500" />, isSpecial: true },
+        { name: "phone" || "phone", href: "/customerDashboard/phone"},
+        { name: t("navbar.phone") || "phone", href: "/customerDashboard/phone", icon: <PlusCircle className="w-5 h-5 text-orange-500" />, isSpecial: true },
         { name: t("navbar.complaints"), href: "/customerDashboard/complaintPage", icon: <MessageCircle className="w-5 h-5" /> },
         { name: t("navbar.account"), href: "/customerDashboard/accountPage", icon: <User className="w-5 h-5" /> }
       );
