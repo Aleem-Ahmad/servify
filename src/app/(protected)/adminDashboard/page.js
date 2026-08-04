@@ -18,6 +18,16 @@ export default function AdminDashboardPage() {
 
   const isOwnerAdmin = user?.email === "www.aleemahmadghias@gmail.com";
 
+  const redirectTabs = new Set(["earnings", "settings"]);
+
+  const handleTabClick = (tabId) => {
+    if (redirectTabs.has(tabId)) {
+      router.push("/coming-soon");
+      return;
+    }
+    setActiveTab(tabId);
+  };
+
   const tabs = [
     { id: "overview", label: "Overview", icon: <LayoutDashboard className="nav-icon" /> },
     { id: "providers", label: "Provider Requests", icon: <UserCheck className="nav-icon" /> },
@@ -68,7 +78,7 @@ export default function AdminDashboardPage() {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabClick(tab.id)}
               className={`admin-nav-item ${activeTab === tab.id ? 'active' : ''}`}
             >
               {tab.icon}
@@ -139,7 +149,7 @@ export default function AdminDashboardPage() {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabClick(tab.id)}
               className={`mobile-tab ${activeTab === tab.id ? 'active' : ''}`}
             >
               {tab.icon}

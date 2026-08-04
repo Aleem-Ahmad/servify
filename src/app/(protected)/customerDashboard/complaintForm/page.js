@@ -674,14 +674,14 @@ function BookingFormContent() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setFormData((prev) => ({ ...prev, paymentMethod: "SadaPay" }))}
+                        onClick={() => router.push("/coming-soon")}
                         className={`bf-payment-card ${formData.paymentMethod === "SadaPay" ? "selected" : ""}`}
                       >
                         <Sparkles className="w-5 h-5 text-emerald-500" />
                         SadaPay Wallet
                       </button>
                     </div>
-                    {formData.paymentMethod === "SadaPay" && (
+                    {false && formData.paymentMethod === "SadaPay" && (
                       <p className="bf-hint" style={{ color: "#10b981", marginTop: 8 }}>
                         ✓ {isUrdu ? "SadaPay کے ذریعے محفوظ آن لائن ادائیگی" : "Secured via SadaPay checkout"}
                       </p>

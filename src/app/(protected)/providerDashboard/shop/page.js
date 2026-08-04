@@ -114,7 +114,7 @@ export default function ShopPage() {
 
   const stats = [
     { label: "Jobs Done", value: user?.performance?.completedJobs || "0", icon: <Briefcase size={20} />, color: "#ff7a00" },
-    { label: "Earnings", value: "PKR 0", icon: <TrendingUp size={20} />, color: "#10b981" },
+    { label: "Earnings", value: "PKR 0", icon: <TrendingUp size={20} />, color: "#10b981", path: "/coming-soon" },
     { label: "Avg. Rating", value: user?.trustScore ? (user.trustScore / 20).toFixed(1) : "0.0", icon: <Star size={20} />, color: "#f59e0b" },
   ];
 
@@ -361,7 +361,7 @@ export default function ShopPage() {
       {/* ── STATS GRID ── */}
       <div className="shop-stats-grid">
         {stats.map((s, idx) => (
-          <div key={idx} className="stat-card">
+          <div key={idx} className="stat-card" onClick={() => s.path && router.push(s.path)} style={{ cursor: s.path ? "pointer" : "default" }}>
             <div className="stat-icon" style={{ color: s.color, background: `${s.color}15` }}>
               {s.icon}
             </div>
