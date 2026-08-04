@@ -43,7 +43,8 @@ export async function POST(request) {
             method: bookingData.paymentMethod || 'Cash',
             status: 'Unpaid'
           },
-          otp: otp
+          otp: otp,
+          bargainingStatus: (bookingData.bargainPrice && Number(bookingData.bargainPrice) > 0) ? 'Negotiating' : 'None'
         }
       }),
       { label: 'create-booking', retries: 2 }
@@ -57,6 +58,28 @@ export async function POST(request) {
       urgency: newBooking.urgency,
       providerId: newBooking.providerId,
     }).catch((err) => console.error('[EventBus] publish error:', err));
+
+    // If bargain requested, create the initial bargain offer
+    if (bookingData.bargainPrice && Number(bookingData.bargainPrice) > 0) {
+      const offer = await prisma.bargainOffer.create({
+        data: {
+          bookingId: newBooking.id,
+          proposerId: newBooking.customerId,
+          proposerType: 'customer',
+          proposedPrice: Number(bookingData.bargainPrice),
+          message: bookingData.bargainMessage || ''
+        }
+      });
+      eventBus.publish(EVENTS.BARGAIN_OFFER_MADE, {
+        bookingId: newBooking.id,
+        offerId: offer.id,
+        proposerId: newBooking.customerId,
+        proposerType: 'customer',
+        proposedPrice: Number(bookingData.bargainPrice),
+        message: bookingData.bargainMessage || '',
+        targetId: newBooking.providerId || null,
+      }).catch(err => console.error('[EventBus] bargain offer error:', err));
+    }
 
     // 1. Notify Customer (Booking Submitted)
     sendPushNotification({
