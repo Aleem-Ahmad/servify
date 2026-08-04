@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import DashboardOverview from "./DashboardOverview";
 import VerificationRequests from "./verification-requests/page";
 import UserManagement from "./UserManagement";
@@ -15,6 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const { user, logout } = useAuth();
+  const router = useRouter();
 
   const isOwnerAdmin = user?.email === "www.aleemahmadghias@gmail.com";
 
@@ -130,7 +132,13 @@ export default function AdminDashboardPage() {
             {activeTab === "overview" && <DashboardOverview />}
             {activeTab === "providers" && <VerificationRequests />}
             {activeTab === "users" && <UserManagement />}
-            {activeTab === "earnings" && <Earnings />}
+            {activeTab === "earnings" && (
+              <div className="admin-panel-card" style={{ textAlign: 'center', padding: '60px 24px' }}>
+                <Coins style={{ width: 48, height: 48, color: 'var(--admin-text-muted)', marginBottom: 16, margin: '0 auto 16px' }} />
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--admin-text-primary)', marginBottom: 8 }}>Earnings</h2>
+                <p style={{ color: 'var(--admin-text-muted)', fontSize: '1rem', fontWeight: 600 }}>Coming soon</p>
+              </div>
+            )}
             {activeTab === "register-admin" && <RegisterAdmin />}
             {activeTab === "settings" && (
               <div className="admin-panel-card" style={{ textAlign: 'center', padding: '60px 24px' }}>
