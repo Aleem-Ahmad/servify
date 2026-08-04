@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Phone, Star, X, Camera, Video, Mic, Send, CheckCircle } from "lucide-react";
+import { Phone, Star, X, Camera, Video, Mic, Send, CheckCircle, HandCoins } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
@@ -22,10 +22,15 @@ export default function ComplaintCard({ complaint }) {
   const [audio, setAudio] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [showBargain, setShowBargain] = useState(false);
+  const [bargainPrice, setBargainPrice] = useState("");
+  const [bargainMessage, setBargainMessage] = useState("");
+  const [bargainSubmitting, setBargainSubmitting] = useState(false);
 
   const isDone = complaint.status === "Completed" || complaint.status === "Done";
   const isCancelled = complaint.status === "Cancelled" || complaint.status === "Rejected";
   const showFeedbackButton = isDone || isCancelled;
+  const canBargain = !isDone && !isCancelled;
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -63,6 +68,36 @@ export default function ComplaintCard({ complaint }) {
       window.location.href = `tel:${phone}`;
     } else {
       alert(`Provider contact: ${complaint.provider}\nPhone not available — please contact support.`);
+    }
+  };
+
+  const handleBargainSubmit = async () => {
+    const price = Number(bargainPrice);
+    if (!price || price <= 0) {
+      alert("Please enter a valid offer price.");
+      return;
+    }
+
+    setBargainSubmitting(true);
+    try {
+      const res = await fetch(`/api/bookings/${complaint.id}/bargain`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ proposedPrice: price, message: bargainMessage, proposerType: "customer" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setShowBargain(false);
+        setBargainPrice("");
+        setBargainMessage("");
+        alert("Bargain offer sent to the provider.");
+      } else {
+        alert(data.message || "Failed to send bargain offer.");
+      }
+    } catch (e) {
+      alert("Network error. Please try again.");
+    } finally {
+      setBargainSubmitting(false);
     }
   };
 
@@ -149,7 +184,23 @@ export default function ComplaintCard({ complaint }) {
         </div>
 
         {/* ACTIONS */}
-        <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+          {canBargain && (
+            <div className={`rounded-2xl border p-3 ${dark ? "border-orange-500/20 bg-orange-500/5" : "border-orange-200 bg-orange-50"}`}>
+              <button type="button" onClick={() => setShowBargain((value) => !value)} className="w-full py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold flex items-center justify-center gap-2 transition-all">
+                <HandCoins className="w-4 h-4" /> {showBargain ? "Hide Bargain" : "Bargain Price"}
+              </button>
+              {showBargain && (
+                <div className="mt-3 space-y-2">
+                  <input type="number" min="1" value={bargainPrice} onChange={(e) => setBargainPrice(e.target.value)} placeholder="Offer price in PKR" className={`w-full px-3 py-2 rounded-xl border text-sm outline-none ${dark ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-orange-200 text-slate-900"}`} />
+                  <input type="text" value={bargainMessage} onChange={(e) => setBargainMessage(e.target.value)} placeholder="Optional message" className={`w-full px-3 py-2 rounded-xl border text-sm outline-none ${dark ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-orange-200 text-slate-900"}`} />
+                  <button type="button" onClick={handleBargainSubmit} disabled={bargainSubmitting} className="w-full py-2.5 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold disabled:opacity-60">
+                    {bargainSubmitting ? "Sending..." : "Send Offer"}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
           {showFeedbackButton ? (
             <button 
               onClick={() => setShowFeedback(true)}

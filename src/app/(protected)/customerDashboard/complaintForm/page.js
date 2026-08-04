@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ChevronRight, ChevronLeft, MapPin, User, ShieldCheck, 
   Zap, CheckCircle2, Lock, Star, Wrench, Mic, Square, Trash2, 
-  Play, Pause, Camera, Wallet, Clock, Sparkles, CheckSquare
+  Play, Pause, Camera, Wallet, Clock, Sparkles, CheckSquare, HandCoins
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import "./bookingForm.css";
@@ -59,6 +59,8 @@ function BookingFormContent() {
     mediaUrls: [], // Base64 photo/video uploads
     hours: 1,
     paymentMethod: "Cash",
+    bargainPrice: "",
+    bargainMessage: "",
     otpInput: "",
   });
 
@@ -277,6 +279,8 @@ function BookingFormContent() {
             providerName: (!isOpenBooking && providerChosen) ? providerChosen.name : undefined,
             hourlyRate: (!isOpenBooking && providerChosen) ? providerChosen.rate : 0,
             price: (!isOpenBooking && providerChosen) ? (providerChosen.rate * formData.hours) : 0,
+            bargainPrice: formData.bargainPrice ? Number(formData.bargainPrice) : undefined,
+            bargainMessage: formData.bargainMessage,
             date: new Date().toISOString(),
             otp: otp
         };
@@ -684,6 +688,45 @@ function BookingFormContent() {
                     )}
                   </div>
 
+
+
+                  <div className="bf-panel">
+                    <div className="bf-price-title">
+                      <HandCoins className="w-3.5 h-3.5" />
+                      {isUrdu ? "Bargain" : "Bargain at Booking"}
+                    </div>
+                    <p className="bf-provider-meta" style={{ marginBottom: 12 }}>
+                      {isUrdu
+                        ? "Apni munasib price booking ke sath bhejen. Provider accept ya counter-offer kar sakta hai."
+                        : "Send your preferred price with this booking. The provider can accept it or counter-offer."}
+                    </p>
+                    <div className="bf-field-grid">
+                      <div className="bf-field">
+                        <label className="bf-label">{isUrdu ? "Offer Price" : "Your Offer Price"}</label>
+                        <input
+                          type="number"
+                          min="1"
+                          name="bargainPrice"
+                          value={formData.bargainPrice}
+                          onChange={handleFieldChange}
+                          placeholder={isOpenBooking ? "e.g. 1500" : `Less than PKR ${activeTotal || 0}`}
+                          className="bf-input"
+                        />
+                      </div>
+                      <div className="bf-field">
+                        <label className="bf-label">{isUrdu ? "Message" : "Message"}</label>
+                        <input
+                          type="text"
+                          name="bargainMessage"
+                          value={formData.bargainMessage}
+                          onChange={handleFieldChange}
+                          placeholder={isUrdu ? "Short reason" : "Add a short reason"}
+                          className="bf-input"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="bf-price-summary">
                     <div className="bf-price-title">
                       <CheckSquare className="w-3.5 h-3.5" />
@@ -694,6 +737,7 @@ function BookingFormContent() {
                         <div className="bf-price-row"><span>{isUrdu ? "زمرہ" : "Category"}</span><strong>{formData.category || "—"}</strong></div>
                         <div className="bf-price-row"><span>{isUrdu ? "گھنٹے" : "Hours"}</span><strong>{formData.hours}</strong></div>
                         <div className="bf-price-row"><span>{isUrdu ? "ادائیگی" : "Payment"}</span><strong>{formData.paymentMethod}</strong></div>
+                        {formData.bargainPrice && <div className="bf-price-total"><span>{isUrdu ? "Your Offer" : "Your Offer"}</span><span>PKR {formData.bargainPrice}</span></div>}
                         <p className="bf-hint" style={{ marginTop: 8 }}>
                           {isUrdu ? "قیمت فراہم کنندہ قبول کرنے کے بعد ظاہر ہوگی" : "Cost shown once a provider accepts"}
                         </p>
@@ -703,6 +747,7 @@ function BookingFormContent() {
                         <div className="bf-price-row"><span>{providerChosen?.name || "—"}</span><strong>PKR {activeRate}/hr</strong></div>
                         <div className="bf-price-row"><span>{isUrdu ? "گھنٹے" : "Hours"}</span><strong>{formData.hours}</strong></div>
                         <div className="bf-price-total"><span>{isUrdu ? "کل تخمینہ" : "Est. Total"}</span><span>PKR {activeTotal}</span></div>
+                        {formData.bargainPrice && <div className="bf-price-row"><span>{isUrdu ? "Your Offer" : "Your Offer"}</span><strong>PKR {formData.bargainPrice}</strong></div>}
                       </>
                     )}
                   </div>
@@ -733,6 +778,7 @@ function BookingFormContent() {
                     <div><strong>{isUrdu ? "پتہ:" : "Address:"}</strong> {formData.address}</div>
                     <div><strong>{isUrdu ? "ادائیگی:" : "Payment:"}</strong> {formData.paymentMethod}</div>
                     <div><strong>{isUrdu ? "تخمینی بجٹ:" : "Est. Budget:"}</strong> {isOpenBooking ? (isUrdu ? "فراہم کنندہ کے بعد" : "After provider accepts") : `PKR ${activeTotal}`}</div>
+                    {formData.bargainPrice && <div><strong>{isUrdu ? "Bargain Offer:" : "Bargain Offer:"}</strong> PKR {formData.bargainPrice}</div>}
                   </div>
 
                   <div className="bf-otp-box">
